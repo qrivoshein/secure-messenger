@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Messenger</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0e1621;
+            color: #e1e9f0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .auth-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #f5f5f5;
+        }
+
+        .auth-box {
+            background: #ffffff;
+            padding: 50px 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            width: 400px;
+            max-width: 90%;
+            border: 1px solid #e8e8e8;
+        }
+
+        .auth-box h1 {
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .auth-box p {
+            color: #737373;
+            margin-bottom: 32px;
+            font-size: 15px;
+            font-weight: 400;
+        }
+
+        .auth-box input {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            border: 1px solid #d4d4d4;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+
+        .auth-box input:focus {
+            outline: none;
+            border-color: #404040;
+            background: #ffffff;
+        }
+
+        .auth-box button {
+            width: 100%;
+            padding: 13px;
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .auth-box button:hover {
+            background: #404040;
+        }
+
+        .messenger-container {
+            display: none;
+            height: 100vh;
+            grid-template-columns: 350px 1fr;
+        }
+
+        .messenger-container.active {
+            display: grid;
+        }
+
+        .sidebar {
+            background: #1a2332;
+            border-right: 1px solid #2d3748;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #2d3748;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sidebar-header h2 {
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: #151e2b;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .user-status {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .search-box {
+            padding: 15px 20px;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            background: #0e1621;
+            border: 1px solid #2d3748;
+            border-radius: 10px;
+            color: #e1e9f0;
+            font-size: 14px;
+        }
+
+        .search-box input::placeholder {
+            color: #718096;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .chats-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #2d3748;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-item:hover {
+            background: #151e2b;
+        }
+
+        .chat-item.active {
+            background: #151e2b;
+            border-left: 3px solid #667eea;
+        }
+
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ecca3 0%, #45b393 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .chat-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .chat-time {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .chat-preview {
+            font-size: 14px;
+            color: #718096;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            background: #0e1621;
+        }
+
+        .chat-header-bar {
+            padding: 20px 30px;
+            background: #1a2332;
+            border-bottom: 1px solid #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .chat-header-bar .chat-avatar {
+            width: 45px;
+            height: 45px;
+        }
+
+        .chat-header-info {
+            flex: 1;
+        }
+
+        .chat-header-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .chat-header-status {
+            font-size: 13px;
+            color: #4ecca3;
+        }
+
+        .encryption-badge {
+            padding: 6px 12px;
+            background: rgba(78, 204, 163, 0.1);
+            border: 1px solid #4ecca3;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #4ecca3;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 70%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ecca3 0%, #45b393 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .message.sent .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message-content {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .message-bubble {
+            padding: 12px 18px;
+            background: #1a2332;
+            border-radius: 18px;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+
+        .message.sent .message-bubble {
+            background: #667eea;
+            color: white;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #718096;
+            padding: 0 5px;
+        }
+
+        .message-input-area {
+            padding: 20px 30px;
+            background: #1a2332;
+            border-top: 1px solid #2d3748;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 15px 20px;
+            background: #0e1621;
+            border: 1px solid #2d3748;
+            border-radius: 25px;
+            color: #e1e9f0;
+            font-size: 15px;
+        }
+
+        .input-container input::placeholder {
+            color: #718096;
+        }
+
+        .input-container input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #667eea;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            background: #5568d3;
+        }
+
+        .send-btn:disabled {
+            background: #2d3748;
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #718096;
+        }
+
+        .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #e1e9f0;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a2332;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2d3748;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a5568;
+        }
+
+        .logout-btn {
+            padding: 8px 15px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 8px;
+            color: #ef4444;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="authScreen" class="auth-screen">
+        <div class="auth-box">
+            <h1>Secure Messenger</h1>
+            <p>Защищенный мессенджер с end-to-end шифрованием</p>
+            
+            <div id="loginForm">
+                <input type="text" id="loginUsername" placeholder="Логин" />
+                <input type="password" id="loginPassword" placeholder="Пароль" />
+                <button onclick="login()">Войти</button>
+                <p style="text-align: center; margin-top: 15px; color: #737373; font-size: 14px;">
+                    Нет аккаунта? <a href="#" onclick="showRegisterForm(); return false;" style="color: #1a1a1a; text-decoration: none; font-weight: 500; border-bottom: 1px solid #1a1a1a;">Зарегистрироваться</a>
+                </p>
+            </div>
+
+            <div id="registerForm" style="display: none;">
+                <input type="text" id="registerUsername" placeholder="Логин" />
+                <input type="password" id="registerPassword" placeholder="Пароль" />
+                <input type="password" id="registerPasswordConfirm" placeholder="Подтвердите пароль" />
+                <button onclick="register()">Зарегистрироваться</button>
+                <p style="text-align: center; margin-top: 15px; color: #737373; font-size: 14px;">
+                    Уже есть аккаунт? <a href="#" onclick="showLoginForm(); return false;" style="color: #1a1a1a; text-decoration: none; font-weight: 500; border-bottom: 1px solid #1a1a1a;">Войти</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="messengerContainer" class="messenger-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Чаты</h2>
+                <button class="logout-btn" onclick="logout()">Выйти</button>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">Пользователь</div>
+                    <div class="user-status">🟢 В сети</div>
+                </div>
+            </div>
+            <div class="search-box">
+                <input type="text" placeholder="🔍 Поиск чатов..." oninput="searchChats(this.value)">
+            </div>
+            <div class="chats-list" id="chatsList"></div>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="empty-state">
+                <div class="empty-state-icon">💬</div>
+                <h3>Выберите чат</h3>
+                <p>Выберите чат из списка слева, чтобы начать общение</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let currentChat = null;
+        let encryptionKey = null;
+
+        const mockChats = [
+            { id: 1, name: 'Алексей Иванов', avatar: 'А', lastMessage: 'Привет! Как дела?', time: '14:23', online: true },
+            { id: 2, name: 'Мария Петрова', avatar: 'М', lastMessage: 'Увидимся завтра', time: '13:45', online: true },
+            { id: 3, name: 'Дмитрий Сидоров', avatar: 'Д', lastMessage: 'Отправил файлы', time: '12:30', online: false },
+            { id: 4, name: 'Елена Смирнова', avatar: 'Е', lastMessage: 'Спасибо за помощь!', time: 'Вчера', online: false },
+            { id: 5, name: 'Сергей Козлов', avatar: 'С', lastMessage: 'Созвон в 15:00', time: 'Вчера', online: true }
+        ];
+
+        async function generateEncryptionKey() {
+            const key = await crypto.subtle.generateKey(
+                { name: 'AES-GCM', length: 256 },
+                true,
+                ['encrypt', 'decrypt']
+            );
+            return key;
+        }
+
+        async function encryptMessage(message, key) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(message);
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            
+            const encrypted = await crypto.subtle.encrypt(
+                { name: 'AES-GCM', iv: iv },
+                key,
+                data
+            );
+            
+            return {
+                encrypted: Array.from(new Uint8Array(encrypted)),
+                iv: Array.from(iv)
+            };
+        }
+
+        async function decryptMessage(encryptedData, iv, key) {
+            try {
+                const decrypted = await crypto.subtle.decrypt(
+                    { name: 'AES-GCM', iv: new Uint8Array(iv) },
+                    key,
+                    new Uint8Array(encryptedData)
+                );
+                
+                const decoder = new TextDecoder();
+                return decoder.decode(decrypted);
+            } catch (e) {
+                return '[Ошибка расшифровки]';
+            }
+        }
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function getUsers() {
+            const users = localStorage.getItem('users');
+            return users ? JSON.parse(users) : {};
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        async function register() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+            if (!username || !password) {
+                alert('Пожалуйста, заполните все поля');
+                return;
+            }
+
+            if (username.length < 3) {
+                alert('Логин должен содержать минимум 3 символа');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('Пароль должен содержать минимум 6 символов');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                alert('Пароли не совпадают');
+                return;
+            }
+
+            const users = getUsers();
+            if (users[username]) {
+                alert('Пользователь с таким логином уже существует');
+                return;
+            }
+
+            const hashedPassword = await hashPassword(password);
+            users[username] = {
+                password: hashedPassword,
+                createdAt: new Date().toISOString()
+            };
+            saveUsers(users);
+
+            alert('Регистрация успешна! Теперь вы можете войти');
+            
+            document.getElementById('registerUsername').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('registerPasswordConfirm').value = '';
+            
+            showLoginForm();
+        }
+
+        async function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                alert('Пожалуйста, введите логин и пароль');
+                return;
+            }
+
+            const users = getUsers();
+            if (!users[username]) {
+                alert('Пользователь не найден. Пожалуйста, зарегистрируйтесь');
+                return;
+            }
+
+            const hashedPassword = await hashPassword(password);
+            if (users[username].password !== hashedPassword) {
+                alert('Неверный пароль');
+                return;
+            }
+
+            currentUser = username;
+            encryptionKey = await generateEncryptionKey();
+            
+            localStorage.setItem('currentUser', username);
+            
+            document.getElementById('userName').textContent = username;
+            document.getElementById('userAvatar').textContent = username[0].toUpperCase();
+            
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('messengerContainer').classList.add('active');
+            
+            loadChats();
+        }
+
+        function logout() {
+            currentUser = null;
+            currentChat = null;
+            encryptionKey = null;
+            
+            localStorage.removeItem('currentUser');
+            
+            document.getElementById('authScreen').style.display = 'flex';
+            document.getElementById('messengerContainer').classList.remove('active');
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            
+            showLoginForm();
+        }
+
+        function loadChats() {
+            const chatsList = document.getElementById('chatsList');
+            chatsList.innerHTML = mockChats.map(chat => `
+                <div class="chat-item" onclick="openChat(${chat.id})">
+                    <div class="chat-avatar">${chat.avatar}</div>
+                    <div class="chat-info">
+                        <div class="chat-header">
+                            <div class="chat-name">${chat.name}</div>
+                            <div class="chat-time">${chat.time}</div>
+                        </div>
+                        <div class="chat-preview">${chat.lastMessage}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openChat(chatId) {
+            currentChat = mockChats.find(c => c.id === chatId);
+            
+            document.querySelectorAll('.chat-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.chat-item').classList.add('active');
+
+            const chatArea = document.getElementById('chatArea');
+            const messages = getMessages(chatId);
+            
+            chatArea.innerHTML = `
+                <div class="chat-header-bar">
+                    <div class="chat-avatar">${currentChat.avatar}</div>
+                    <div class="chat-header-info">
+                        <div class="chat-header-name">${currentChat.name}</div>
+                        <div class="chat-header-status">${currentChat.online ? '🟢 В сети' : '⚪ Не в сети'}</div>
+                    </div>
+                    <div class="encryption-badge">
+                        🔒 E2E шифрование
+                    </div>
+                </div>
+                <div class="messages-area" id="messagesArea">
+                    ${messages.map(msg => `
+                        <div class="message ${msg.sent ? 'sent' : ''}">
+                            <div class="message-avatar">${msg.sent ? currentUser[0].toUpperCase() : currentChat.avatar}</div>
+                            <div class="message-content">
+                                <div class="message-bubble">${msg.text}</div>
+                                <div class="message-time">${msg.time}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="message-input-area">
+                    <div class="input-container">
+                        <input type="text" id="messageInput" placeholder="Напишите сообщение..." onkeypress="handleKeyPress(event)">
+                        <button class="send-btn" onclick="sendMessage()">➤</button>
+                    </div>
+                </div>
+            `;
+
+            const messagesArea = document.getElementById('messagesArea');
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+            document.getElementById('messageInput').focus();
+        }
+
+        function getMessages(chatId) {
+            const storageKey = `messages_${chatId}`;
+            const stored = localStorage.getItem(storageKey);
+            
+            if (stored) {
+                return JSON.parse(stored);
+            }
+            
+            return [
+                { text: 'Привет! Как дела?', sent: false, time: getCurrentTime() },
+                { text: 'Отлично, спасибо! А у тебя?', sent: true, time: getCurrentTime() }
+            ];
+        }
+
+        function saveMessages(chatId, messages) {
+            const storageKey = `messages_${chatId}`;
+            localStorage.setItem(storageKey, JSON.stringify(messages));
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text || !currentChat) return;
+
+            const encrypted = await encryptMessage(text, encryptionKey);
+            
+            const messages = getMessages(currentChat.id);
+            messages.push({
+                text: text,
+                sent: true,
+                time: getCurrentTime(),
+                encrypted: encrypted
+            });
+            
+            saveMessages(currentChat.id, messages);
+            
+            const messagesArea = document.getElementById('messagesArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message sent';
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${currentUser[0].toUpperCase()}</div>
+                <div class="message-content">
+                    <div class="message-bubble">${text}</div>
+                    <div class="message-time">${getCurrentTime()}</div>
+                </div>
+            `;
+            
+            messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+            
+            input.value = '';
+            
+            mockChats.find(c => c.id === currentChat.id).lastMessage = text;
+            mockChats.find(c => c.id === currentChat.id).time = getCurrentTime();
+            loadChats();
+            document.querySelectorAll('.chat-item')[mockChats.findIndex(c => c.id === currentChat.id)].classList.add('active');
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function getCurrentTime() {
+            const now = new Date();
+            return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        }
+
+        function searchChats(query) {
+            const filtered = mockChats.filter(chat => 
+                chat.name.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            const chatsList = document.getElementById('chatsList');
+            chatsList.innerHTML = filtered.map(chat => `
+                <div class="chat-item ${currentChat && currentChat.id === chat.id ? 'active' : ''}" onclick="openChat(${chat.id})">
+                    <div class="chat-avatar">${chat.avatar}</div>
+                    <div class="chat-info">
+                        <div class="chat-header">
+                            <div class="chat-name">${chat.name}</div>
+                            <div class="chat-time">${chat.time}</div>
+                        </div>
+                        <div class="chat-preview">${chat.lastMessage}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
