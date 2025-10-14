@@ -470,8 +470,25 @@
         <div class="auth-box">
             <h1>🔒 Secure Messenger</h1>
             <p>Защищенный мессенджер с end-to-end шифрованием</p>
-            <input type="text" id="usernameInput" placeholder="Ваше имя" />
-            <button onclick="login()">Войти</button>
+            
+            <div id="loginForm">
+                <input type="text" id="loginUsername" placeholder="Логин" />
+                <input type="password" id="loginPassword" placeholder="Пароль" />
+                <button onclick="login()">Войти</button>
+                <p style="text-align: center; margin-top: 15px; color: #666;">
+                    Нет аккаунта? <a href="#" onclick="showRegisterForm(); return false;" style="color: #667eea; text-decoration: none; font-weight: 600;">Зарегистрироваться</a>
+                </p>
+            </div>
+
+            <div id="registerForm" style="display: none;">
+                <input type="text" id="registerUsername" placeholder="Логин" />
+                <input type="password" id="registerPassword" placeholder="Пароль" />
+                <input type="password" id="registerPasswordConfirm" placeholder="Подтвердите пароль" />
+                <button onclick="register()">Зарегистрироваться</button>
+                <p style="text-align: center; margin-top: 15px; color: #666;">
+                    Уже есть аккаунт? <a href="#" onclick="showLoginForm(); return false;" style="color: #667eea; text-decoration: none; font-weight: 600;">Войти</a>
+                </p>
+            </div>
         </div>
     </div>
 
@@ -557,15 +574,106 @@
             }
         }
 
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hash = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hash))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+        }
+
+        function showRegisterForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+        }
+
+        function getUsers() {
+            const users = localStorage.getItem('users');
+            return users ? JSON.parse(users) : {};
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        async function register() {
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+
+            if (!username || !password) {
+                alert('Пожалуйста, заполните все поля');
+                return;
+            }
+
+            if (username.length < 3) {
+                alert('Логин должен содержать минимум 3 символа');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('Пароль должен содержать минимум 6 символов');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                alert('Пароли не совпадают');
+                return;
+            }
+
+            const users = getUsers();
+            if (users[username]) {
+                alert('Пользователь с таким логином уже существует');
+                return;
+            }
+
+            const hashedPassword = await hashPassword(password);
+            users[username] = {
+                password: hashedPassword,
+                createdAt: new Date().toISOString()
+            };
+            saveUsers(users);
+
+            alert('Регистрация успешна! Теперь вы можете войти');
+            
+            document.getElementById('registerUsername').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('registerPasswordConfirm').value = '';
+            
+            showLoginForm();
+        }
+
         async function login() {
-            const username = document.getElementById('usernameInput').value.trim();
-            if (!username) {
-                alert('Пожалуйста, введите имя');
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                alert('Пожалуйста, введите логин и пароль');
+                return;
+            }
+
+            const users = getUsers();
+            if (!users[username]) {
+                alert('Пользователь не найден. Пожалуйста, зарегистрируйтесь');
+                return;
+            }
+
+            const hashedPassword = await hashPassword(password);
+            if (users[username].password !== hashedPassword) {
+                alert('Неверный пароль');
                 return;
             }
 
             currentUser = username;
             encryptionKey = await generateEncryptionKey();
+            
+            localStorage.setItem('currentUser', username);
             
             document.getElementById('userName').textContent = username;
             document.getElementById('userAvatar').textContent = username[0].toUpperCase();
@@ -581,9 +689,14 @@
             currentChat = null;
             encryptionKey = null;
             
+            localStorage.removeItem('currentUser');
+            
             document.getElementById('authScreen').style.display = 'flex';
             document.getElementById('messengerContainer').classList.remove('active');
-            document.getElementById('usernameInput').value = '';
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            
+            showLoginForm();
         }
 
         function loadChats() {
