@@ -1207,8 +1207,8 @@
             <div class="auth-subtitle">Защищенный мессенджер</div>
             
             <div id="loginForm">
-                <input type="text" id="loginUsername" placeholder="Логин" />
-                <input type="password" id="loginPassword" placeholder="Пароль" />
+                <input type="text" id="loginUsername" placeholder="Логин" onkeypress="if(event.key === 'Enter') login()" />
+                <input type="password" id="loginPassword" placeholder="Пароль" onkeypress="if(event.key === 'Enter') login()" />
                 <button onclick="login()" id="loginBtn">Войти</button>
                 <div id="loginMessage"></div>
                 <div class="auth-switch">
@@ -1217,9 +1217,9 @@
             </div>
 
             <div id="registerForm" style="display: none;">
-                <input type="text" id="registerUsername" placeholder="Логин" />
-                <input type="password" id="registerPassword" placeholder="Пароль" />
-                <input type="password" id="registerPasswordConfirm" placeholder="Подтвердите пароль" />
+                <input type="text" id="registerUsername" placeholder="Логин" onkeypress="if(event.key === 'Enter') register()" />
+                <input type="password" id="registerPassword" placeholder="Пароль" onkeypress="if(event.key === 'Enter') register()" />
+                <input type="password" id="registerPasswordConfirm" placeholder="Подтвердите пароль" onkeypress="if(event.key === 'Enter') register()" />
                 <button onclick="register()" id="registerBtn">Зарегистрироваться</button>
                 <div id="registerMessage"></div>
                 <div class="auth-switch">
