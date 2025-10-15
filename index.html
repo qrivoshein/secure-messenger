@@ -1149,6 +1149,85 @@
             font-size: 16px;
             color: #e1e9f0;
         }
+
+        .pin-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pin-modal.active {
+            display: flex;
+        }
+
+        .pin-modal-content {
+            background: #1a2332;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            padding: 24px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .pin-modal-title {
+            font-size: 20px;
+            color: #e1e9f0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .pin-modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pin-modal-btn {
+            width: 100%;
+            padding: 14px;
+            background: #2d3748;
+            color: #e1e9f0;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pin-modal-btn:hover {
+            background: #3d4758;
+            transform: translateY(-1px);
+        }
+
+        .pin-modal-btn.primary {
+            background: #667eea;
+        }
+
+        .pin-modal-btn.primary:hover {
+            background: #5568d3;
+        }
+
+        .pin-modal-btn-cancel {
+            margin-top: 8px;
+            background: transparent;
+            color: #718096;
+        }
+
+        .pin-modal-btn-cancel:hover {
+            background: #2d3748;
+            transform: none;
+        }
         
         .selection-toolbar {
             display: none;
@@ -1385,6 +1464,26 @@
         </div>
     </div>
 
+    <!-- Pin Modal -->
+    <div id="pinModal" class="pin-modal" onclick="if(event.target.id === 'pinModal') closePinModal()">
+        <div class="pin-modal-content">
+            <div class="pin-modal-title">Закрепить сообщение</div>
+            <div class="pin-modal-buttons">
+                <button class="pin-modal-btn primary" onclick="pinMessage('shared')">
+                    <svg class="icon-svg" width="20" height="20"><use href="#icon-pin"></use></svg>
+                    Закрепить у всех
+                </button>
+                <button class="pin-modal-btn" onclick="pinMessage('local')">
+                    <svg class="icon-svg" width="20" height="20"><use href="#icon-pin"></use></svg>
+                    Закрепить у себя
+                </button>
+                <button class="pin-modal-btn pin-modal-btn-cancel" onclick="closePinModal()">
+                    Отмена
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = window.location.origin;
         const WS_URL = `ws://${window.location.host}`;
@@ -1403,6 +1502,7 @@
         let selectedMessages = new Set();
         let pinnedMessages = new Map(); // Shared pins (synced with server)
         let localPinnedMessages = new Map(); // Local pins (only for current user)
+        let pendingPinMessageId = null; // Message ID waiting to be pinned
         let isSelectionMode = false;
         let swipeStartX = 0;
         let swipeStartY = 0;
@@ -2026,13 +2126,9 @@
                                             Открепить
                                         </div>
                                     ` : `
-                                        <div class="message-menu-item" onclick="event.stopPropagation(); togglePinMessage('${message.id}', 'shared'); closeMessageMenu('${message.id}')">
+                                        <div class="message-menu-item" onclick="event.stopPropagation(); showPinModal('${message.id}'); closeMessageMenu('${message.id}')">
                                             <svg class="icon-svg" width="16" height="16"><use href="#icon-pin"></use></svg>
-                                            Закрепить у всех
-                                        </div>
-                                        <div class="message-menu-item" onclick="event.stopPropagation(); togglePinMessage('${message.id}', 'local'); closeMessageMenu('${message.id}')">
-                                            <svg class="icon-svg" width="16" height="16"><use href="#icon-pin"></use></svg>
-                                            Закрепить у себя
+                                            Закрепить
                                         </div>
                                     `}
                                 </div>
@@ -2852,16 +2948,30 @@
         }
 
         // Pin message functions
-        function togglePinMessage(messageId, pinType = 'shared') {
-            if (!currentChat) return;
-            
-            const chatId = [currentUser, currentChat.username].sort().join('_');
-            
-            if (pinType === 'unpin') {
-                // Unpin - remove from both shared and local
-                unpinMessage();
+        function showPinModal(messageId) {
+            pendingPinMessageId = messageId;
+            const modal = document.getElementById('pinModal');
+            if (modal) {
+                modal.classList.add('active');
+            }
+        }
+
+        function closePinModal() {
+            pendingPinMessageId = null;
+            const modal = document.getElementById('pinModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        function pinMessage(pinType) {
+            if (!pendingPinMessageId || !currentChat) {
+                closePinModal();
                 return;
             }
+
+            const messageId = pendingPinMessageId;
+            const chatId = [currentUser, currentChat.username].sort().join('_');
             
             // Find message text
             const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
@@ -2881,17 +2991,6 @@
                 localPinnedMessages.set(chatId, messageId);
                 saveLocalPins();
                 updatePinnedBanner(messageText, 'local');
-                
-                // Refresh messages to update menu
-                if (currentChat) {
-                    const messagesArea = document.getElementById('messagesArea');
-                    if (messagesArea) {
-                        const scrollPos = messagesArea.scrollTop;
-                        const messages = Array.from(messagesArea.querySelectorAll('.message'));
-                        messagesArea.innerHTML = messages.map(m => m.outerHTML).join('');
-                        messagesArea.scrollTop = scrollPos;
-                    }
-                }
             } else if (pinType === 'shared') {
                 // Pin for everyone
                 pinnedMessages.set(chatId, messageId);
@@ -2906,6 +3005,18 @@
                         messageText: messageText
                     }));
                 }
+            }
+
+            closePinModal();
+        }
+
+        function togglePinMessage(messageId, pinType = 'shared') {
+            if (!currentChat) return;
+            
+            if (pinType === 'unpin') {
+                // Unpin - remove from both shared and local
+                unpinMessage();
+                return;
             }
         }
         
