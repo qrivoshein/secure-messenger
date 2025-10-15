@@ -542,6 +542,24 @@
             font-size: 11px;
             color: #718096;
             padding: 0 5px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .message-read-status {
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .message-read-status svg {
+            width: 14px;
+            height: 14px;
+            color: #718096;
+        }
+        
+        .message.sent .message-read-status svg.read {
+            color: #4ecca3;
         }
         
         .message-actions {
@@ -1195,6 +1213,13 @@
             <symbol id="icon-check" viewBox="0 0 24 24">
                 <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
             </symbol>
+            <symbol id="icon-check-single" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="icon-check-double" viewBox="0 0 24 24">
+                <polyline points="17 6 6 17 1 12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="23 6 12 17" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
             <symbol id="icon-lock-auth" viewBox="0 0 24 24">
                 <rect x="5" y="11" width="14" height="11" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
                 <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
@@ -1637,6 +1662,10 @@
                     handleTypingIndicator(data.from, data.isTyping);
                     break;
 
+                case 'messages_read':
+                    handleMessagesRead(data.messageIds, data.by);
+                    break;
+
                 case 'ping':
                     ws.send(JSON.stringify({ type: 'pong' }));
                     break;
@@ -1645,6 +1674,33 @@
                     console.error('Server error:', data.error);
                     break;
             }
+        }
+        
+        function markMessagesAsRead(from) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'mark_read',
+                    from: from
+                }));
+            }
+        }
+        
+        function handleMessagesRead(messageIds, by) {
+            if (!currentChat || currentChat.username !== by) return;
+            
+            messageIds.forEach(messageId => {
+                const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (messageEl) {
+                    const readIcon = messageEl.querySelector('.message-read-status svg');
+                    if (readIcon) {
+                        readIcon.classList.add('read');
+                        const useEl = readIcon.querySelector('use');
+                        if (useEl) {
+                            useEl.setAttribute('href', '#icon-check-double');
+                        }
+                    }
+                }
+            });
         }
 
         function handleIncomingMessage(message) {
@@ -1664,6 +1720,9 @@
                     
                     // Initialize swipe handlers for new message
                     setTimeout(() => initSwipesForAllMessages(), 10);
+                    
+                    // Mark as read immediately
+                    markMessagesAsRead(fromUser);
                     
                     // Play subtle sound for current chat
                     playNotificationSound();
@@ -1865,7 +1924,16 @@
                                 </div>
                             </div>
                         ` : ''}
-                        <div class="message-time">${message.time}</div>
+                        <div class="message-time">
+                            ${message.time}
+                            ${isSent ? `
+                                <span class="message-read-status">
+                                    <svg class="${message.read ? 'read' : ''}" width="14" height="14">
+                                        <use href="#icon-check-${message.read ? 'double' : 'single'}"></use>
+                                    </svg>
+                                </span>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
             `;
@@ -2028,6 +2096,9 @@
                         
                         // Initialize swipe handlers for all messages
                         setTimeout(() => initSwipesForAllMessages(), 100);
+                        
+                        // Mark messages as read
+                        markMessagesAsRead(username);
                     }
                 }
             } catch (error) {

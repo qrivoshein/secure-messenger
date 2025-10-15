@@ -255,6 +255,7 @@ wss.on('connection', (ws, req) => {
                         fileSize,
                         forwarded: forwarded || false,
                         forwardedFrom: forwardedFrom || null,
+                        read: false,
                         timestamp: new Date().toISOString(),
                         time: new Date().toLocaleTimeString('ru-RU', { 
                             hour: '2-digit', 
@@ -345,6 +346,37 @@ wss.on('connection', (ws, req) => {
                             from: username,
                             isTyping: message.isTyping
                         }));
+                    }
+                    break;
+
+                case 'mark_read':
+                    if (!username) return;
+                    
+                    const { from: readFrom } = message;
+                    const readChatId = [username, readFrom].sort().join('_');
+                    
+                    if (messages.has(readChatId)) {
+                        const chatMessages = messages.get(readChatId);
+                        const messageIds = [];
+                        
+                        chatMessages.forEach(msg => {
+                            if (msg.from === readFrom && msg.to === username && !msg.read) {
+                                msg.read = true;
+                                messageIds.push(msg.id);
+                            }
+                        });
+                        
+                        // Notify sender
+                        if (messageIds.length > 0) {
+                            const senderWs = onlineUsers.get(readFrom);
+                            if (senderWs && senderWs.readyState === WebSocket.OPEN) {
+                                senderWs.send(JSON.stringify({
+                                    type: 'messages_read',
+                                    messageIds: messageIds,
+                                    by: username
+                                }));
+                            }
+                        }
                     }
                     break;
 
