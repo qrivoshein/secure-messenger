@@ -825,33 +825,57 @@
         let typingTimeout = null;
         let isTyping = false;
 
+        function isSecureContext() {
+            return window.isSecureContext && typeof crypto !== 'undefined' && typeof crypto.subtle !== 'undefined';
+        }
+
         async function generateEncryptionKey() {
-            const key = await crypto.subtle.generateKey(
-                { name: 'AES-GCM', length: 256 },
-                true,
-                ['encrypt', 'decrypt']
-            );
-            return key;
+            if (!isSecureContext()) {
+                console.warn('Encryption not available in insecure context (HTTP). Use HTTPS for encryption.');
+                return null;
+            }
+            try {
+                const key = await crypto.subtle.generateKey(
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['encrypt', 'decrypt']
+                );
+                return key;
+            } catch (error) {
+                console.error('Failed to generate encryption key:', error);
+                return null;
+            }
         }
 
         async function encryptMessage(message, key) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(message);
-            const iv = crypto.getRandomValues(new Uint8Array(12));
-            
-            const encrypted = await crypto.subtle.encrypt(
-                { name: 'AES-GCM', iv: iv },
-                key,
-                data
-            );
-            
-            return {
-                encrypted: Array.from(new Uint8Array(encrypted)),
-                iv: Array.from(iv)
-            };
+            if (!key || !isSecureContext()) {
+                return null;
+            }
+            try {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(message);
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                
+                const encrypted = await crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    key,
+                    data
+                );
+                
+                return {
+                    encrypted: Array.from(new Uint8Array(encrypted)),
+                    iv: Array.from(iv)
+                };
+            } catch (error) {
+                console.error('Encryption failed:', error);
+                return null;
+            }
         }
 
         async function decryptMessage(encryptedData, iv, key) {
+            if (!key || !isSecureContext()) {
+                return '[Шифрование недоступно]';
+            }
             try {
                 const decrypted = await crypto.subtle.decrypt(
                     { name: 'AES-GCM', iv: new Uint8Array(iv) },
@@ -1253,8 +1277,8 @@
                         <div class="chat-header-name">${escapeHtml(username)}</div>
                         <div class="chat-header-status ${isOnline ? '' : 'offline'}">${isOnline ? '<svg class="icon-svg" width="12" height="12" style="color: #4ecca3;"><use href="#icon-online"></use></svg> В сети' : '<svg class="icon-svg" width="12" height="12" style="color: #718096;"><use href="#icon-offline"></use></svg> Не в сети'}</div>
                     </div>
-                    <div class="encryption-badge">
-                        <svg class="icon-svg" width="14" height="14"><use href="#icon-lock"></use></svg> E2E шифрование
+                    <div class="encryption-badge" style="${!isSecureContext() ? 'opacity: 0.5;' : ''}">
+                        <svg class="icon-svg" width="14" height="14"><use href="#icon-lock"></use></svg> ${isSecureContext() ? 'E2E шифрование' : 'Шифрование недоступно (HTTP)'}
                     </div>
                 </div>
                 <div class="messages-area" id="messagesArea">
@@ -1346,14 +1370,19 @@
             const encrypted = await encryptMessage(text, encryptionKey);
             const messageId = Date.now().toString();
             
-            ws.send(JSON.stringify({
+            const messageData = {
                 type: 'message',
                 to: currentChat.username,
                 text: text,
-                encrypted: encrypted.encrypted,
-                iv: encrypted.iv,
                 messageId: messageId
-            }));
+            };
+            
+            if (encrypted) {
+                messageData.encrypted = encrypted.encrypted;
+                messageData.iv = encrypted.iv;
+            }
+            
+            ws.send(JSON.stringify(messageData));
 
             if (isTyping) {
                 isTyping = false;
