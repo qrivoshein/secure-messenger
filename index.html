@@ -291,10 +291,27 @@
             white-space: nowrap;
         }
 
+        .unread-badge {
+            min-width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+            padding: 0 6px;
+            margin-left: auto;
+        }
+
         .chat-area {
             display: flex;
             flex-direction: column;
             background: #0e1621;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .chat-header-bar {
@@ -824,6 +841,30 @@
         let onlineUsers = new Set();
         let typingTimeout = null;
         let isTyping = false;
+        let unreadMessages = new Map();
+        
+        // Notification sound (simple beep using Web Audio API)
+        function playNotificationSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (error) {
+                console.error('Failed to play notification sound:', error);
+            }
+        }
 
         function isSecureContext() {
             return window.isSecureContext && typeof crypto !== 'undefined' && typeof crypto.subtle !== 'undefined';
@@ -1137,8 +1178,9 @@
             console.log('Received message:', message);
             
             const fromUser = message.from;
+            const isCurrentChat = currentChat && currentChat.username === fromUser;
             
-            if (currentChat && currentChat.username === fromUser) {
+            if (isCurrentChat) {
                 const messagesArea = document.getElementById('messagesArea');
                 if (messagesArea) {
                     const messageDiv = document.createElement('div');
@@ -1160,7 +1202,31 @@
                     `;
                     messagesArea.appendChild(messageDiv);
                     messagesArea.scrollTop = messagesArea.scrollHeight;
+                    
+                    // Play subtle sound for current chat
+                    playNotificationSound();
                 }
+            } else {
+                // Increment unread count for other chats
+                const currentUnread = unreadMessages.get(fromUser) || 0;
+                unreadMessages.set(fromUser, currentUnread + 1);
+                
+                // Play notification sound
+                playNotificationSound();
+                
+                // Show browser notification
+                if (Notification.permission === 'granted') {
+                    const notificationText = message.mediaType ? getMediaPreviewText(message.mediaType) : message.text;
+                    new Notification(`Новое сообщение от ${fromUser}`, {
+                        body: notificationText,
+                        icon: '/favicon.ico',
+                        tag: fromUser,
+                        requireInteraction: false
+                    });
+                }
+                
+                // Update title with unread count
+                updatePageTitle();
             }
             
             const user = users.find(u => u.username === fromUser);
@@ -1169,12 +1235,14 @@
                 user.time = message.time;
                 loadChats();
             }
-
-            if (Notification.permission === 'granted' && (!currentChat || currentChat.username !== fromUser)) {
-                new Notification('Новое сообщение', {
-                    body: `${fromUser}: ${message.text}`,
-                    icon: '/favicon.ico'
-                });
+        }
+        
+        function updatePageTitle() {
+            const totalUnread = Array.from(unreadMessages.values()).reduce((sum, count) => sum + count, 0);
+            if (totalUnread > 0) {
+                document.title = `(${totalUnread}) Secure Messenger`;
+            } else {
+                document.title = 'Secure Messenger';
             }
         }
 
@@ -1230,21 +1298,25 @@
                 return;
             }
 
-            chatsList.innerHTML = users.map(user => `
-                <div class="chat-item ${currentChat && currentChat.username === user.username ? 'active' : ''}" onclick="openChat('${user.username}')">
-                    <div class="chat-avatar">
-                        ${user.avatar}
-                        ${user.online || onlineUsers.has(user.username) ? '<div class="online-badge"></div>' : ''}
-                    </div>
-                    <div class="chat-info">
-                        <div class="chat-header">
-                            <div class="chat-name">${escapeHtml(user.username)}</div>
-                            <div class="chat-time">${user.time}</div>
+            chatsList.innerHTML = users.map(user => {
+                const unreadCount = unreadMessages.get(user.username) || 0;
+                return `
+                    <div class="chat-item ${currentChat && currentChat.username === user.username ? 'active' : ''}" onclick="openChat('${user.username}')">
+                        <div class="chat-avatar">
+                            ${user.avatar}
+                            ${user.online || onlineUsers.has(user.username) ? '<div class="online-badge"></div>' : ''}
                         </div>
-                        <div class="chat-preview">${escapeHtml(user.lastMessage || 'Начните общение')}</div>
+                        <div class="chat-info">
+                            <div class="chat-header">
+                                <div class="chat-name">${escapeHtml(user.username)}</div>
+                                <div class="chat-time">${user.time}</div>
+                            </div>
+                            <div class="chat-preview">${escapeHtml(user.lastMessage || 'Начните общение')}</div>
+                        </div>
+                        ${unreadCount > 0 ? `<div class="unread-badge">${unreadCount}</div>` : ''}
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function updateOnlineStatuses() {
@@ -1268,6 +1340,13 @@
             if (!user) return;
 
             currentChat = user;
+            
+            // Clear unread messages for this chat
+            if (unreadMessages.has(username)) {
+                unreadMessages.delete(username);
+                updatePageTitle();
+                loadChats();
+            }
             
             const chatArea = document.getElementById('chatArea');
             const isOnline = onlineUsers.has(username);
