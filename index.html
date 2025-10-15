@@ -1672,9 +1672,24 @@
         }
         
         function forwardSingleMessage(messageId) {
+            // Enter selection mode and mark this message as selected
+            if (!isSelectionMode) {
+                enterSelectionMode();
+            }
             selectedMessages.clear();
             selectedMessages.add(messageId);
-            openForwardModal([messageId]);
+            
+            // Update UI to show selection
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageEl) {
+                messageEl.classList.add('selected');
+            }
+            
+            // Update selection count
+            const countEl = document.querySelector('.selection-count');
+            if (countEl) {
+                countEl.textContent = `Выбрано: 1`;
+            }
         }
         
         function deleteMessage(messageId) {
@@ -2408,7 +2423,9 @@
             
             closeForwardModal();
             exitSelectionMode();
-            alert(`Сообщений переслано: ${selectedMessages.size}`);
+            
+            // Switch to chat with recipient
+            openChat(toUser);
         }
         
         // Selection mode functions
@@ -2491,41 +2508,8 @@
         
         // Swipe handling
         function initMessageSwipe(messageEl, messageId) {
-            let startX = 0;
-            let currentX = 0;
-            let isDragging = false;
-            
-            messageEl.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX;
-                isDragging = true;
-            }, { passive: true });
-            
-            messageEl.addEventListener('touchmove', (e) => {
-                if (!isDragging) return;
-                currentX = e.touches[0].clientX;
-                const diff = currentX - startX;
-                
-                if (Math.abs(diff) > 50) {
-                    messageEl.style.transform = `translateX(${diff}px)`;
-                }
-            }, { passive: true });
-            
-            messageEl.addEventListener('touchend', () => {
-                if (!isDragging) return;
-                isDragging = false;
-                
-                const diff = currentX - startX;
-                if (Math.abs(diff) > 100) {
-                    // Enter selection mode and select this message
-                    if (!isSelectionMode) {
-                        enterSelectionMode();
-                    }
-                    toggleMessageSelection(messageId);
-                }
-                
-                messageEl.style.transform = '';
-                currentX = 0;
-            }, { passive: true });
+            // Swipe gesture disabled - use three-dot menu instead
+            return;
         }
 
         window.addEventListener('beforeunload', () => {
@@ -2550,45 +2534,8 @@
         }
         
         function initTrackpadSwipe(messageEl, messageId) {
-            let swipeX = 0;
-            let swipeStartTime = 0;
-            
-            messageEl.addEventListener('wheel', (e) => {
-                // Detect horizontal swipe on trackpad (two-finger swipe)
-                if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 10) {
-                    e.preventDefault();
-                    
-                    swipeX += e.deltaX;
-                    
-                    // Visual feedback
-                    if (Math.abs(swipeX) > 50) {
-                        messageEl.style.transform = `translateX(${-swipeX}px)`;
-                        messageEl.style.transition = 'none';
-                    }
-                    
-                    // If swipe is significant enough, enter selection mode
-                    if (Math.abs(swipeX) > 100) {
-                        messageEl.style.transition = 'transform 0.3s ease';
-                        messageEl.style.transform = '';
-                        
-                        // Enter selection mode and select this message
-                        if (!isSelectionMode) {
-                            enterSelectionMode();
-                        }
-                        toggleMessageSelection(messageId);
-                        
-                        swipeX = 0;
-                    }
-                    
-                    // Reset swipe after a delay
-                    clearTimeout(swipeData.get(messageId));
-                    swipeData.set(messageId, setTimeout(() => {
-                        messageEl.style.transition = 'transform 0.3s ease';
-                        messageEl.style.transform = '';
-                        swipeX = 0;
-                    }, 200));
-                }
-            }, { passive: false });
+            // Swipe gesture disabled - use three-dot menu instead
+            return;
         }
 
         window.addEventListener('load', () => {
