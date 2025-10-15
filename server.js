@@ -99,6 +99,9 @@ app.post('/api/register', (req, res) => {
     });
     
     saveData();
+    
+    // Notify all online users about the new user
+    broadcastNewUser(username);
 
     res.json({ success: true, message: 'User registered successfully' });
 });
@@ -323,6 +326,17 @@ function broadcastOnlineUsers() {
             ws.send(JSON.stringify({
                 type: 'online_users',
                 users: onlineUsersList.filter(u => u !== username)
+            }));
+        }
+    });
+}
+
+function broadcastNewUser(newUsername) {
+    onlineUsers.forEach((ws, username) => {
+        if (ws.readyState === WebSocket.OPEN && username !== newUsername) {
+            ws.send(JSON.stringify({
+                type: 'new_user',
+                username: newUsername
             }));
         }
     });

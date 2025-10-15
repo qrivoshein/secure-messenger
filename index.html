@@ -1114,6 +1114,11 @@
                     updateOnlineStatuses();
                     break;
 
+                case 'new_user':
+                    console.log('New user registered:', data.username);
+                    loadUsers();
+                    break;
+
                 case 'typing':
                     handleTypingIndicator(data.from, data.isTyping);
                     break;
