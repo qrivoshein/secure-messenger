@@ -3198,11 +3198,6 @@
             }
             
             ws.send(JSON.stringify(messageData));
-            
-            // Close reply banner after sending
-            if (replyToMessage) {
-                closeReplyBanner();
-            }
 
             if (isTyping) {
                 isTyping = false;
@@ -3223,6 +3218,9 @@
                 replyToSender: replyToMessage?.sender || null,
                 time: getCurrentTime()
             };
+            
+            console.log('Creating message with reply:', newMessage.replyTo, newMessage.replyToText);
+            
             const messageHtml = renderMessage(newMessage, true);
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = messageHtml;
@@ -3231,6 +3229,11 @@
             
             // Initialize swipe handlers for new message
             setTimeout(() => initSwipesForAllMessages(), 10);
+            
+            // Close reply banner AFTER creating message
+            if (replyToMessage) {
+                closeReplyBanner();
+            }
             
             input.value = '';
             
