@@ -465,6 +465,8 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
+            max-width: 100%;
+            min-width: 0;
         }
 
         .message-bubble {
@@ -472,7 +474,11 @@
             background: #1a2332;
             border-radius: 18px;
             word-wrap: break-word;
+            word-break: break-word;
+            overflow-wrap: break-word;
             line-height: 1.5;
+            max-width: 100%;
+            white-space: pre-wrap;
         }
 
         .message.sent .message-bubble {
