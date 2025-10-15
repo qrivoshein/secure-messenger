@@ -151,32 +151,32 @@
         
         .password-toggle {
             position: absolute;
-            right: 14px;
+            right: 18px;
             top: 50%;
             transform: translateY(-50%);
             background: transparent;
             border: none;
             color: #718096;
             cursor: pointer;
-            padding: 6px;
+            padding: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
-            border-radius: 6px;
+            transition: all 0.15s;
+            border-radius: 4px;
             user-select: none;
             -webkit-user-select: none;
+            pointer-events: auto;
+            z-index: 10;
         }
         
         .password-toggle:hover {
-            color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
+            color: #9ca3af;
         }
         
         .password-toggle:active {
-            color: #5568d3;
-            background: rgba(102, 126, 234, 0.2);
-            transform: translateY(-50%) scale(0.95);
+            color: #718096;
+            transform: translateY(-50%) scale(0.92);
         }
         
         .password-toggle svg {
@@ -1257,7 +1257,7 @@
                     <use href="#icon-lock-auth"></use>
                 </svg>
             </div>
-            <h1>Эгита</h1>
+            <h1>ЭГИТА</h1>
             <div class="auth-subtitle">Защищенный мессенджер</div>
             
             <div id="loginForm">
