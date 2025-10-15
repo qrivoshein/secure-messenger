@@ -518,6 +518,7 @@
             gap: 5px;
             max-width: 100%;
             min-width: 0;
+            position: relative;
         }
 
         .message-bubble {
@@ -549,16 +550,17 @@
             opacity: 0;
             transition: opacity 0.2s;
             position: absolute;
-            top: -10px;
-            left: -10px;
+            top: 0;
+            left: 0;
             background: #1a2332;
             border-radius: 8px;
             padding: 4px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            z-index: 10;
         }
         
         .message.sent .message-actions {
-            right: -10px;
+            right: 0;
             left: auto;
         }
         
@@ -1829,33 +1831,6 @@
             
             return `
                 <div class="message ${isSent ? 'sent' : ''}" data-message-id="${message.id}" onclick="handleMessageClick(event, '${message.id}')">
-                    ${showActions ? `
-                        <div class="message-actions">
-                            <button class="message-action-btn message-menu-btn" onclick="event.stopPropagation(); toggleMessageMenu('${message.id}')" title="Действия">
-                                <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24">
-                                    <circle cx="12" cy="5" r="2" fill="currentColor"/>
-                                    <circle cx="12" cy="12" r="2" fill="currentColor"/>
-                                    <circle cx="12" cy="19" r="2" fill="currentColor"/>
-                                </svg>
-                            </button>
-                            <div class="message-menu" id="message-menu-${message.id}">
-                                ${showEditDelete ? `
-                                    <div class="message-menu-item" onclick="event.stopPropagation(); editMessageStart('${message.id}', '${escapeHtml(message.text).replace(/'/g, "\\'")}'); closeMessageMenu('${message.id}')">
-                                        <svg class="icon-svg" width="16" height="16"><use href="#icon-edit"></use></svg>
-                                        Изменить
-                                    </div>
-                                    <div class="message-menu-item" onclick="event.stopPropagation(); deleteMessage('${message.id}'); closeMessageMenu('${message.id}')">
-                                        <svg class="icon-svg" width="16" height="16"><use href="#icon-delete"></use></svg>
-                                        Удалить
-                                    </div>
-                                ` : ''}
-                                <div class="message-menu-item" onclick="event.stopPropagation(); forwardSingleMessage('${message.id}'); closeMessageMenu('${message.id}')">
-                                    <svg class="icon-svg" width="16" height="16"><use href="#icon-forward"></use></svg>
-                                    Переслать
-                                </div>
-                            </div>
-                        </div>
-                    ` : ''}
                     <div class="message-swipe-indicator">
                         <svg class="icon-svg" width="24" height="24"><use href="#icon-forward"></use></svg>
                     </div>
@@ -1863,6 +1838,33 @@
                     <div class="message-content">
                         <div class="message-sender-name">${escapeHtml(username)}</div>
                         ${contentHtml}
+                        ${showActions ? `
+                            <div class="message-actions">
+                                <button class="message-action-btn message-menu-btn" onclick="event.stopPropagation(); toggleMessageMenu('${message.id}')" title="Действия">
+                                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="5" r="2" fill="currentColor"/>
+                                        <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                                        <circle cx="12" cy="19" r="2" fill="currentColor"/>
+                                    </svg>
+                                </button>
+                                <div class="message-menu" id="message-menu-${message.id}">
+                                    ${showEditDelete ? `
+                                        <div class="message-menu-item" onclick="event.stopPropagation(); editMessageStart('${message.id}', '${escapeHtml(message.text).replace(/'/g, "\\'")}'); closeMessageMenu('${message.id}')">
+                                            <svg class="icon-svg" width="16" height="16"><use href="#icon-edit"></use></svg>
+                                            Изменить
+                                        </div>
+                                        <div class="message-menu-item" onclick="event.stopPropagation(); deleteMessage('${message.id}'); closeMessageMenu('${message.id}')">
+                                            <svg class="icon-svg" width="16" height="16"><use href="#icon-delete"></use></svg>
+                                            Удалить
+                                        </div>
+                                    ` : ''}
+                                    <div class="message-menu-item" onclick="event.stopPropagation(); forwardSingleMessage('${message.id}'); closeMessageMenu('${message.id}')">
+                                        <svg class="icon-svg" width="16" height="16"><use href="#icon-forward"></use></svg>
+                                        Переслать
+                                    </div>
+                                </div>
+                            </div>
+                        ` : ''}
                         <div class="message-time">${message.time}</div>
                     </div>
                 </div>
