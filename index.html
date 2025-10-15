@@ -3173,6 +3173,9 @@
                 id: messageId,
                 from: currentUser,
                 text: text,
+                replyTo: replyToMessage?.id || null,
+                replyToText: replyToMessage?.text || null,
+                replyToSender: replyToMessage?.sender || null,
                 time: getCurrentTime()
             };
             const messageHtml = renderMessage(newMessage, true);
@@ -3859,15 +3862,37 @@
         let replyToMessage = null;
         
         function showReplyBanner(messageId) {
+            console.log('showReplyBanner called for message:', messageId);
+            
             const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
-            if (!messageEl) return;
+            if (!messageEl) {
+                console.log('Message element not found');
+                return;
+            }
             
             const bubble = messageEl.querySelector('.message-bubble');
-            if (!bubble) return;
+            if (!bubble) {
+                console.log('Message bubble not found');
+                return;
+            }
             
-            const messageText = bubble.textContent.replace('(изменено)', '').trim();
-            const senderName = messageEl.querySelector('.message-sender-name')?.textContent || 
-                              (messageEl.classList.contains('sent') ? currentUser : currentChat?.username);
+            // Get clean text - remove forwarded label, reply quote, and edited label
+            let messageText = bubble.textContent || bubble.innerText || '';
+            messageText = messageText
+                .replace(/Переслано от .+/g, '')
+                .replace(/\(изменено\)/g, '')
+                .trim();
+            
+            // Get first line only if it's a reply (to skip quoted text)
+            const lines = messageText.split('\n').filter(line => line.trim());
+            if (lines.length > 2) {
+                // If multiple lines, likely has a quote, take last line as actual message
+                messageText = lines[lines.length - 1];
+            }
+            
+            const senderName = messageEl.classList.contains('sent') ? currentUser : (currentChat?.username || 'Unknown');
+            
+            console.log('Reply data:', { messageId, messageText, senderName });
             
             replyToMessage = {
                 id: messageId,
@@ -3877,7 +3902,10 @@
             
             // Show reply banner in input area
             const inputArea = document.querySelector('.message-input-area');
-            if (!inputArea) return;
+            if (!inputArea) {
+                console.log('Input area not found');
+                return;
+            }
             
             let replyBanner = document.querySelector('.reply-banner');
             if (!replyBanner) {
@@ -3902,7 +3930,12 @@
                 </button>
             `;
             
-            document.getElementById('messageInput').focus();
+            console.log('Reply banner shown');
+            
+            const inputField = document.getElementById('messageInput');
+            if (inputField) {
+                inputField.focus();
+            }
         }
         
         function closeReplyBanner() {
