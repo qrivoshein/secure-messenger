@@ -97,6 +97,17 @@ app.post('/api/login', (req, res) => {
     res.json({ success: true, token, username });
 });
 
+app.get('/api/verify', (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    const session = sessions.get(token);
+
+    if (!session) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    res.json({ success: true, username: session.username });
+});
+
 app.get('/api/users', (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '');
     const session = sessions.get(token);

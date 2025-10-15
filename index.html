@@ -1564,6 +1564,45 @@
             }
         }
 
+        async function autoLogin() {
+            const savedToken = localStorage.getItem('token');
+            const savedUsername = localStorage.getItem('username');
+
+            if (!savedToken || !savedUsername) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/verify`, {
+                    headers: {
+                        'Authorization': `Bearer ${savedToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    currentUser = savedUsername;
+                    currentToken = savedToken;
+                    encryptionKey = await generateEncryptionKey();
+                    
+                    document.getElementById('userName').textContent = savedUsername;
+                    document.getElementById('userAvatar').textContent = savedUsername[0].toUpperCase();
+                    
+                    document.getElementById('authScreen').style.display = 'none';
+                    document.getElementById('messengerContainer').classList.add('active');
+                    
+                    connectWebSocket();
+                    await loadUsers();
+                } else {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('username');
+                }
+            } catch (error) {
+                console.error('Auto-login failed:', error);
+                localStorage.removeItem('token');
+                localStorage.removeItem('username');
+            }
+        }
+
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
@@ -1572,6 +1611,10 @@
             if (ws) {
                 ws.close();
             }
+        });
+
+        window.addEventListener('load', () => {
+            autoLogin();
         });
     </script>
 </body>
