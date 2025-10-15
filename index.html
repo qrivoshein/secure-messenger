@@ -1401,7 +1401,8 @@
         let unreadMessages = new Map();
         let editingMessage = null;
         let selectedMessages = new Set();
-        let pinnedMessages = new Map();
+        let pinnedMessages = new Map(); // Shared pins (synced with server)
+        let localPinnedMessages = new Map(); // Local pins (only for current user)
         let isSelectionMode = false;
         let swipeStartX = 0;
         let swipeStartY = 0;
@@ -1601,6 +1602,9 @@
                     
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('username', data.username);
+                    
+                    // Load local pins from localStorage
+                    loadLocalPins();
                     
                     document.getElementById('userName').textContent = username;
                     document.getElementById('userAvatar').textContent = username[0].toUpperCase();
@@ -1968,10 +1972,11 @@
             const showActions = !message.mediaType; // Show menu for all text messages
             const showEditDelete = isSent && !message.forwarded; // Edit/Delete only for own non-forwarded messages
             
-            // Check if this message is pinned
+            // Check if this message is pinned (shared or local)
             const chatId = currentChat ? [currentUser, currentChat.username].sort().join('_') : null;
-            const pinnedId = chatId ? pinnedMessages.get(chatId) : null;
-            const isPinned = pinnedId === message.id;
+            const sharedPinnedId = chatId ? pinnedMessages.get(chatId) : null;
+            const localPinnedId = chatId ? localPinnedMessages.get(chatId) : null;
+            const isPinned = (sharedPinnedId === message.id) || (localPinnedId === message.id);
             
             let contentHtml;
             if (message.mediaType) {
@@ -2015,10 +2020,21 @@
                                         <svg class="icon-svg" width="16" height="16"><use href="#icon-forward"></use></svg>
                                         Переслать
                                     </div>
-                                    <div class="message-menu-item" onclick="event.stopPropagation(); togglePinMessage('${message.id}'); closeMessageMenu('${message.id}')">
-                                        <svg class="icon-svg" width="16" height="16"><use href="#icon-pin"></use></svg>
-                                        ${isPinned ? 'Открепить' : 'Закрепить'}
-                                    </div>
+                                    ${isPinned ? `
+                                        <div class="message-menu-item" onclick="event.stopPropagation(); togglePinMessage('${message.id}', 'unpin'); closeMessageMenu('${message.id}')">
+                                            <svg class="icon-svg" width="16" height="16"><use href="#icon-pin"></use></svg>
+                                            Открепить
+                                        </div>
+                                    ` : `
+                                        <div class="message-menu-item" onclick="event.stopPropagation(); togglePinMessage('${message.id}', 'shared'); closeMessageMenu('${message.id}')">
+                                            <svg class="icon-svg" width="16" height="16"><use href="#icon-pin"></use></svg>
+                                            Закрепить у всех
+                                        </div>
+                                        <div class="message-menu-item" onclick="event.stopPropagation(); togglePinMessage('${message.id}', 'local'); closeMessageMenu('${message.id}')">
+                                            <svg class="icon-svg" width="16" height="16"><use href="#icon-pin"></use></svg>
+                                            Закрепить у себя
+                                        </div>
+                                    `}
                                 </div>
                             </div>
                         ` : ''}
@@ -2211,9 +2227,13 @@
                         markMessagesAsRead(username);
                     }
                     
-                    // Show pinned message banner if exists
+                    // Show pinned message banner if exists (prioritize local pins)
                     const chatId = [currentUser, username].sort().join('_');
-                    const pinnedId = pinnedMessages.get(chatId);
+                    const localPinnedId = localPinnedMessages.get(chatId);
+                    const sharedPinnedId = pinnedMessages.get(chatId);
+                    const pinnedId = localPinnedId || sharedPinnedId;
+                    const pinType = localPinnedId ? 'local' : 'shared';
+                    
                     if (pinnedId) {
                         const pinnedMsg = data.messages.find(m => m.id === pinnedId);
                         if (pinnedMsg) {
@@ -2221,7 +2241,7 @@
                             if (pinnedMsg.text) {
                                 messageText = pinnedMsg.text;
                             }
-                            updatePinnedBanner(messageText);
+                            updatePinnedBanner(messageText, pinType);
                         }
                     }
                 }
@@ -2640,6 +2660,9 @@
                     currentToken = savedToken;
                     encryptionKey = await generateEncryptionKey();
                     
+                    // Load local pins from localStorage
+                    loadLocalPins();
+                    
                     document.getElementById('userName').textContent = savedUsername;
                     document.getElementById('userAvatar').textContent = savedUsername[0].toUpperCase();
                     
@@ -2829,38 +2852,56 @@
         }
 
         // Pin message functions
-        function togglePinMessage(messageId) {
+        function togglePinMessage(messageId, pinType = 'shared') {
             if (!currentChat) return;
             
-            const chatId = [currentUser, currentChat].sort().join('_');
-            const currentPinned = pinnedMessages.get(chatId);
+            const chatId = [currentUser, currentChat.username].sort().join('_');
             
-            if (currentPinned === messageId) {
-                // Unpin if already pinned
+            if (pinType === 'unpin') {
+                // Unpin - remove from both shared and local
                 unpinMessage();
-            } else {
-                // Pin new message
-                pinnedMessages.set(chatId, messageId);
+                return;
+            }
+            
+            // Find message text
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            let messageText = 'Медиа-сообщение';
+            
+            if (messageEl) {
+                const bubbleEl = messageEl.querySelector('.message-bubble');
+                if (bubbleEl) {
+                    messageText = bubbleEl.textContent.replace('(изменено)', '').trim();
+                    // Remove forwarded label and edited label
+                    messageText = messageText.replace(/^Переслано от .+$/, '').replace('(изменено)', '').trim();
+                }
+            }
+            
+            if (pinType === 'local') {
+                // Pin locally (only for current user)
+                localPinnedMessages.set(chatId, messageId);
+                saveLocalPins();
+                updatePinnedBanner(messageText, 'local');
                 
-                // Find message text
-                const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
-                let messageText = 'Медиа-сообщение';
-                
-                if (messageEl) {
-                    const bubbleEl = messageEl.querySelector('.message-bubble');
-                    if (bubbleEl) {
-                        messageText = bubbleEl.textContent.replace('(изменено)', '').trim();
+                // Refresh messages to update menu
+                if (currentChat) {
+                    const messagesArea = document.getElementById('messagesArea');
+                    if (messagesArea) {
+                        const scrollPos = messagesArea.scrollTop;
+                        const messages = Array.from(messagesArea.querySelectorAll('.message'));
+                        messagesArea.innerHTML = messages.map(m => m.outerHTML).join('');
+                        messagesArea.scrollTop = scrollPos;
                     }
                 }
-                
-                // Update banner
-                updatePinnedBanner(messageText);
+            } else if (pinType === 'shared') {
+                // Pin for everyone
+                pinnedMessages.set(chatId, messageId);
+                updatePinnedBanner(messageText, 'shared');
                 
                 // Send to server
                 if (ws && ws.readyState === WebSocket.OPEN) {
                     ws.send(JSON.stringify({
                         type: 'pin_message',
-                        to: currentChat,
+                        to: currentChat.username,
                         messageId: messageId,
                         messageText: messageText
                     }));
@@ -2871,8 +2912,12 @@
         function unpinMessage() {
             if (!currentChat) return;
             
-            const chatId = [currentUser, currentChat].sort().join('_');
+            const chatId = [currentUser, currentChat.username].sort().join('_');
+            
+            // Remove both shared and local pins
             pinnedMessages.delete(chatId);
+            localPinnedMessages.delete(chatId);
+            saveLocalPins();
             
             // Hide banner
             const banner = document.getElementById('pinnedMessageBanner');
@@ -2884,17 +2929,21 @@
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({
                     type: 'unpin_message',
-                    to: currentChat
+                    to: currentChat.username
                 }));
             }
         }
         
-        function updatePinnedBanner(messageText) {
+        function updatePinnedBanner(messageText, pinType = 'shared') {
             const banner = document.getElementById('pinnedMessageBanner');
             const textEl = document.getElementById('pinnedMessageText');
+            const titleEl = banner?.querySelector('.pinned-message-title');
             
             if (banner && textEl) {
                 textEl.textContent = messageText;
+                if (titleEl) {
+                    titleEl.textContent = pinType === 'local' ? 'Закреплено у вас' : 'Закрепленное сообщение';
+                }
                 banner.classList.add('active');
             }
         }
@@ -2902,8 +2951,8 @@
         function scrollToPinnedMessage() {
             if (!currentChat) return;
             
-            const chatId = [currentUser, currentChat].sort().join('_');
-            const pinnedId = pinnedMessages.get(chatId);
+            const chatId = [currentUser, currentChat.username].sort().join('_');
+            const pinnedId = localPinnedMessages.get(chatId) || pinnedMessages.get(chatId);
             
             if (!pinnedId) return;
             
@@ -2924,8 +2973,11 @@
             pinnedMessages.set(chatId, data.messageId);
             
             // Update banner if this chat is open
-            if (currentChat === data.from) {
-                updatePinnedBanner(data.messageText);
+            if (currentChat && currentChat.username === data.from) {
+                // Check if there's a local pin - prioritize it
+                if (!localPinnedMessages.has(chatId)) {
+                    updatePinnedBanner(data.messageText, 'shared');
+                }
             }
         }
         
@@ -2934,11 +2986,52 @@
             pinnedMessages.delete(chatId);
             
             // Update banner if this chat is open
-            if (currentChat === data.from) {
+            if (currentChat && currentChat.username === data.from) {
                 const banner = document.getElementById('pinnedMessageBanner');
                 if (banner) {
-                    banner.classList.remove('active');
+                    // Check if there's a local pin
+                    if (localPinnedMessages.has(chatId)) {
+                        // Show local pin
+                        const localPinId = localPinnedMessages.get(chatId);
+                        const messageEl = document.querySelector(`[data-message-id="${localPinId}"]`);
+                        if (messageEl) {
+                            const bubbleEl = messageEl.querySelector('.message-bubble');
+                            if (bubbleEl) {
+                                const text = bubbleEl.textContent.replace('(изменено)', '').trim();
+                                updatePinnedBanner(text, 'local');
+                            }
+                        }
+                    } else {
+                        banner.classList.remove('active');
+                    }
                 }
+            }
+        }
+
+        // LocalStorage functions for local pins
+        function saveLocalPins() {
+            try {
+                const pinsData = {};
+                localPinnedMessages.forEach((messageId, chatId) => {
+                    pinsData[chatId] = messageId;
+                });
+                localStorage.setItem('localPinnedMessages', JSON.stringify(pinsData));
+            } catch (error) {
+                console.error('Error saving local pins:', error);
+            }
+        }
+
+        function loadLocalPins() {
+            try {
+                const saved = localStorage.getItem('localPinnedMessages');
+                if (saved) {
+                    const pinsData = JSON.parse(saved);
+                    Object.entries(pinsData).forEach(([chatId, messageId]) => {
+                        localPinnedMessages.set(chatId, messageId);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading local pins:', error);
             }
         }
 
