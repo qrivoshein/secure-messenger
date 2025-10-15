@@ -506,7 +506,7 @@
         .message {
             display: flex;
             gap: 12px;
-            width: 50%;
+            width: 65%;
             animation: fadeIn 0.3s ease;
             position: relative;
             transition: transform 0.3s ease;
@@ -1689,11 +1689,13 @@
             /* Messages */
             .message {
                 width: 100%;
+                max-width: 95%;
             }
 
             .message-bubble {
-                max-width: 85%;
+                max-width: 95%;
                 font-size: 15px;
+                word-break: break-word;
             }
 
             .messages-area {
@@ -1883,8 +1885,9 @@
             }
 
             .message-bubble {
-                max-width: 92%;
+                max-width: 95%;
                 padding: 10px 14px;
+                word-break: break-word;
             }
 
             .chat-header h2 {
@@ -2574,6 +2577,7 @@
 
         function handleIncomingMessage(message) {
             console.log('Received message:', message);
+            console.log('Has reply?', message.replyTo ? 'YES' : 'NO', message.replyTo);
             
             const fromUser = message.from;
             const isCurrentChat = currentChat && currentChat.username === fromUser;
