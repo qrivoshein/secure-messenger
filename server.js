@@ -3,6 +3,8 @@ const WebSocket = require('ws');
 const http = require('http');
 const crypto = require('crypto');
 const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -10,6 +12,26 @@ const wss = new WebSocket.Server({ server });
 
 app.use(express.json());
 app.use(express.static('.'));
+
+if (!fs.existsSync('./uploads')) {
+    fs.mkdirSync('./uploads');
+}
+app.use('/uploads', express.static('uploads'));
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + '-' + file.originalname);
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 50 * 1024 * 1024 }
+});
 
 const users = new Map();
 const sessions = new Map();
@@ -109,6 +131,29 @@ app.get('/api/messages/:otherUser', (req, res) => {
     res.json({ messages: chatMessages });
 });
 
+app.post('/api/upload', upload.single('file'), (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    const session = sessions.get(token);
+
+    if (!session) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const fileUrl = `/uploads/${req.file.filename}`;
+    const fileInfo = {
+        url: fileUrl,
+        name: req.file.originalname,
+        size: req.file.size,
+        type: req.file.mimetype
+    };
+
+    res.json({ success: true, file: fileInfo });
+});
+
 wss.on('connection', (ws, req) => {
     let username = null;
     let token = null;
@@ -151,7 +196,7 @@ wss.on('connection', (ws, req) => {
                         return;
                     }
 
-                    const { to, text, encrypted, iv, messageId } = message;
+                    const { to, text, encrypted, iv, messageId, mediaType, mediaUrl, fileName, fileSize } = message;
                     const chatId = [username, to].sort().join('_');
                     
                     const msg = {
@@ -161,6 +206,10 @@ wss.on('connection', (ws, req) => {
                         text,
                         encrypted,
                         iv,
+                        mediaType,
+                        mediaUrl,
+                        fileName,
+                        fileSize,
                         timestamp: new Date().toISOString(),
                         time: new Date().toLocaleTimeString('ru-RU', { 
                             hour: '2-digit', 

@@ -541,6 +541,138 @@
             margin-top: 10px;
             text-align: center;
         }
+
+        .attach-btn, .voice-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #2d3748;
+            border: none;
+            color: #e1e9f0;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .attach-btn:hover, .voice-btn:hover {
+            background: #4a5568;
+        }
+
+        .voice-btn.recording {
+            background: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .media-message {
+            max-width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .media-message img, .media-message video {
+            max-width: 300px;
+            max-height: 300px;
+            width: 100%;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .file-message {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .file-message:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .file-icon {
+            font-size: 32px;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #e1e9f0;
+            word-break: break-word;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 2px;
+        }
+
+        .voice-message {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(78, 204, 163, 0.1);
+            border: 1px solid rgba(78, 204, 163, 0.3);
+            border-radius: 12px;
+        }
+
+        .voice-play-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #4ecca3;
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s;
+        }
+
+        .voice-play-btn:hover {
+            background: #45b393;
+        }
+
+        .voice-waveform {
+            flex: 1;
+            height: 30px;
+            background: repeating-linear-gradient(
+                to right,
+                #4ecca3 0px,
+                #4ecca3 3px,
+                transparent 3px,
+                transparent 8px
+            );
+            border-radius: 4px;
+            opacity: 0.3;
+        }
+
+        .voice-duration {
+            font-size: 12px;
+            color: #718096;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -910,10 +1042,18 @@
                 if (messagesArea) {
                     const messageDiv = document.createElement('div');
                     messageDiv.className = 'message';
+                    
+                    let contentHtml;
+                    if (message.mediaType) {
+                        contentHtml = renderMediaContent(message.mediaType, message.mediaUrl, message.fileName, message.fileSize);
+                    } else {
+                        contentHtml = `<div class="message-bubble">${escapeHtml(message.text)}</div>`;
+                    }
+                    
                     messageDiv.innerHTML = `
                         <div class="message-avatar">${fromUser[0].toUpperCase()}</div>
                         <div class="message-content">
-                            <div class="message-bubble">${escapeHtml(message.text)}</div>
+                            ${contentHtml}
                             <div class="message-time">${message.time}</div>
                         </div>
                     `;
@@ -924,7 +1064,7 @@
             
             const user = users.find(u => u.username === fromUser);
             if (user) {
-                user.lastMessage = message.text;
+                user.lastMessage = message.mediaType ? getMediaPreviewText(message.mediaType) : message.text;
                 user.time = message.time;
                 loadChats();
             }
@@ -1052,6 +1192,9 @@
                 </div>
                 <div class="message-input-area">
                     <div class="input-container">
+                        <input type="file" id="fileInput" accept="*/*" onchange="handleFileSelect(event)" />
+                        <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Прикрепить файл">📎</button>
+                        <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()" title="Голосовое сообщение">🎤</button>
                         <input type="text" id="messageInput" placeholder="Напишите сообщение..." onkeypress="handleKeyPress(event)" oninput="handleTyping()">
                         <button class="send-btn" onclick="sendMessage()">➤</button>
                     </div>
@@ -1072,11 +1215,17 @@
                     if (data.messages.length > 0) {
                         messagesArea.innerHTML = data.messages.map(msg => {
                             const isSent = msg.from === currentUser;
+                            let contentHtml;
+                            if (msg.mediaType) {
+                                contentHtml = renderMediaContent(msg.mediaType, msg.mediaUrl, msg.fileName, msg.fileSize);
+                            } else {
+                                contentHtml = `<div class="message-bubble">${escapeHtml(msg.text)}</div>`;
+                            }
                             return `
                                 <div class="message ${isSent ? 'sent' : ''}">
                                     <div class="message-avatar">${(isSent ? currentUser : username)[0].toUpperCase()}</div>
                                     <div class="message-content">
-                                        <div class="message-bubble">${escapeHtml(msg.text)}</div>
+                                        ${contentHtml}
                                         <div class="message-time">${msg.time}</div>
                                     </div>
                                 </div>
@@ -1205,6 +1354,214 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+
+        async function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 50 * 1024 * 1024) {
+                alert('Файл слишком большой. Максимальный размер: 50 МБ');
+                return;
+            }
+
+            await uploadFile(file);
+            event.target.value = '';
+        }
+
+        async function uploadFile(file) {
+            if (!currentChat) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_URL}/api/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Upload failed');
+                }
+
+                const data = await response.json();
+                await sendMediaMessage(data.file);
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                alert('Ошибка загрузки файла');
+            }
+        }
+
+        async function sendMediaMessage(fileInfo) {
+            if (!currentChat || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+            const mediaType = getMediaType(fileInfo.type);
+            const messageId = Date.now().toString();
+            
+            ws.send(JSON.stringify({
+                type: 'message',
+                to: currentChat.username,
+                text: fileInfo.name,
+                mediaType: mediaType,
+                mediaUrl: fileInfo.url,
+                fileName: fileInfo.name,
+                fileSize: fileInfo.size,
+                messageId: messageId
+            }));
+
+            const messagesArea = document.getElementById('messagesArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message sent';
+            
+            const mediaHtml = renderMediaContent(mediaType, fileInfo.url, fileInfo.name, fileInfo.size);
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${currentUser[0].toUpperCase()}</div>
+                <div class="message-content">
+                    ${mediaHtml}
+                    <div class="message-time">${getCurrentTime()}</div>
+                </div>
+            `;
+            
+            messagesArea.appendChild(messageDiv);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+            
+            const user = users.find(u => u.username === currentChat.username);
+            if (user) {
+                user.lastMessage = getMediaPreviewText(mediaType);
+                user.time = getCurrentTime();
+            }
+            loadChats();
+        }
+
+        function getMediaType(mimeType) {
+            if (mimeType.startsWith('image/')) return 'image';
+            if (mimeType.startsWith('video/')) return 'video';
+            if (mimeType.startsWith('audio/')) return 'audio';
+            return 'file';
+        }
+
+        function getMediaPreviewText(mediaType) {
+            const icons = {
+                'image': '🖼️ Изображение',
+                'video': '🎬 Видео',
+                'audio': '🎵 Аудио',
+                'voice': '🎤 Голосовое сообщение',
+                'file': '📎 Файл'
+            };
+            return icons[mediaType] || '📎 Файл';
+        }
+
+        function renderMediaContent(mediaType, url, name, size) {
+            switch (mediaType) {
+                case 'image':
+                    return `<div class="media-message"><img src="${url}" alt="${escapeHtml(name)}" onclick="window.open('${url}', '_blank')"></div>`;
+                case 'video':
+                    return `<div class="media-message"><video src="${url}" controls></video></div>`;
+                case 'audio':
+                case 'voice':
+                    return `
+                        <div class="voice-message">
+                            <button class="voice-play-btn" onclick="playAudio('${url}')">▶</button>
+                            <div class="voice-waveform"></div>
+                            <div class="voice-duration">${formatFileSize(size)}</div>
+                        </div>
+                    `;
+                case 'file':
+                default:
+                    return `
+                        <div class="file-message" onclick="window.open('${url}', '_blank')">
+                            <div class="file-icon">${getFileIcon(name)}</div>
+                            <div class="file-info">
+                                <div class="file-name">${escapeHtml(name)}</div>
+                                <div class="file-size">${formatFileSize(size)}</div>
+                            </div>
+                        </div>
+                    `;
+            }
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                'pdf': '📄',
+                'doc': '📝', 'docx': '📝',
+                'xls': '📊', 'xlsx': '📊',
+                'zip': '🗜️', 'rar': '🗜️',
+                'mp3': '🎵', 'wav': '🎵',
+                'mp4': '🎬', 'avi': '🎬',
+                'jpg': '🖼️', 'png': '🖼️', 'gif': '🖼️'
+            };
+            return icons[ext] || '📎';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        let currentAudio = null;
+        function playAudio(url) {
+            if (currentAudio) {
+                currentAudio.pause();
+            }
+            currentAudio = new Audio(url);
+            currentAudio.play();
+        }
+
+        async function toggleVoiceRecording() {
+            if (isRecording) {
+                await stopRecording();
+            } else {
+                await startRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioFile = new File([audioBlob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+                    
+                    await uploadFile(audioFile);
+                    
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                document.getElementById('voiceBtn').classList.add('recording');
+                console.log('Recording started');
+            } catch (error) {
+                console.error('Error starting recording:', error);
+                alert('Не удалось получить доступ к микрофону');
+            }
+        }
+
+        async function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                isRecording = false;
+                document.getElementById('voiceBtn').classList.remove('recording');
+                console.log('Recording stopped');
+            }
         }
 
         if ('Notification' in window && Notification.permission === 'default') {
