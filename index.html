@@ -4278,6 +4278,19 @@
             return;
         }
 
+        function scrollToMessage(messageId) {
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageEl) {
+                messageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Highlight animation
+                messageEl.style.background = 'rgba(102, 126, 234, 0.2)';
+                setTimeout(() => {
+                    messageEl.style.background = '';
+                }, 1500);
+            }
+        }
+
         window.addEventListener('load', () => {
             autoLogin();
         });
