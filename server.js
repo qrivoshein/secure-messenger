@@ -33,10 +33,37 @@ const upload = multer({
     limits: { fileSize: 50 * 1024 * 1024 }
 });
 
-const users = new Map();
+const DATA_FILE = path.join(__dirname, 'data.json');
+
+let users = new Map();
 const sessions = new Map();
 const messages = new Map();
 const onlineUsers = new Map();
+
+function loadData() {
+    try {
+        if (fs.existsSync(DATA_FILE)) {
+            const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+            users = new Map(Object.entries(data.users || {}));
+            console.log(`Loaded ${users.size} users from disk`);
+        }
+    } catch (error) {
+        console.error('Error loading data:', error);
+    }
+}
+
+function saveData() {
+    try {
+        const data = {
+            users: Object.fromEntries(users)
+        };
+        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+    } catch (error) {
+        console.error('Error saving data:', error);
+    }
+}
+
+loadData();
 
 function hashPassword(password) {
     return crypto.createHash('sha256').update(password).digest('hex');
@@ -70,6 +97,8 @@ app.post('/api/register', (req, res) => {
         password: hashedPassword,
         createdAt: new Date().toISOString()
     });
+    
+    saveData();
 
     res.json({ success: true, message: 'User registered successfully' });
 });
