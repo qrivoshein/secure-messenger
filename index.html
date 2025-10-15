@@ -443,8 +443,13 @@
         .message.selected {
             background: rgba(102, 126, 234, 0.05);
             border-radius: 12px;
-            padding: 6px;
-            margin: -6px;
+            padding: 8px 8px 8px 20px;
+            margin: -8px -8px -8px -20px;
+        }
+        
+        .message.sent.selected {
+            padding: 8px 20px 8px 8px;
+            margin: -8px -20px -8px -8px;
         }
         
         .message.selecting .message-bubble {
@@ -589,7 +594,7 @@
         .message-menu {
             position: absolute;
             top: 30px;
-            right: 0;
+            left: 0;
             background: #1a2332;
             border: 1px solid #2d3748;
             border-radius: 8px;
@@ -601,8 +606,8 @@
         }
         
         .message.sent .message-menu {
-            right: auto;
-            left: 0;
+            left: auto;
+            right: 0;
         }
         
         .message-menu.active {
