@@ -390,6 +390,11 @@
             cursor: pointer;
         }
         
+        .message.selecting .message-actions {
+            display: none !important;
+            opacity: 0 !important;
+        }
+        
         .message.selected {
             background: rgba(102, 126, 234, 0.1);
             border-radius: 8px;
@@ -557,6 +562,22 @@
         
         .message-forwarded svg {
             color: #667eea;
+        }
+        
+        .message-sender-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4ecca3;
+            margin-bottom: 2px;
+            display: none;
+        }
+        
+        .message.selecting .message-sender-name {
+            display: block;
+        }
+        
+        .message.sent .message-sender-name {
+            color: #9f7aea;
         }
 
         .message-input-area {
@@ -1655,6 +1676,7 @@
                     </div>
                     <div class="message-avatar">${username[0].toUpperCase()}</div>
                     <div class="message-content">
+                        <div class="message-sender-name">${escapeHtml(username)}</div>
                         ${contentHtml}
                         <div class="message-time">${message.time}</div>
                     </div>
