@@ -3084,12 +3084,24 @@
                 messageId: messageId
             };
             
+            // Add reply information if replying to a message
+            if (replyToMessage) {
+                messageData.replyTo = replyToMessage.id;
+                messageData.replyToText = replyToMessage.text;
+                messageData.replyToSender = replyToMessage.sender;
+            }
+            
             if (encrypted) {
                 messageData.encrypted = encrypted.encrypted;
                 messageData.iv = encrypted.iv;
             }
             
             ws.send(JSON.stringify(messageData));
+            
+            // Close reply banner after sending
+            if (replyToMessage) {
+                closeReplyBanner();
+            }
 
             if (isTyping) {
                 isTyping = false;
@@ -3749,11 +3761,15 @@
                 
                 // Only swipe horizontally if horizontal movement is greater
                 if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
-                    isSwiping = true;
-                    currentX = Math.min(Math.max(deltaX, 0), 80); // Limit swipe distance
-                    
                     const isSent = messageEl.classList.contains('sent');
+                    
+                    // For sent messages: swipe left (negative deltaX)
+                    // For received messages: swipe right (positive deltaX)
                     if ((isSent && deltaX < 0) || (!isSent && deltaX > 0)) {
+                        isSwiping = true;
+                        currentX = Math.abs(deltaX);
+                        currentX = Math.min(currentX, 80); // Limit swipe distance
+                        
                         messageEl.style.transform = `translateX(${isSent ? -currentX : currentX}px)`;
                         
                         const indicator = messageEl.querySelector('.message-swipe-indicator');
