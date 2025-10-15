@@ -2814,11 +2814,11 @@
             } else {
                 const editedLabel = message.edited ? ' <span class="message-edited">(изменено)</span>' : '';
                 const forwardedLabel = message.forwarded ? `<div class="message-forwarded"><svg class="icon-svg" width="12" height="12"><use href="#icon-forward"></use></svg> Переслано от ${escapeHtml(message.forwardedFrom)}</div>` : '';
-                const replyLabel = message.replyTo ? `
+                const replyLabel = message.replyTo && message.replyToText ? `
                     <div class="message-reply-quote" onclick="event.stopPropagation(); scrollToMessage('${message.replyTo}')">
                         <div class="message-reply-line"></div>
                         <div class="message-reply-content">
-                            <div class="message-reply-sender">${escapeHtml(message.replyToSender)}</div>
+                            <div class="message-reply-sender">${escapeHtml(message.replyToSender || 'Unknown')}</div>
                             <div class="message-reply-text">${escapeHtml(message.replyToText.substring(0, 50))}${message.replyToText.length > 50 ? '...' : ''}</div>
                         </div>
                     </div>
