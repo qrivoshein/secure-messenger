@@ -2207,11 +2207,12 @@
             chatsList.innerHTML = users.map(user => {
                 const unreadCount = unreadMessages.get(user.username) || 0;
                 const avatarColors = getAvatarColor(user.username);
+                const isOnline = onlineUsers.has(user.username);
                 return `
                     <div class="chat-item ${currentChat && currentChat.username === user.username ? 'active' : ''}" onclick="openChat('${user.username}')">
                         <div class="chat-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">
                             ${user.avatar}
-                            ${user.online || onlineUsers.has(user.username) ? '<div class="online-badge"></div>' : ''}
+                            ${isOnline ? '<div class="online-badge"></div>' : ''}
                         </div>
                         <div class="chat-info">
                             <div class="chat-header">
@@ -2227,17 +2228,28 @@
         }
 
         function updateOnlineStatuses() {
-            users.forEach(user => {
-                user.online = onlineUsers.has(user.username);
-            });
+            // Update chat list
             loadChats();
             
             if (currentChat) {
+                const isOnline = onlineUsers.has(currentChat.username);
+                
+                // Update status text
                 const statusEl = document.querySelector('.chat-header-status');
                 if (statusEl && !statusEl.classList.contains('typing')) {
-                    const isOnline = onlineUsers.has(currentChat.username);
                     statusEl.innerHTML = isOnline ? '<svg class="icon-svg" width="12" height="12" style="color: #4ecca3;"><use href="#icon-online"></use></svg> В сети' : '<svg class="icon-svg" width="12" height="12" style="color: #718096;"><use href="#icon-offline"></use></svg> Не в сети';
                     statusEl.className = isOnline ? 'chat-header-status' : 'chat-header-status offline';
+                }
+                
+                // Update online badge in chat header avatar
+                const chatHeaderAvatar = document.querySelector('.chat-header-bar .chat-avatar');
+                if (chatHeaderAvatar) {
+                    const existingBadge = chatHeaderAvatar.querySelector('.online-badge');
+                    if (isOnline && !existingBadge) {
+                        chatHeaderAvatar.insertAdjacentHTML('beforeend', '<div class="online-badge"></div>');
+                    } else if (!isOnline && existingBadge) {
+                        existingBadge.remove();
+                    }
                 }
             }
         }
@@ -2476,11 +2488,12 @@
             const chatsList = document.getElementById('chatsList');
             chatsList.innerHTML = filtered.map(user => {
                 const avatarColors = getAvatarColor(user.username);
+                const isOnline = onlineUsers.has(user.username);
                 return `
                 <div class="chat-item ${currentChat && currentChat.username === user.username ? 'active' : ''}" onclick="openChat('${user.username}')">
                     <div class="chat-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">
                         ${user.avatar}
-                        ${user.online || onlineUsers.has(user.username) ? '<div class="online-badge"></div>' : ''}
+                        ${isOnline ? '<div class="online-badge"></div>' : ''}
                     </div>
                     <div class="chat-info">
                         <div class="chat-header">
