@@ -521,8 +521,8 @@
         }
         
         .message-action-btn {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border: none;
             background: transparent;
             color: #e1e9f0;
@@ -532,7 +532,12 @@
             align-items: center;
             justify-content: center;
             transition: background 0.2s;
-            font-size: 14px;
+            font-size: 12px;
+        }
+        
+        .message-action-btn svg {
+            width: 14px;
+            height: 14px;
         }
         
         .message-action-btn:hover {
@@ -546,14 +551,14 @@
         
         .message-edited {
             font-size: 10px;
-            color: #a0aec0;
+            color: #cbd5e0;
             font-style: italic;
             margin-left: 5px;
         }
         
         .message-forwarded {
             font-size: 11px;
-            color: #667eea;
+            color: #a8b8ff;
             margin-bottom: 4px;
             display: flex;
             align-items: center;
@@ -561,7 +566,7 @@
         }
         
         .message-forwarded svg {
-            color: #667eea;
+            color: #a8b8ff;
         }
         
         .message-sender-name {
@@ -1664,10 +1669,10 @@
                     ${showActions ? `
                         <div class="message-actions">
                             <button class="message-action-btn" onclick="event.stopPropagation(); editMessageStart('${message.id}', '${escapeHtml(message.text).replace(/'/g, "\\'")}')" title="Редактировать">
-                                <svg class="icon-svg" width="16" height="16"><use href="#icon-edit"></use></svg>
+                                <svg class="icon-svg" width="14" height="14"><use href="#icon-edit"></use></svg>
                             </button>
                             <button class="message-action-btn delete" onclick="event.stopPropagation(); deleteMessage('${message.id}')" title="Удалить">
-                                <svg class="icon-svg" width="16" height="16"><use href="#icon-delete"></use></svg>
+                                <svg class="icon-svg" width="14" height="14"><use href="#icon-delete"></use></svg>
                             </button>
                         </div>
                     ` : ''}
