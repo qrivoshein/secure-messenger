@@ -541,9 +541,22 @@
         
         .message-edited {
             font-size: 10px;
-            color: #718096;
+            color: #a0aec0;
             font-style: italic;
             margin-left: 5px;
+        }
+        
+        .message-forwarded {
+            font-size: 11px;
+            color: #667eea;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .message-forwarded svg {
+            color: #667eea;
         }
 
         .message-input-area {
@@ -1611,18 +1624,19 @@
         
         function renderMessage(message, isSent) {
             const username = isSent ? currentUser : (currentChat ? currentChat.username : message.from);
-            const showActions = isSent && !message.mediaType;
+            const showActions = isSent && !message.mediaType && !message.forwarded;
             
             let contentHtml;
             if (message.mediaType) {
                 contentHtml = renderMediaContent(message.mediaType, message.mediaUrl, message.fileName, message.fileSize);
             } else {
                 const editedLabel = message.edited ? ' <span class="message-edited">(изменено)</span>' : '';
-                contentHtml = `<div class="message-bubble">${escapeHtml(message.text)}${editedLabel}</div>`;
+                const forwardedLabel = message.forwarded ? `<div class="message-forwarded"><svg class="icon-svg" width="12" height="12"><use href="#icon-forward"></use></svg> Переслано от ${escapeHtml(message.forwardedFrom)}</div>` : '';
+                contentHtml = `<div class="message-bubble">${forwardedLabel}${escapeHtml(message.text)}${editedLabel}</div>`;
             }
             
             return `
-                <div class="message ${isSent ? 'sent' : ''}" data-message-id="${message.id}" onmousedown="if(event.ctrlKey || event.metaKey) toggleMessageSelection('${message.id}')">
+                <div class="message ${isSent ? 'sent' : ''}" data-message-id="${message.id}" onclick="handleMessageClick(event, '${message.id}')" onmousedown="if(event.ctrlKey || event.metaKey) toggleMessageSelection('${message.id}')">
                     <div class="message-checkbox" onclick="toggleMessageSelection('${message.id}')">
                         <svg class="icon-svg" width="14" height="14" style="color: white;"><use href="#icon-check"></use></svg>
                     </div>
@@ -2249,14 +2263,24 @@
                 if (messageEl) {
                     const bubble = messageEl.querySelector('.message-bubble');
                     if (bubble && ws && ws.readyState === WebSocket.OPEN) {
-                        const text = bubble.textContent.replace(' (изменено)', '');
+                        const text = bubble.textContent.replace(' (изменено)', '').trim();
                         const newMessageId = Date.now().toString() + Math.random();
+                        
+                        // Get original author
+                        const isSentMessage = messageEl.classList.contains('sent');
+                        const originalAuthor = isSentMessage ? currentUser : (currentChat ? currentChat.username : 'Unknown');
+                        
+                        // Check if already forwarded
+                        const forwardedInfo = messageEl.querySelector('.message-forwarded');
+                        const forwardedFrom = forwardedInfo ? forwardedInfo.textContent.replace('Переслано от ', '').trim() : originalAuthor;
                         
                         ws.send(JSON.stringify({
                             type: 'message',
                             to: toUser,
-                            text: `Пересланное сообщение: ${text}`,
-                            messageId: newMessageId
+                            text: text,
+                            messageId: newMessageId,
+                            forwarded: true,
+                            forwardedFrom: forwardedFrom
                         }));
                     }
                 }
@@ -2302,6 +2326,15 @@
             const toolbar = document.querySelector('.selection-toolbar');
             if (toolbar) {
                 toolbar.classList.remove('active');
+            }
+        }
+        
+        function handleMessageClick(event, messageId) {
+            // In selection mode, any click toggles selection (like Telegram)
+            if (isSelectionMode) {
+                event.preventDefault();
+                event.stopPropagation();
+                toggleMessageSelection(messageId);
             }
         }
         

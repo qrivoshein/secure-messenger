@@ -239,7 +239,7 @@ wss.on('connection', (ws, req) => {
                         return;
                     }
 
-                    const { to, text, encrypted, iv, messageId, mediaType, mediaUrl, fileName, fileSize } = message;
+                    const { to, text, encrypted, iv, messageId, mediaType, mediaUrl, fileName, fileSize, forwarded, forwardedFrom } = message;
                     const chatId = [username, to].sort().join('_');
                     
                     const msg = {
@@ -253,6 +253,8 @@ wss.on('connection', (ws, req) => {
                         mediaUrl,
                         fileName,
                         fileSize,
+                        forwarded: forwarded || false,
+                        forwardedFrom: forwardedFrom || null,
                         timestamp: new Date().toISOString(),
                         time: new Date().toLocaleTimeString('ru-RU', { 
                             hour: '2-digit', 
