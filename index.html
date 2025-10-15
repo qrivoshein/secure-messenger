@@ -377,6 +377,11 @@
             gap: 12px;
             max-width: 70%;
             animation: fadeIn 0.3s ease;
+            position: relative;
+        }
+        
+        .message:hover .message-actions {
+            opacity: 1;
         }
 
         @keyframes fadeIn {
@@ -436,6 +441,56 @@
             font-size: 11px;
             color: #718096;
             padding: 0 5px;
+        }
+        
+        .message-actions {
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #1a2332;
+            border-radius: 8px;
+            padding: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .message.sent .message-actions {
+            left: -10px;
+            right: auto;
+        }
+        
+        .message-action-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: transparent;
+            color: #e1e9f0;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+        
+        .message-action-btn:hover {
+            background: #2d3748;
+        }
+        
+        .message-action-btn.delete:hover {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .message-edited {
+            font-size: 10px;
+            color: #718096;
+            font-style: italic;
+            margin-left: 5px;
         }
 
         .message-input-area {
@@ -842,6 +897,7 @@
         let typingTimeout = null;
         let isTyping = false;
         let unreadMessages = new Map();
+        let editingMessage = null;
         
         // Notification sound (simple beep using Web Audio API)
         function playNotificationSound() {
@@ -1150,6 +1206,14 @@
                     console.log('Message sent:', data.messageId);
                     break;
 
+                case 'message_edited':
+                    handleMessageEdited(data.messageId, data.newText, data.from);
+                    break;
+
+                case 'message_deleted':
+                    handleMessageDeleted(data.messageId, data.from);
+                    break;
+
                 case 'online_users':
                     onlineUsers = new Set(data.users);
                     updateOnlineStatuses();
@@ -1183,24 +1247,10 @@
             if (isCurrentChat) {
                 const messagesArea = document.getElementById('messagesArea');
                 if (messagesArea) {
-                    const messageDiv = document.createElement('div');
-                    messageDiv.className = 'message';
-                    
-                    let contentHtml;
-                    if (message.mediaType) {
-                        contentHtml = renderMediaContent(message.mediaType, message.mediaUrl, message.fileName, message.fileSize);
-                    } else {
-                        contentHtml = `<div class="message-bubble">${escapeHtml(message.text)}</div>`;
-                    }
-                    
-                    messageDiv.innerHTML = `
-                        <div class="message-avatar">${fromUser[0].toUpperCase()}</div>
-                        <div class="message-content">
-                            ${contentHtml}
-                            <div class="message-time">${message.time}</div>
-                        </div>
-                    `;
-                    messagesArea.appendChild(messageDiv);
+                    const messageHtml = renderMessage(message, false);
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = messageHtml;
+                    messagesArea.appendChild(tempDiv.firstElementChild);
                     messagesArea.scrollTop = messagesArea.scrollHeight;
                     
                     // Play subtle sound for current chat
@@ -1244,6 +1294,93 @@
             } else {
                 document.title = 'Secure Messenger';
             }
+        }
+        
+        function editMessageStart(messageId, currentText) {
+            editingMessage = { id: messageId, originalText: currentText };
+            const input = document.getElementById('messageInput');
+            if (input) {
+                input.value = currentText;
+                input.focus();
+                input.placeholder = 'Редактирование сообщения... (Enter - сохранить, Esc - отмена)';
+            }
+        }
+        
+        function cancelEdit() {
+            editingMessage = null;
+            const input = document.getElementById('messageInput');
+            if (input) {
+                input.value = '';
+                input.placeholder = 'Напишите сообщение...';
+            }
+        }
+        
+        function deleteMessage(messageId) {
+            if (!confirm('Удалить сообщение?')) return;
+            
+            if (!currentChat || !ws || ws.readyState !== WebSocket.OPEN) return;
+            
+            ws.send(JSON.stringify({
+                type: 'delete_message',
+                messageId: messageId,
+                to: currentChat.username
+            }));
+            
+            // Remove from UI immediately
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageEl) {
+                messageEl.remove();
+            }
+        }
+        
+        function handleMessageEdited(messageId, newText, from) {
+            if (!currentChat || (currentChat.username !== from && from !== currentUser)) return;
+            
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageEl) {
+                const bubble = messageEl.querySelector('.message-bubble');
+                if (bubble) {
+                    bubble.innerHTML = `${escapeHtml(newText)} <span class="message-edited">(изменено)</span>`;
+                }
+            }
+        }
+        
+        function handleMessageDeleted(messageId, from) {
+            if (!currentChat || (currentChat.username !== from && from !== currentUser)) return;
+            
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageEl) {
+                messageEl.remove();
+            }
+        }
+        
+        function renderMessage(message, isSent) {
+            const username = isSent ? currentUser : (currentChat ? currentChat.username : message.from);
+            const showActions = isSent && !message.mediaType;
+            
+            let contentHtml;
+            if (message.mediaType) {
+                contentHtml = renderMediaContent(message.mediaType, message.mediaUrl, message.fileName, message.fileSize);
+            } else {
+                const editedLabel = message.edited ? ' <span class="message-edited">(изменено)</span>' : '';
+                contentHtml = `<div class="message-bubble">${escapeHtml(message.text)}${editedLabel}</div>`;
+            }
+            
+            return `
+                <div class="message ${isSent ? 'sent' : ''}" data-message-id="${message.id}">
+                    ${showActions ? `
+                        <div class="message-actions">
+                            <button class="message-action-btn" onclick="editMessageStart('${message.id}', '${escapeHtml(message.text).replace(/'/g, "\\'")}')">✏️</button>
+                            <button class="message-action-btn delete" onclick="deleteMessage('${message.id}')">🗑️</button>
+                        </div>
+                    ` : ''}
+                    <div class="message-avatar">${username[0].toUpperCase()}</div>
+                    <div class="message-content">
+                        ${contentHtml}
+                        <div class="message-time">${message.time}</div>
+                    </div>
+                </div>
+            `;
         }
 
         function handleTypingIndicator(from, isTyping) {
@@ -1395,21 +1532,7 @@
                     if (data.messages.length > 0) {
                         messagesArea.innerHTML = data.messages.map(msg => {
                             const isSent = msg.from === currentUser;
-                            let contentHtml;
-                            if (msg.mediaType) {
-                                contentHtml = renderMediaContent(msg.mediaType, msg.mediaUrl, msg.fileName, msg.fileSize);
-                            } else {
-                                contentHtml = `<div class="message-bubble">${escapeHtml(msg.text)}</div>`;
-                            }
-                            return `
-                                <div class="message ${isSent ? 'sent' : ''}">
-                                    <div class="message-avatar">${(isSent ? currentUser : username)[0].toUpperCase()}</div>
-                                    <div class="message-content">
-                                        ${contentHtml}
-                                        <div class="message-time">${msg.time}</div>
-                                    </div>
-                                </div>
-                            `;
+                            return renderMessage(msg, isSent);
                         }).join('');
                         messagesArea.scrollTop = messagesArea.scrollHeight;
                     }
@@ -1451,6 +1574,28 @@
             
             if (!text || !currentChat || !ws || ws.readyState !== WebSocket.OPEN) return;
 
+            // Handle editing
+            if (editingMessage) {
+                ws.send(JSON.stringify({
+                    type: 'edit_message',
+                    messageId: editingMessage.id,
+                    newText: text,
+                    to: currentChat.username
+                }));
+                
+                // Update UI immediately
+                const messageEl = document.querySelector(`[data-message-id="${editingMessage.id}"]`);
+                if (messageEl) {
+                    const bubble = messageEl.querySelector('.message-bubble');
+                    if (bubble) {
+                        bubble.innerHTML = `${escapeHtml(text)} <span class="message-edited">(изменено)</span>`;
+                    }
+                }
+                
+                cancelEdit();
+                return;
+            }
+
             const encrypted = await encryptMessage(text, encryptionKey);
             const messageId = Date.now().toString();
             
@@ -1478,17 +1623,16 @@
             }
 
             const messagesArea = document.getElementById('messagesArea');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message sent';
-            messageDiv.innerHTML = `
-                <div class="message-avatar">${currentUser[0].toUpperCase()}</div>
-                <div class="message-content">
-                    <div class="message-bubble">${escapeHtml(text)}</div>
-                    <div class="message-time">${getCurrentTime()}</div>
-                </div>
-            `;
-            
-            messagesArea.appendChild(messageDiv);
+            const newMessage = {
+                id: messageId,
+                from: currentUser,
+                text: text,
+                time: getCurrentTime()
+            };
+            const messageHtml = renderMessage(newMessage, true);
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = messageHtml;
+            messagesArea.appendChild(tempDiv.firstElementChild);
             messagesArea.scrollTop = messagesArea.scrollHeight;
             
             input.value = '';
@@ -1504,6 +1648,8 @@
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 sendMessage();
+            } else if (event.key === 'Escape' && editingMessage) {
+                cancelEdit();
             }
         }
 

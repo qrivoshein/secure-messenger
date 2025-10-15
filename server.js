@@ -279,6 +279,60 @@ wss.on('connection', (ws, req) => {
                     }
                     break;
 
+                case 'edit_message':
+                    if (!username) return;
+                    
+                    const { messageId: editId, newText, to: editTo } = message;
+                    const editChatId = [username, editTo].sort().join('_');
+                    
+                    if (messages.has(editChatId)) {
+                        const chatMessages = messages.get(editChatId);
+                        const msgToEdit = chatMessages.find(m => m.id === editId && m.from === username);
+                        
+                        if (msgToEdit) {
+                            msgToEdit.text = newText;
+                            msgToEdit.edited = true;
+                            
+                            // Notify recipient
+                            const editRecipient = onlineUsers.get(editTo);
+                            if (editRecipient && editRecipient.readyState === WebSocket.OPEN) {
+                                editRecipient.send(JSON.stringify({
+                                    type: 'message_edited',
+                                    messageId: editId,
+                                    newText: newText,
+                                    from: username
+                                }));
+                            }
+                        }
+                    }
+                    break;
+
+                case 'delete_message':
+                    if (!username) return;
+                    
+                    const { messageId: deleteId, to: deleteTo } = message;
+                    const deleteChatId = [username, deleteTo].sort().join('_');
+                    
+                    if (messages.has(deleteChatId)) {
+                        const chatMessages = messages.get(deleteChatId);
+                        const msgIndex = chatMessages.findIndex(m => m.id === deleteId && m.from === username);
+                        
+                        if (msgIndex !== -1) {
+                            chatMessages.splice(msgIndex, 1);
+                            
+                            // Notify recipient
+                            const deleteRecipient = onlineUsers.get(deleteTo);
+                            if (deleteRecipient && deleteRecipient.readyState === WebSocket.OPEN) {
+                                deleteRecipient.send(JSON.stringify({
+                                    type: 'message_deleted',
+                                    messageId: deleteId,
+                                    from: username
+                                }));
+                            }
+                        }
+                    }
+                    break;
+
                 case 'typing':
                     if (!username) return;
                     
