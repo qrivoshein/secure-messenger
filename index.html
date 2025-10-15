@@ -500,11 +500,12 @@
             padding: 30px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
+            align-items: flex-start;
         }
 
         .message {
-            display: flex;
+            display: inline-flex;
             gap: 10px;
             max-width: 70%;
             animation: fadeIn 0.3s ease;
@@ -582,6 +583,7 @@
         .message.sent {
             align-self: flex-end;
             flex-direction: row-reverse;
+            margin-left: auto;
         }
 
         .message-avatar {
@@ -609,9 +611,9 @@
         }
 
         .message-bubble {
-            padding: 10px 14px;
+            padding: 8px 12px;
             background: #1a2332;
-            border-radius: 16px;
+            border-radius: 14px;
             word-wrap: break-word;
             word-break: break-word;
             overflow-wrap: break-word;
