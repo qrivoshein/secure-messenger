@@ -308,8 +308,8 @@ setInterval(() => {
 }, 30000);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Secure Messenger Server running on port ${PORT}`);
     console.log(`📡 WebSocket server ready`);
-    console.log(`🌐 Open http://localhost:${PORT} in your browser`);
+    console.log(`🌐 Server listening on all interfaces (0.0.0.0:${PORT})`);
 });
