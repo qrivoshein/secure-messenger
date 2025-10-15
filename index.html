@@ -1500,6 +1500,239 @@
             color: #718096;
             font-size: 14px;
         }
+
+        /* MOBILE RESPONSIVE STYLES */
+        @media only screen and (max-width: 768px) {
+            /* Force single column layout */
+            .messenger-container {
+                display: grid;
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 100vh;
+                max-height: 100vh;
+                border-right: none;
+                border-bottom: none;
+            }
+
+            .chat-area {
+                display: none;
+                width: 100%;
+                height: 100vh;
+            }
+
+            /* Hide sidebar when chat is active on mobile */
+            .messenger-container.chat-active .sidebar {
+                display: none;
+            }
+
+            .messenger-container.chat-active .chat-area {
+                display: flex;
+                height: 100vh;
+            }
+
+            /* Back button for mobile */
+            .mobile-back-btn {
+                display: inline-flex !important;
+                align-items: center;
+                gap: 5px;
+                background: none;
+                border: none;
+                color: #e1e9f0;
+                cursor: pointer;
+                padding: 8px;
+                margin-right: 8px;
+                border-radius: 8px;
+                transition: background 0.2s;
+            }
+
+            .mobile-back-btn:hover {
+                background: #2d3748;
+            }
+
+            .mobile-back-btn svg {
+                width: 24px;
+                height: 24px;
+            }
+
+            /* Auth screen */
+            .auth-box {
+                padding: 40px 20px;
+                width: 100%;
+            }
+
+            /* Messages */
+            .message {
+                width: 100%;
+            }
+
+            .message-bubble {
+                max-width: 75%;
+                font-size: 15px;
+            }
+
+            .messages-area {
+                padding: 20px 15px;
+            }
+
+            /* Chat header */
+            .chat-header-bar {
+                padding: 15px;
+            }
+
+            .chat-header-name {
+                font-size: 16px;
+            }
+
+            .encryption-badge {
+                display: none;
+            }
+
+            /* Input area */
+            .message-input-area {
+                padding: 15px;
+            }
+
+            .input-container {
+                gap: 10px;
+            }
+
+            .input-container input {
+                padding: 12px 16px;
+                font-size: 16px;
+            }
+
+            .attach-btn, .voice-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 20px;
+            }
+
+            .send-btn {
+                width: 44px;
+                height: 44px;
+            }
+
+            /* Media messages */
+            .media-message img, .media-message video {
+                max-width: 250px;
+            }
+
+            .file-message {
+                padding: 10px 14px;
+            }
+
+            /* Sidebar */
+            .sidebar-header {
+                padding: 15px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .sidebar-header h2 {
+                font-size: 20px;
+            }
+
+            .new-chat-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+
+            .logout-btn {
+                width: 100%;
+                order: 3;
+            }
+
+            .user-info {
+                padding: 12px 15px;
+            }
+
+            .search-box {
+                padding: 10px 15px;
+            }
+
+            .chat-item {
+                padding: 12px 15px;
+            }
+
+            /* Modals */
+            .search-users-modal-content,
+            .forward-modal-content,
+            .pin-modal-content {
+                width: 95%;
+                max-width: 95%;
+                margin: 10px;
+            }
+
+            .forward-modal-content,
+            .search-users-modal-content {
+                max-height: 90vh;
+            }
+
+            /* Selection toolbar */
+            .selection-toolbar {
+                padding: 12px 15px;
+            }
+
+            .selection-toolbar-btn {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+
+            /* Image modal */
+            .image-modal-content {
+                max-width: 95%;
+            }
+
+            .image-modal-close {
+                top: 10px;
+                right: 10px;
+            }
+
+            /* Message actions */
+            .message-actions {
+                display: none !important;
+            }
+
+            .message:active .message-actions {
+                display: flex !important;
+            }
+        }
+
+        @media only screen and (max-width: 480px) {
+            .auth-box h1 {
+                font-size: 32px;
+            }
+
+            .auth-logo {
+                width: 100px;
+                height: 100px;
+            }
+
+            .message-bubble {
+                max-width: 90%;
+                padding: 10px 12px;
+            }
+
+            .chat-header h2 {
+                font-size: 16px;
+            }
+
+            .message-time {
+                font-size: 10px;
+            }
+
+            .sidebar-header h2 {
+                font-size: 20px;
+            }
+        }
+
+        .mobile-back-btn {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -2002,14 +2235,17 @@
             }
             
             currentUser = null;
+            currentUserId = null;
             currentToken = null;
             currentChat = null;
             encryptionKey = null;
             users = [];
             onlineUsers.clear();
+            unreadMessages.clear();
             
             localStorage.removeItem('token');
             localStorage.removeItem('username');
+            localStorage.removeItem('userId');
             
             document.getElementById('authScreen').style.display = 'flex';
             document.getElementById('messengerContainer').classList.remove('active');
@@ -2557,6 +2793,11 @@
             const avatarColors = getAvatarColor(username);
             chatArea.innerHTML = `
                 <div class="chat-header-bar">
+                    <button class="mobile-back-btn" onclick="closeMobileChat()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 12H5M5 12L12 19M5 12L12 5"/>
+                        </svg>
+                    </button>
                     <div class="chat-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">
                         ${user.avatar}
                         ${isOnline ? '<div class="online-badge"></div>' : ''}
@@ -2646,6 +2887,13 @@
 
             document.getElementById('messageInput').focus();
             loadChats();
+            
+            // Enable mobile chat view
+            document.getElementById('messengerContainer').classList.add('chat-active');
+        }
+        
+        function closeMobileChat() {
+            document.getElementById('messengerContainer').classList.remove('chat-active');
         }
 
         function handleTyping() {
@@ -2959,17 +3207,62 @@
             return icons[mediaType] || 'Файл';
         }
 
+        // Load secure media files with authentication
+        async function loadSecureMedia(url) {
+            try {
+                // Ensure URL is absolute
+                const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+                
+                const response = await fetch(fullUrl, {
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load media');
+                }
+                
+                const blob = await response.blob();
+                return URL.createObjectURL(blob);
+            } catch (error) {
+                console.error('Error loading secure media:', error);
+                return null;
+            }
+        }
+
         function renderMediaContent(mediaType, url, name, size) {
+            const messageId = `media-${Date.now()}-${Math.random()}`;
+            
             switch (mediaType) {
                 case 'image':
-                    return `<div class="media-message"><img src="${url}" alt="${escapeHtml(name)}" onclick="openImageModal('${url}')" style="cursor: zoom-in;"></div>`;
+                    const imgId = `img-${messageId}`;
+                    setTimeout(async () => {
+                        const blobUrl = await loadSecureMedia(url);
+                        if (blobUrl) {
+                            const imgEl = document.getElementById(imgId);
+                            if (imgEl) {
+                                imgEl.src = blobUrl;
+                                imgEl.onclick = () => openImageModal(blobUrl);
+                            }
+                        }
+                    }, 0);
+                    return `<div class="media-message"><img id="${imgId}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect fill='%231e293b' width='200' height='200'/%3E%3Ctext fill='%23718096' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3EЗагрузка...%3C/text%3E%3C/svg%3E" alt="${escapeHtml(name)}" style="cursor: zoom-in;"></div>`;
                 case 'video':
-                    return `<div class="media-message"><video src="${url}" controls></video></div>`;
+                    const vidId = `vid-${messageId}`;
+                    setTimeout(async () => {
+                        const blobUrl = await loadSecureMedia(url);
+                        if (blobUrl) {
+                            const vidEl = document.getElementById(vidId);
+                            if (vidEl) vidEl.src = blobUrl;
+                        }
+                    }, 0);
+                    return `<div class="media-message"><video id="${vidId}" controls></video></div>`;
                 case 'audio':
                 case 'voice':
                     return `
                         <div class="voice-message">
-                            <button class="voice-play-btn" onclick="playAudio('${url}')"><svg class="icon-svg" width="16" height="16"><use href="#icon-play"></use></svg></button>
+                            <button class="voice-play-btn" onclick="playSecureAudio('${url}')"><svg class="icon-svg" width="16" height="16"><use href="#icon-play"></use></svg></button>
                             <div class="voice-waveform"></div>
                             <div class="voice-duration">${formatFileSize(size)}</div>
                         </div>
@@ -2978,7 +3271,7 @@
                 default:
                     const fileIconId = getFileIconId(name);
                     return `
-                        <div class="file-message" onclick="window.open('${url}', '_blank')">
+                        <div class="file-message" onclick="downloadSecureFile('${url}', '${escapeHtml(name)}')">
                             <div class="file-icon"><svg class="icon-svg" width="32" height="32"><use href="#${fileIconId}"></use></svg></div>
                             <div class="file-info">
                                 <div class="file-name">${escapeHtml(name)}</div>
@@ -2986,6 +3279,28 @@
                             </div>
                         </div>
                     `;
+            }
+        }
+        
+        async function playSecureAudio(url) {
+            const blobUrl = await loadSecureMedia(url);
+            if (blobUrl) {
+                if (currentAudio) currentAudio.pause();
+                currentAudio = new Audio(blobUrl);
+                currentAudio.play();
+            }
+        }
+        
+        async function downloadSecureFile(url, filename) {
+            const blobUrl = await loadSecureMedia(url);
+            if (blobUrl) {
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
             }
         }
 
