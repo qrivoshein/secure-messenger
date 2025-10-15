@@ -396,34 +396,24 @@
         }
         
         .message.selected {
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 8px;
-            padding: 8px;
-            margin: -8px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 12px;
+            padding: 6px;
+            margin: -6px;
+        }
+        
+        .message.selecting .message-bubble {
+            border: 2px solid rgba(102, 126, 234, 0.4);
+            box-sizing: border-box;
+        }
+        
+        .message.selected .message-bubble {
+            border: 2px solid #667eea;
+            box-sizing: border-box;
         }
         
         .message-checkbox {
-            position: absolute;
-            left: -35px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 24px;
-            height: 24px;
-            border: 2px solid #667eea;
-            border-radius: 4px;
-            background: transparent;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        
-        .message.selecting .message-checkbox {
-            display: flex;
-        }
-        
-        .message.selected .message-checkbox {
-            background: #667eea;
+            display: none !important;
         }
         
         .message-swipe-indicator {
@@ -558,7 +548,7 @@
         
         .message-forwarded {
             font-size: 11px;
-            color: #a8b8ff;
+            color: #c7d2ff;
             margin-bottom: 4px;
             display: flex;
             align-items: center;
@@ -566,7 +556,7 @@
         }
         
         .message-forwarded svg {
-            color: #a8b8ff;
+            color: #c7d2ff;
         }
         
         .message-sender-name {
@@ -1547,6 +1537,9 @@
                     messagesArea.appendChild(tempDiv.firstElementChild);
                     messagesArea.scrollTop = messagesArea.scrollHeight;
                     
+                    // Initialize swipe handlers for new message
+                    setTimeout(() => initSwipesForAllMessages(), 10);
+                    
                     // Play subtle sound for current chat
                     playNotificationSound();
                 }
@@ -1662,10 +1655,7 @@
             }
             
             return `
-                <div class="message ${isSent ? 'sent' : ''}" data-message-id="${message.id}" onclick="handleMessageClick(event, '${message.id}')" onmousedown="if(event.ctrlKey || event.metaKey) toggleMessageSelection('${message.id}')">
-                    <div class="message-checkbox" onclick="toggleMessageSelection('${message.id}')">
-                        <svg class="icon-svg" width="14" height="14" style="color: white;"><use href="#icon-check"></use></svg>
-                    </div>
+                <div class="message ${isSent ? 'sent' : ''}" data-message-id="${message.id}" onclick="handleMessageClick(event, '${message.id}')">
                     ${showActions ? `
                         <div class="message-actions">
                             <button class="message-action-btn" onclick="event.stopPropagation(); editMessageStart('${message.id}', '${escapeHtml(message.text).replace(/'/g, "\\'")}')" title="Редактировать">
@@ -1841,6 +1831,9 @@
                             return renderMessage(msg, isSent);
                         }).join('');
                         messagesArea.scrollTop = messagesArea.scrollHeight;
+                        
+                        // Initialize swipe handlers for all messages
+                        setTimeout(() => initSwipesForAllMessages(), 100);
                     }
                 }
             } catch (error) {
@@ -1940,6 +1933,9 @@
             tempDiv.innerHTML = messageHtml;
             messagesArea.appendChild(tempDiv.firstElementChild);
             messagesArea.scrollTop = messagesArea.scrollHeight;
+            
+            // Initialize swipe handlers for new message
+            setTimeout(() => initSwipesForAllMessages(), 10);
             
             input.value = '';
             
@@ -2438,21 +2434,64 @@
             }
         });
 
-        window.addEventListener('load', () => {
-            autoLogin();
-            
-            // Add Ctrl+Click listener for message selection
-            document.addEventListener('click', (e) => {
-                if (e.ctrlKey || e.metaKey) {
-                    const messageEl = e.target.closest('.message');
-                    if (messageEl) {
-                        const messageId = messageEl.getAttribute('data-message-id');
-                        if (messageId) {
-                            toggleMessageSelection(messageId);
-                        }
-                    }
+        // Trackpad swipe detection for message selection
+        let swipeData = new Map(); // Store swipe data per message
+        
+        function initSwipesForAllMessages() {
+            const messages = document.querySelectorAll('.message[data-message-id]');
+            messages.forEach(messageEl => {
+                const messageId = messageEl.getAttribute('data-message-id');
+                if (messageId && !messageEl.dataset.swipeInitialized) {
+                    initTrackpadSwipe(messageEl, messageId);
+                    initMessageSwipe(messageEl, messageId);
+                    messageEl.dataset.swipeInitialized = 'true';
                 }
             });
+        }
+        
+        function initTrackpadSwipe(messageEl, messageId) {
+            let swipeX = 0;
+            let swipeStartTime = 0;
+            
+            messageEl.addEventListener('wheel', (e) => {
+                // Detect horizontal swipe on trackpad (two-finger swipe)
+                if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 10) {
+                    e.preventDefault();
+                    
+                    swipeX += e.deltaX;
+                    
+                    // Visual feedback
+                    if (Math.abs(swipeX) > 50) {
+                        messageEl.style.transform = `translateX(${-swipeX}px)`;
+                        messageEl.style.transition = 'none';
+                    }
+                    
+                    // If swipe is significant enough, trigger forward
+                    if (Math.abs(swipeX) > 150) {
+                        messageEl.style.transition = 'transform 0.3s ease';
+                        messageEl.style.transform = '';
+                        
+                        // Open forward modal for this message
+                        selectedMessages.clear();
+                        selectedMessages.add(messageId);
+                        openForwardModal([messageId]);
+                        
+                        swipeX = 0;
+                    }
+                    
+                    // Reset swipe after a delay
+                    clearTimeout(swipeData.get(messageId));
+                    swipeData.set(messageId, setTimeout(() => {
+                        messageEl.style.transition = 'transform 0.3s ease';
+                        messageEl.style.transform = '';
+                        swipeX = 0;
+                    }, 200));
+                }
+            }, { passive: false });
+        }
+
+        window.addEventListener('load', () => {
+            autoLogin();
         });
     </script>
 </body>
