@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Secure Messenger</title>
     <style>
         * {
@@ -786,6 +786,69 @@
             background: #1a2332;
             border-top: 1px solid #2d3748;
         }
+        
+        .reply-banner {
+            padding: 12px 16px;
+            background: #151e2b;
+            border-left: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+        }
+        
+        .reply-banner-content {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .reply-banner-line {
+            width: 3px;
+            background: #667eea;
+            border-radius: 2px;
+            align-self: stretch;
+        }
+        
+        .reply-banner-text {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .reply-banner-sender {
+            font-size: 13px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+        
+        .reply-banner-message {
+            font-size: 13px;
+            color: #e1e9f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .reply-banner-close {
+            background: none;
+            border: none;
+            color: #718096;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .reply-banner-close:hover {
+            background: #2d3748;
+            color: #e1e9f0;
+        }
 
         .input-container {
             display: flex;
@@ -1534,9 +1597,16 @@
             .messenger-container.chat-active .chat-area {
                 display: flex !important;
                 flex-direction: column !important;
-                height: 100vh !important;
-                max-height: 100vh !important;
+                height: 100dvh !important;
+                max-height: 100dvh !important;
                 overflow: hidden !important;
+            }
+            
+            @supports not (height: 100dvh) {
+                .messenger-container.chat-active .chat-area {
+                    height: 100vh !important;
+                    max-height: 100vh !important;
+                }
             }
 
             /* Back button for mobile */
@@ -1575,7 +1645,7 @@
             }
 
             .message-bubble {
-                max-width: 75%;
+                max-width: 85%;
                 font-size: 15px;
             }
 
@@ -1766,8 +1836,8 @@
             }
 
             .message-bubble {
-                max-width: 90%;
-                padding: 10px 12px;
+                max-width: 92%;
+                padding: 10px 14px;
             }
 
             .chat-header h2 {
@@ -3652,10 +3722,123 @@
             openForwardModal(Array.from(selectedMessages));
         }
         
-        // Swipe handling
+        // Swipe handling for mobile reply
         function initMessageSwipe(messageEl, messageId) {
-            // Swipe gesture disabled - use three-dot menu instead
-            return;
+            // Only enable on mobile devices
+            if (window.innerWidth > 768) return;
+            
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let currentX = 0;
+            let isSwiping = false;
+            
+            messageEl.addEventListener('touchstart', (e) => {
+                if (isSelectionMode) return;
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                currentX = 0;
+            }, { passive: true });
+            
+            messageEl.addEventListener('touchmove', (e) => {
+                if (isSelectionMode) return;
+                
+                const touchX = e.touches[0].clientX;
+                const touchY = e.touches[0].clientY;
+                const deltaX = touchX - touchStartX;
+                const deltaY = touchY - touchStartY;
+                
+                // Only swipe horizontally if horizontal movement is greater
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+                    isSwiping = true;
+                    currentX = Math.min(Math.max(deltaX, 0), 80); // Limit swipe distance
+                    
+                    const isSent = messageEl.classList.contains('sent');
+                    if ((isSent && deltaX < 0) || (!isSent && deltaX > 0)) {
+                        messageEl.style.transform = `translateX(${isSent ? -currentX : currentX}px)`;
+                        
+                        const indicator = messageEl.querySelector('.message-swipe-indicator');
+                        if (indicator) {
+                            indicator.style.opacity = Math.min(currentX / 40, 1);
+                        }
+                    }
+                }
+            }, { passive: true });
+            
+            messageEl.addEventListener('touchend', (e) => {
+                if (isSelectionMode) return;
+                
+                if (isSwiping && currentX > 40) {
+                    // Trigger reply
+                    console.log('Reply to message:', messageId);
+                    showReplyBanner(messageId);
+                }
+                
+                // Reset
+                messageEl.style.transform = '';
+                const indicator = messageEl.querySelector('.message-swipe-indicator');
+                if (indicator) {
+                    indicator.style.opacity = '0';
+                }
+                isSwiping = false;
+                currentX = 0;
+            }, { passive: true });
+        }
+        
+        let replyToMessage = null;
+        
+        function showReplyBanner(messageId) {
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (!messageEl) return;
+            
+            const bubble = messageEl.querySelector('.message-bubble');
+            if (!bubble) return;
+            
+            const messageText = bubble.textContent.replace('(изменено)', '').trim();
+            const senderName = messageEl.querySelector('.message-sender-name')?.textContent || 
+                              (messageEl.classList.contains('sent') ? currentUser : currentChat?.username);
+            
+            replyToMessage = {
+                id: messageId,
+                text: messageText,
+                sender: senderName
+            };
+            
+            // Show reply banner in input area
+            const inputArea = document.querySelector('.message-input-area');
+            if (!inputArea) return;
+            
+            let replyBanner = document.querySelector('.reply-banner');
+            if (!replyBanner) {
+                replyBanner = document.createElement('div');
+                replyBanner.className = 'reply-banner';
+                inputArea.insertBefore(replyBanner, inputArea.firstChild);
+            }
+            
+            replyBanner.innerHTML = `
+                <div class="reply-banner-content">
+                    <div class="reply-banner-line"></div>
+                    <div class="reply-banner-text">
+                        <div class="reply-banner-sender">${escapeHtml(senderName)}</div>
+                        <div class="reply-banner-message">${escapeHtml(messageText.substring(0, 50))}${messageText.length > 50 ? '...' : ''}</div>
+                    </div>
+                </div>
+                <button class="reply-banner-close" onclick="closeReplyBanner()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            `;
+            
+            document.getElementById('messageInput').focus();
+        }
+        
+        function closeReplyBanner() {
+            const banner = document.querySelector('.reply-banner');
+            if (banner) {
+                banner.remove();
+            }
+            replyToMessage = null;
         }
 
         // Pin message functions
