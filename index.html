@@ -162,13 +162,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: color 0.2s;
+            transition: all 0.2s;
             border-radius: 6px;
+            user-select: none;
+            -webkit-user-select: none;
         }
         
         .password-toggle:hover {
             color: #667eea;
             background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .password-toggle:active {
+            color: #5568d3;
+            background: rgba(102, 126, 234, 0.2);
+            transform: translateY(-50%) scale(0.95);
         }
         
         .password-toggle svg {
@@ -1256,9 +1264,15 @@
                 <input type="text" id="loginUsername" placeholder="Логин" />
                 <div class="password-input-wrapper">
                     <input type="password" id="loginPassword" placeholder="Пароль" />
-                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility('loginPassword')" tabindex="-1">
+                    <button type="button" class="password-toggle" 
+                            onmousedown="showPassword('loginPassword')" 
+                            onmouseup="hidePassword('loginPassword')" 
+                            onmouseleave="hidePassword('loginPassword')"
+                            ontouchstart="showPassword('loginPassword')" 
+                            ontouchend="hidePassword('loginPassword')" 
+                            tabindex="-1">
                         <svg width="20" height="20" class="eye-icon">
-                            <use href="#icon-eye"></use>
+                            <use href="#icon-eye-off"></use>
                         </svg>
                     </button>
                 </div>
@@ -1273,17 +1287,29 @@
                 <input type="text" id="registerUsername" placeholder="Логин" />
                 <div class="password-input-wrapper">
                     <input type="password" id="registerPassword" placeholder="Пароль" />
-                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility('registerPassword')" tabindex="-1">
+                    <button type="button" class="password-toggle" 
+                            onmousedown="showPassword('registerPassword')" 
+                            onmouseup="hidePassword('registerPassword')" 
+                            onmouseleave="hidePassword('registerPassword')"
+                            ontouchstart="showPassword('registerPassword')" 
+                            ontouchend="hidePassword('registerPassword')" 
+                            tabindex="-1">
                         <svg width="20" height="20" class="eye-icon">
-                            <use href="#icon-eye"></use>
+                            <use href="#icon-eye-off"></use>
                         </svg>
                     </button>
                 </div>
                 <div class="password-input-wrapper">
                     <input type="password" id="registerPasswordConfirm" placeholder="Подтвердите пароль" />
-                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility('registerPasswordConfirm')" tabindex="-1">
+                    <button type="button" class="password-toggle" 
+                            onmousedown="showPassword('registerPasswordConfirm')" 
+                            onmouseup="hidePassword('registerPasswordConfirm')" 
+                            onmouseleave="hidePassword('registerPasswordConfirm')"
+                            ontouchstart="showPassword('registerPasswordConfirm')" 
+                            ontouchend="hidePassword('registerPasswordConfirm')" 
+                            tabindex="-1">
                         <svg width="20" height="20" class="eye-icon">
-                            <use href="#icon-eye"></use>
+                            <use href="#icon-eye-off"></use>
                         </svg>
                     </button>
                 </div>
@@ -1470,18 +1496,22 @@
             document.getElementById('registerMessage').innerHTML = '';
         }
         
-        function togglePasswordVisibility(inputId) {
+        function showPassword(inputId) {
             const input = document.getElementById(inputId);
             const button = input.nextElementSibling;
             const icon = button.querySelector('use');
             
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.setAttribute('href', '#icon-eye-off');
-            } else {
-                input.type = 'password';
-                icon.setAttribute('href', '#icon-eye');
-            }
+            input.type = 'text';
+            icon.setAttribute('href', '#icon-eye');
+        }
+        
+        function hidePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.nextElementSibling;
+            const icon = button.querySelector('use');
+            
+            input.type = 'password';
+            icon.setAttribute('href', '#icon-eye-off');
         }
 
         async function register() {
