@@ -51,6 +51,21 @@ function loadData() {
                     pinnedMessages.set(chatId, pinData);
                 });
             }
+            
+            // Migrate existing users without userId
+            let migrated = 0;
+            for (const [username, userData] of users.entries()) {
+                if (!userData.userId) {
+                    userData.userId = generateUserId();
+                    migrated++;
+                }
+            }
+            
+            if (migrated > 0) {
+                console.log(`Migrated ${migrated} users with new IDs`);
+                saveData();
+            }
+            
             console.log(`Loaded ${users.size} users from disk`);
         }
     } catch (error) {
@@ -80,6 +95,37 @@ function generateToken() {
     return crypto.randomBytes(32).toString('hex');
 }
 
+function generateUserId() {
+    // Generate unique 4-digit ID
+    let userId;
+    let attempts = 0;
+    const maxAttempts = 10000;
+    
+    do {
+        userId = String(Math.floor(1000 + Math.random() * 9000));
+        attempts++;
+        
+        if (attempts >= maxAttempts) {
+            // If we've tried 10000 times, just use timestamp
+            userId = String(Date.now()).slice(-4);
+            break;
+        }
+        
+        // Check if this ID is already used
+        let isUsed = false;
+        for (const [username, userData] of users.entries()) {
+            if (userData.userId === userId) {
+                isUsed = true;
+                break;
+            }
+        }
+        
+        if (!isUsed) break;
+    } while (true);
+    
+    return userId;
+}
+
 app.post('/api/register', (req, res) => {
     const { username, password } = req.body;
 
@@ -100,17 +146,20 @@ app.post('/api/register', (req, res) => {
     }
 
     const hashedPassword = hashPassword(password);
+    const userId = generateUserId();
+    
     users.set(username, {
         password: hashedPassword,
+        userId: userId,
         createdAt: new Date().toISOString()
     });
     
     saveData();
     
     // Notify all online users about the new user
-    broadcastNewUser(username);
+    broadcastNewUser(username, userId);
 
-    res.json({ success: true, message: 'User registered successfully' });
+    res.json({ success: true, message: 'User registered successfully', userId: userId });
 });
 
 app.post('/api/login', (req, res) => {
@@ -133,7 +182,7 @@ app.post('/api/login', (req, res) => {
     const token = generateToken();
     sessions.set(token, { username, loginTime: Date.now() });
 
-    res.json({ success: true, token, username });
+    res.json({ success: true, token, username, userId: user.userId });
 });
 
 app.get('/api/verify', (req, res) => {
@@ -144,7 +193,8 @@ app.get('/api/verify', (req, res) => {
         return res.status(401).json({ error: 'Invalid token' });
     }
 
-    res.json({ success: true, username: session.username });
+    const user = users.get(session.username);
+    res.json({ success: true, username: session.username, userId: user?.userId });
 });
 
 app.get('/api/users', (req, res) => {
@@ -155,10 +205,11 @@ app.get('/api/users', (req, res) => {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const usersList = Array.from(users.keys())
-        .filter(u => u !== session.username)
-        .map(username => ({
+    const usersList = Array.from(users.entries())
+        .filter(([username]) => username !== session.username)
+        .map(([username, userData]) => ({
             username,
+            userId: userData.userId,
             online: onlineUsers.has(username),
             avatar: username[0].toUpperCase()
         }));
@@ -487,12 +538,13 @@ function broadcastOnlineUsers() {
     });
 }
 
-function broadcastNewUser(newUsername) {
+function broadcastNewUser(newUsername, userId) {
     onlineUsers.forEach((ws, username) => {
         if (ws.readyState === WebSocket.OPEN && username !== newUsername) {
             ws.send(JSON.stringify({
                 type: 'new_user',
-                username: newUsername
+                username: newUsername,
+                userId: userId
             }));
         }
     });

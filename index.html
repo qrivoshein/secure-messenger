@@ -1489,6 +1489,7 @@
         const WS_URL = `ws://${window.location.host}`;
 
         let currentUser = null;
+        let currentUserId = null;
         let currentToken = null;
         let currentChat = null;
         let encryptionKey = null;
@@ -1697,16 +1698,18 @@
 
                 if (response.ok) {
                     currentUser = data.username;
+                    currentUserId = data.userId;
                     currentToken = data.token;
                     encryptionKey = await generateEncryptionKey();
                     
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('username', data.username);
+                    localStorage.setItem('userId', data.userId);
                     
                     // Load local pins from localStorage
                     loadLocalPins();
                     
-                    document.getElementById('userName').textContent = username;
+                    document.getElementById('userName').textContent = `${username}#${data.userId}`;
                     const avatarEl = document.getElementById('userAvatar');
                     avatarEl.textContent = username[0].toUpperCase();
                     const avatarColors = getAvatarColor(username);
@@ -2208,6 +2211,7 @@
                 const unreadCount = unreadMessages.get(user.username) || 0;
                 const avatarColors = getAvatarColor(user.username);
                 const isOnline = onlineUsers.has(user.username);
+                const displayName = user.userId ? `${user.username}#${user.userId}` : user.username;
                 return `
                     <div class="chat-item ${currentChat && currentChat.username === user.username ? 'active' : ''}" onclick="openChat('${user.username}')">
                         <div class="chat-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">
@@ -2216,7 +2220,7 @@
                         </div>
                         <div class="chat-info">
                             <div class="chat-header">
-                                <div class="chat-name">${escapeHtml(user.username)}</div>
+                                <div class="chat-name">${escapeHtml(displayName)}</div>
                                 <div class="chat-time">${user.time}</div>
                             </div>
                             <div class="chat-preview">${escapeHtml(user.lastMessage || 'Начните общение')}</div>
@@ -2269,6 +2273,7 @@
             
             const chatArea = document.getElementById('chatArea');
             const isOnline = onlineUsers.has(username);
+            const displayName = user.userId ? `${username}#${user.userId}` : username;
             
             const avatarColors = getAvatarColor(username);
             chatArea.innerHTML = `
@@ -2278,7 +2283,7 @@
                         ${isOnline ? '<div class="online-badge"></div>' : ''}
                     </div>
                     <div class="chat-header-info">
-                        <div class="chat-header-name">${escapeHtml(username)}</div>
+                        <div class="chat-header-name">${escapeHtml(displayName)}</div>
                         <div class="chat-header-status ${isOnline ? '' : 'offline'}">${isOnline ? '<svg class="icon-svg" width="12" height="12" style="color: #4ecca3;"><use href="#icon-online"></use></svg> В сети' : '<svg class="icon-svg" width="12" height="12" style="color: #718096;"><use href="#icon-offline"></use></svg> Не в сети'}</div>
                     </div>
                     <div class="encryption-badge" style="${!isSecureContext() ? 'opacity: 0.5;' : ''}">
@@ -2481,14 +2486,18 @@
         }
 
         function searchChats(query) {
-            const filtered = users.filter(user => 
-                user.username.toLowerCase().includes(query.toLowerCase())
-            );
+            const lowerQuery = query.toLowerCase();
+            const filtered = users.filter(user => {
+                const username = user.username.toLowerCase();
+                const userId = user.userId ? user.userId.toLowerCase() : '';
+                return username.includes(lowerQuery) || userId.includes(lowerQuery);
+            });
             
             const chatsList = document.getElementById('chatsList');
             chatsList.innerHTML = filtered.map(user => {
                 const avatarColors = getAvatarColor(user.username);
                 const isOnline = onlineUsers.has(user.username);
+                const displayName = user.userId ? `${user.username}#${user.userId}` : user.username;
                 return `
                 <div class="chat-item ${currentChat && currentChat.username === user.username ? 'active' : ''}" onclick="openChat('${user.username}')">
                     <div class="chat-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">
@@ -2497,7 +2506,7 @@
                     </div>
                     <div class="chat-info">
                         <div class="chat-header">
-                            <div class="chat-name">${escapeHtml(user.username)}</div>
+                            <div class="chat-name">${escapeHtml(displayName)}</div>
                             <div class="chat-time">${user.time}</div>
                         </div>
                         <div class="chat-preview">${escapeHtml(user.lastMessage || 'Начните общение')}</div>
@@ -2768,14 +2777,18 @@
                 });
 
                 if (response.ok) {
+                    const data = await response.json();
                     currentUser = savedUsername;
+                    currentUserId = data.userId;
                     currentToken = savedToken;
                     encryptionKey = await generateEncryptionKey();
                     
                     // Load local pins from localStorage
                     loadLocalPins();
                     
-                    document.getElementById('userName').textContent = savedUsername;
+                    localStorage.setItem('userId', data.userId);
+                    
+                    document.getElementById('userName').textContent = `${savedUsername}#${data.userId}`;
                     const avatarEl = document.getElementById('userAvatar');
                     avatarEl.textContent = savedUsername[0].toUpperCase();
                     const avatarColors = getAvatarColor(savedUsername);
@@ -2809,10 +2822,11 @@
             const usersList = document.getElementById('forwardUsersList');
             usersList.innerHTML = users.filter(u => u.username !== currentUser).map(user => {
                 const avatarColors = getAvatarColor(user.username);
+                const displayName = user.userId ? `${user.username}#${user.userId}` : user.username;
                 return `
                 <div class="forward-user-item" onclick="forwardMessagesToUser('${user.username}')">
                     <div class="forward-user-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">${user.avatar}</div>
-                    <div class="forward-user-name">${escapeHtml(user.username)}</div>
+                    <div class="forward-user-name">${escapeHtml(displayName)}</div>
                 </div>
             `;
             }).join('');
@@ -2825,18 +2839,21 @@
         }
         
         function filterForwardUsers(query) {
-            const filtered = users.filter(u => 
-                u.username !== currentUser && 
-                u.username.toLowerCase().includes(query.toLowerCase())
-            );
+            const lowerQuery = query.toLowerCase();
+            const filtered = users.filter(u => {
+                const username = u.username.toLowerCase();
+                const userId = u.userId ? u.userId.toLowerCase() : '';
+                return u.username !== currentUser && (username.includes(lowerQuery) || userId.includes(lowerQuery));
+            });
             
             const usersList = document.getElementById('forwardUsersList');
             usersList.innerHTML = filtered.map(user => {
                 const avatarColors = getAvatarColor(user.username);
+                const displayName = user.userId ? `${user.username}#${user.userId}` : user.username;
                 return `
                 <div class="forward-user-item" onclick="forwardMessagesToUser('${user.username}')">
                     <div class="forward-user-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">${user.avatar}</div>
-                    <div class="forward-user-name">${escapeHtml(user.username)}</div>
+                    <div class="forward-user-name">${escapeHtml(displayName)}</div>
                 </div>
             `;
             }).join('');
