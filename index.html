@@ -162,11 +162,32 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
         }
 
         .sidebar-header h2 {
             font-size: 24px;
             color: #fff;
+            flex: 1;
+        }
+
+        .new-chat-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .new-chat-btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
         }
 
         .connection-status {
@@ -1275,6 +1296,210 @@
             display: inline-block;
             vertical-align: middle;
         }
+
+        /* Image Modal */
+        .image-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            cursor: zoom-out;
+        }
+
+        .image-modal.active {
+            display: flex;
+        }
+
+        .image-modal-content {
+            max-width: 90%;
+            max-height: 90vh;
+            position: relative;
+            cursor: default;
+        }
+
+        .image-modal-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(26, 35, 50, 0.8);
+            border: none;
+            border-radius: 50%;
+            color: #e1e9f0;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10001;
+        }
+
+        .image-modal-close:hover {
+            background: rgba(26, 35, 50, 0.95);
+            transform: scale(1.1);
+        }
+
+        /* Search Users Modal */
+        .search-users-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-users-modal.active {
+            display: flex;
+        }
+
+        .search-users-modal-content {
+            background: #1a2332;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 70vh;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .search-users-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #2d3748;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-users-modal-header h3 {
+            margin: 0;
+            color: #e1e9f0;
+            font-size: 20px;
+        }
+
+        .search-users-modal-close {
+            background: none;
+            border: none;
+            color: #718096;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .search-users-modal-close:hover {
+            color: #e1e9f0;
+        }
+
+        .search-users-input-container {
+            padding: 16px 20px;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .search-users-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #2d3748;
+            border: 1px solid #3d4758;
+            border-radius: 10px;
+            color: #e1e9f0;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+
+        .search-users-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-users-input::placeholder {
+            color: #718096;
+        }
+
+        .search-users-results {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .search-user-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-user-item:hover {
+            background: #2d3748;
+        }
+
+        .search-user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .search-user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-user-name {
+            color: #e1e9f0;
+            font-weight: 500;
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-user-tag {
+            color: #718096;
+            font-size: 13px;
+            margin-top: 2px;
+        }
+
+        .search-no-results {
+            padding: 40px 20px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -1416,6 +1641,12 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <h2>Чаты</h2>
+                <button class="new-chat-btn" onclick="openSearchUsersModal()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Новый чат
+                </button>
                 <button class="logout-btn" onclick="logout()">Выйти</button>
             </div>
             <div class="connection-status" id="connectionStatus">
@@ -1484,9 +1715,42 @@
         </div>
     </div>
 
+    <!-- Image Modal -->
+    <div id="imageModal" class="image-modal" onclick="closeImageModal()">
+        <button class="image-modal-close" onclick="closeImageModal()">×</button>
+        <div class="image-modal-content" onclick="event.stopPropagation()">
+            <img id="imageModalImg" src="" alt="">
+        </div>
+    </div>
+
+    <!-- Search Users Modal -->
+    <div id="searchUsersModal" class="search-users-modal" onclick="if(event.target.id === 'searchUsersModal') closeSearchUsersModal()">
+        <div class="search-users-modal-content">
+            <div class="search-users-modal-header">
+                <h3>Найти пользователя</h3>
+                <button class="search-users-modal-close" onclick="closeSearchUsersModal()">×</button>
+            </div>
+            <div class="search-users-input-container">
+                <input 
+                    type="text" 
+                    id="searchUsersInput" 
+                    class="search-users-input" 
+                    placeholder="Введите username или username#tag..." 
+                    oninput="handleUserSearch(this.value)"
+                    autocomplete="off"
+                >
+            </div>
+            <div class="search-users-results" id="searchUsersResults">
+                <div class="search-no-results">
+                    Введите имя пользователя или тег для поиска
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = window.location.origin;
-        const WS_URL = `ws://${window.location.host}`;
+        const WS_URL = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`;
 
         let currentUser = null;
         let currentUserId = null;
@@ -1999,6 +2263,21 @@
             }
         }
         
+        function showMessageMenuOnRightClick(messageId, event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Close all other menus
+            document.querySelectorAll('.message-menu.active').forEach(menu => {
+                menu.classList.remove('active');
+            });
+            
+            const menu = document.getElementById(`message-menu-${messageId}`);
+            if (menu) {
+                menu.classList.add('active');
+            }
+        }
+        
         function closeMessageMenu(messageId) {
             const menu = document.getElementById(`message-menu-${messageId}`);
             if (menu) {
@@ -2094,7 +2373,7 @@
             }
             
             return `
-                <div class="message ${isSent ? 'sent' : ''}" data-message-id="${message.id}" onclick="handleMessageClick(event, '${message.id}')">
+                <div class="message ${isSent ? 'sent' : ''}" data-message-id="${message.id}" onclick="handleMessageClick(event, '${message.id}')" oncontextmenu="showMessageMenuOnRightClick('${message.id}', event)">
                     <div class="message-swipe-indicator">
                         <svg class="icon-svg" width="24" height="24"><use href="#icon-forward"></use></svg>
                     </div>
@@ -2312,7 +2591,7 @@
                         <input type="file" id="fileInput" accept="*/*" onchange="handleFileSelect(event)" />
                         <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Прикрепить файл"><svg class="icon-svg" width="20" height="20"><use href="#icon-attach"></use></svg></button>
                         <button class="voice-btn" id="voiceBtn" onclick="toggleVoiceRecording()" title="Голосовое сообщение"><svg class="icon-svg" width="20" height="20"><use href="#icon-mic"></use></svg></button>
-                        <input type="text" id="messageInput" placeholder="Напишите сообщение..." onkeypress="handleKeyPress(event)" oninput="handleTyping()">
+                        <input type="text" id="messageInput" placeholder="Напишите сообщение..." onkeypress="handleKeyPress(event)" oninput="handleTyping()" onpaste="handlePaste(event)">
                         <button class="send-btn" onclick="sendMessage()"><svg class="icon-svg" width="24" height="24"><use href="#icon-send"></use></svg></button>
                     </div>
                 </div>
@@ -2568,6 +2847,30 @@
             event.target.value = '';
         }
 
+        async function handlePaste(event) {
+            const items = event.clipboardData?.items;
+            if (!items) return;
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                
+                // Проверяем, является ли это изображением
+                if (item.type.indexOf('image') !== -1) {
+                    event.preventDefault();
+                    
+                    const file = item.getAsFile();
+                    if (file) {
+                        if (file.size > 50 * 1024 * 1024) {
+                            alert('Файл слишком большой. Максимальный размер: 50 МБ');
+                            return;
+                        }
+                        await uploadFile(file);
+                    }
+                    break;
+                }
+            }
+        }
+
         async function uploadFile(file) {
             if (!currentChat) return;
 
@@ -2659,7 +2962,7 @@
         function renderMediaContent(mediaType, url, name, size) {
             switch (mediaType) {
                 case 'image':
-                    return `<div class="media-message"><img src="${url}" alt="${escapeHtml(name)}" onclick="window.open('${url}', '_blank')"></div>`;
+                    return `<div class="media-message"><img src="${url}" alt="${escapeHtml(name)}" onclick="openImageModal('${url}')" style="cursor: zoom-in;"></div>`;
                 case 'video':
                     return `<div class="media-message"><video src="${url}" controls></video></div>`;
                 case 'audio':
@@ -2998,6 +3301,146 @@
             if (modal) {
                 modal.classList.remove('active');
             }
+        }
+
+        // Image modal functions
+        function openImageModal(imageUrl) {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('imageModalImg');
+            if (modal && img) {
+                img.src = imageUrl;
+                modal.classList.add('active');
+                
+                // Close on ESC key
+                document.addEventListener('keydown', handleImageModalEscape);
+            }
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.removeEventListener('keydown', handleImageModalEscape);
+            }
+        }
+
+        function handleImageModalEscape(event) {
+            if (event.key === 'Escape') {
+                closeImageModal();
+            }
+        }
+
+        // Search users modal functions
+        let searchTimeout = null;
+
+        function openSearchUsersModal() {
+            const modal = document.getElementById('searchUsersModal');
+            const input = document.getElementById('searchUsersInput');
+            const results = document.getElementById('searchUsersResults');
+            
+            if (modal) {
+                input.value = '';
+                results.innerHTML = '<div class="search-no-results">Введите имя пользователя или тег для поиска</div>';
+                modal.classList.add('active');
+                setTimeout(() => input.focus(), 100);
+            }
+        }
+
+        function closeSearchUsersModal() {
+            const modal = document.getElementById('searchUsersModal');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        async function handleUserSearch(query) {
+            const results = document.getElementById('searchUsersResults');
+            
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // Show loading or empty state
+            if (!query || query.trim().length < 2) {
+                results.innerHTML = '<div class="search-no-results">Введите минимум 2 символа для поиска</div>';
+                return;
+            }
+            
+            results.innerHTML = '<div class="search-no-results">Поиск...</div>';
+            
+            // Debounce search
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`${API_URL}/api/search-users?q=${encodeURIComponent(query.trim())}`, {
+                        headers: {
+                            'Authorization': `Bearer ${currentToken}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        displaySearchResults(data.users);
+                    } else {
+                        results.innerHTML = '<div class="search-no-results">Ошибка поиска</div>';
+                    }
+                } catch (error) {
+                    console.error('Search error:', error);
+                    results.innerHTML = '<div class="search-no-results">Ошибка поиска</div>';
+                }
+            }, 400);
+        }
+
+        function displaySearchResults(users) {
+            const results = document.getElementById('searchUsersResults');
+            
+            if (users.length === 0) {
+                results.innerHTML = '<div class="search-no-results">Пользователи не найдены</div>';
+                return;
+            }
+            
+            results.innerHTML = users.map(user => {
+                const avatarColors = getAvatarColor(user.username);
+                const displayName = `${user.username}#${user.userId}`;
+                const onlineBadge = user.online ? '<div class="online-badge"></div>' : '';
+                
+                return `
+                    <div class="search-user-item" onclick="startChatWithUser('${user.username}', '${user.userId}')">
+                        <div class="search-user-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">
+                            ${user.avatar}
+                            ${onlineBadge}
+                        </div>
+                        <div class="search-user-info">
+                            <div class="search-user-name">${escapeHtml(user.username)}</div>
+                            <div class="search-user-tag">#${user.userId}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function startChatWithUser(username, userId) {
+            closeSearchUsersModal();
+            
+            // Check if user already in chat list
+            let user = users.find(u => u.username === username);
+            
+            if (!user) {
+                // Add user to chat list
+                user = {
+                    username: username,
+                    userId: userId,
+                    online: onlineUsers.has(username),
+                    avatar: username[0].toUpperCase(),
+                    lastMessage: '',
+                    time: ''
+                };
+                users.push(user);
+                loadChats();
+            }
+            
+            // Open chat
+            await openChat(username);
         }
 
         function pinMessage(pinType) {
