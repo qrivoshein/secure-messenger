@@ -17,13 +17,18 @@ const app = express();
 const server = http.createServer(app);
 
 app.use(express.json());
-app.use(express.static('.'));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+app.get('/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 if (!fs.existsSync(config.upload.uploadDir)) {
     fs.mkdirSync(config.upload.uploadDir);
     logger.info(`Created upload directory: ${config.upload.uploadDir}`);
 }
-app.use('/uploads', express.static(config.upload.uploadDir));
 
 if (!fs.existsSync('./logs')) {
     fs.mkdirSync('./logs');

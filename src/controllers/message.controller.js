@@ -17,7 +17,7 @@ class MessageController {
                 return res.status(400).json({ error: 'No file uploaded' });
             }
 
-            const fileUrl = `/uploads/${req.file.filename}`;
+            const fileUrl = `/api/file/${req.file.filename}`;
             const fileInfo = {
                 url: fileUrl,
                 name: req.file.originalname,
