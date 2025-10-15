@@ -378,10 +378,63 @@
             max-width: 70%;
             animation: fadeIn 0.3s ease;
             position: relative;
+            transition: transform 0.3s ease;
+            touch-action: pan-y;
         }
         
         .message:hover .message-actions {
             opacity: 1;
+        }
+        
+        .message.selecting {
+            cursor: pointer;
+        }
+        
+        .message.selected {
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+            padding: 8px;
+            margin: -8px;
+        }
+        
+        .message-checkbox {
+            position: absolute;
+            left: -35px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            background: transparent;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .message.selecting .message-checkbox {
+            display: flex;
+        }
+        
+        .message.selected .message-checkbox {
+            background: #667eea;
+        }
+        
+        .message-swipe-indicator {
+            position: absolute;
+            right: -60px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.2s;
+            color: #667eea;
+            pointer-events: none;
+        }
+        
+        .message.sent .message-swipe-indicator {
+            left: -60px;
+            right: auto;
         }
 
         @keyframes fadeIn {
@@ -722,6 +775,11 @@
         .voice-play-btn:hover {
             background: #45b393;
         }
+        
+        .voice-play-btn svg {
+            color: white;
+            fill: white;
+        }
 
         .voice-waveform {
             flex: 1;
@@ -744,6 +802,168 @@
 
         input[type="file"] {
             display: none;
+        }
+        
+        .forward-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .forward-modal.active {
+            display: flex;
+        }
+        
+        .forward-modal-content {
+            background: #1a2332;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .forward-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #2d3748;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .forward-modal-header h3 {
+            font-size: 20px;
+            color: #e1e9f0;
+        }
+        
+        .forward-modal-close {
+            background: none;
+            border: none;
+            color: #e1e9f0;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        
+        .forward-modal-close:hover {
+            background: #2d3748;
+        }
+        
+        .forward-search {
+            padding: 15px 20px;
+            border-bottom: 1px solid #2d3748;
+        }
+        
+        .forward-search input {
+            width: 100%;
+            padding: 12px 15px;
+            background: #0e1621;
+            border: 1px solid #2d3748;
+            border-radius: 10px;
+            color: #e1e9f0;
+            font-size: 14px;
+        }
+        
+        .forward-search input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .forward-users-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+        
+        .forward-user-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .forward-user-item:hover {
+            background: #0e1621;
+        }
+        
+        .forward-user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4ecca3 0%, #45b393 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .forward-user-name {
+            flex: 1;
+            font-size: 16px;
+            color: #e1e9f0;
+        }
+        
+        .selection-toolbar {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #667eea;
+            padding: 15px 20px;
+            z-index: 10;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .selection-toolbar.active {
+            display: flex;
+        }
+        
+        .selection-toolbar-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .selection-toolbar-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .selection-count {
+            flex: 1;
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
         }
 
         .icon-svg {
@@ -815,7 +1035,22 @@
                 <path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
             </symbol>
             <symbol id="icon-play" viewBox="0 0 24 24">
-                <path d="M5 3l14 9-14 9V3z" fill="currentColor"/>
+                <path d="M8 5v14l11-7z" fill="currentColor"/>
+            </symbol>
+            <symbol id="icon-edit" viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" fill="none"/>
+            </symbol>
+            <symbol id="icon-delete" viewBox="0 0 24 24">
+                <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" stroke="currentColor" stroke-width="2" fill="none"/>
+                <line x1="10" y1="11" x2="10" y2="17" stroke="currentColor" stroke-width="2"/>
+                <line x1="14" y1="11" x2="14" y2="17" stroke="currentColor" stroke-width="2"/>
+            </symbol>
+            <symbol id="icon-forward" viewBox="0 0 24 24">
+                <path d="M13 17l5-5-5-5M6 17l5-5-5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="icon-check" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
             </symbol>
         </defs>
     </svg>
@@ -883,6 +1118,22 @@
         </div>
     </div>
 
+    <!-- Forward Modal -->
+    <div id="forwardModal" class="forward-modal">
+        <div class="forward-modal-content">
+            <div class="forward-modal-header">
+                <h3>Переслать сообщение</h3>
+                <button class="forward-modal-close" onclick="closeForwardModal()">×</button>
+            </div>
+            <div class="forward-search">
+                <input type="text" id="forwardSearchInput" placeholder="Поиск пользователей..." oninput="filterForwardUsers(this.value)">
+            </div>
+            <div class="forward-users-list" id="forwardUsersList">
+                <!-- Users will be populated here -->
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_URL = window.location.origin;
         const WS_URL = `ws://${window.location.host}`;
@@ -898,6 +1149,10 @@
         let isTyping = false;
         let unreadMessages = new Map();
         let editingMessage = null;
+        let selectedMessages = new Set();
+        let isSelectionMode = false;
+        let swipeStartX = 0;
+        let swipeStartY = 0;
         
         // Notification sound (simple beep using Web Audio API)
         function playNotificationSound() {
@@ -1367,13 +1622,23 @@
             }
             
             return `
-                <div class="message ${isSent ? 'sent' : ''}" data-message-id="${message.id}">
+                <div class="message ${isSent ? 'sent' : ''}" data-message-id="${message.id}" onmousedown="if(event.ctrlKey || event.metaKey) toggleMessageSelection('${message.id}')">
+                    <div class="message-checkbox" onclick="toggleMessageSelection('${message.id}')">
+                        <svg class="icon-svg" width="14" height="14" style="color: white;"><use href="#icon-check"></use></svg>
+                    </div>
                     ${showActions ? `
                         <div class="message-actions">
-                            <button class="message-action-btn" onclick="editMessageStart('${message.id}', '${escapeHtml(message.text).replace(/'/g, "\\'")}')">✏️</button>
-                            <button class="message-action-btn delete" onclick="deleteMessage('${message.id}')">🗑️</button>
+                            <button class="message-action-btn" onclick="event.stopPropagation(); editMessageStart('${message.id}', '${escapeHtml(message.text).replace(/'/g, "\\'")}')" title="Редактировать">
+                                <svg class="icon-svg" width="16" height="16"><use href="#icon-edit"></use></svg>
+                            </button>
+                            <button class="message-action-btn delete" onclick="event.stopPropagation(); deleteMessage('${message.id}')" title="Удалить">
+                                <svg class="icon-svg" width="16" height="16"><use href="#icon-delete"></use></svg>
+                            </button>
                         </div>
                     ` : ''}
+                    <div class="message-swipe-indicator">
+                        <svg class="icon-svg" width="24" height="24"><use href="#icon-forward"></use></svg>
+                    </div>
                     <div class="message-avatar">${username[0].toUpperCase()}</div>
                     <div class="message-content">
                         ${contentHtml}
@@ -1939,6 +2204,174 @@
             Notification.requestPermission();
         }
 
+        // Message forwarding functions
+        function openForwardModal(messageIds) {
+            const modal = document.getElementById('forwardModal');
+            modal.classList.add('active');
+            
+            const usersList = document.getElementById('forwardUsersList');
+            usersList.innerHTML = users.filter(u => u.username !== currentUser).map(user => `
+                <div class="forward-user-item" onclick="forwardMessagesToUser('${user.username}')">
+                    <div class="forward-user-avatar">${user.avatar}</div>
+                    <div class="forward-user-name">${escapeHtml(user.username)}</div>
+                </div>
+            `).join('');
+        }
+        
+        function closeForwardModal() {
+            const modal = document.getElementById('forwardModal');
+            modal.classList.remove('active');
+            document.getElementById('forwardSearchInput').value = '';
+        }
+        
+        function filterForwardUsers(query) {
+            const filtered = users.filter(u => 
+                u.username !== currentUser && 
+                u.username.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            const usersList = document.getElementById('forwardUsersList');
+            usersList.innerHTML = filtered.map(user => `
+                <div class="forward-user-item" onclick="forwardMessagesToUser('${user.username}')">
+                    <div class="forward-user-avatar">${user.avatar}</div>
+                    <div class="forward-user-name">${escapeHtml(user.username)}</div>
+                </div>
+            `).join('');
+        }
+        
+        async function forwardMessagesToUser(toUser) {
+            if (selectedMessages.size === 0) return;
+            
+            const messagesArea = document.getElementById('messagesArea');
+            
+            for (const messageId of selectedMessages) {
+                const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (messageEl) {
+                    const bubble = messageEl.querySelector('.message-bubble');
+                    if (bubble && ws && ws.readyState === WebSocket.OPEN) {
+                        const text = bubble.textContent.replace(' (изменено)', '');
+                        const newMessageId = Date.now().toString() + Math.random();
+                        
+                        ws.send(JSON.stringify({
+                            type: 'message',
+                            to: toUser,
+                            text: `Пересланное сообщение: ${text}`,
+                            messageId: newMessageId
+                        }));
+                    }
+                }
+            }
+            
+            closeForwardModal();
+            exitSelectionMode();
+            alert(`Сообщений переслано: ${selectedMessages.size}`);
+        }
+        
+        // Selection mode functions
+        function enterSelectionMode() {
+            isSelectionMode = true;
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(msg => msg.classList.add('selecting'));
+            
+            const chatArea = document.getElementById('chatArea');
+            let toolbar = chatArea.querySelector('.selection-toolbar');
+            if (!toolbar) {
+                toolbar = document.createElement('div');
+                toolbar.className = 'selection-toolbar';
+                toolbar.innerHTML = `
+                    <button class="selection-toolbar-btn" onclick="exitSelectionMode()">Отмена</button>
+                    <span class="selection-count">Выбрано: 0</span>
+                    <button class="selection-toolbar-btn" onclick="forwardSelected()">
+                        <svg class="icon-svg" width="16" height="16"><use href="#icon-forward"></use></svg>
+                        Переслать
+                    </button>
+                `;
+                chatArea.insertBefore(toolbar, chatArea.firstChild);
+            }
+            toolbar.classList.add('active');
+        }
+        
+        function exitSelectionMode() {
+            isSelectionMode = false;
+            selectedMessages.clear();
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(msg => {
+                msg.classList.remove('selecting', 'selected');
+            });
+            
+            const toolbar = document.querySelector('.selection-toolbar');
+            if (toolbar) {
+                toolbar.classList.remove('active');
+            }
+        }
+        
+        function toggleMessageSelection(messageId) {
+            if (!isSelectionMode) {
+                enterSelectionMode();
+            }
+            
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (!messageEl) return;
+            
+            if (selectedMessages.has(messageId)) {
+                selectedMessages.delete(messageId);
+                messageEl.classList.remove('selected');
+            } else {
+                selectedMessages.add(messageId);
+                messageEl.classList.add('selected');
+            }
+            
+            const countEl = document.querySelector('.selection-count');
+            if (countEl) {
+                countEl.textContent = `Выбрано: ${selectedMessages.size}`;
+            }
+            
+            if (selectedMessages.size === 0) {
+                exitSelectionMode();
+            }
+        }
+        
+        function forwardSelected() {
+            if (selectedMessages.size === 0) return;
+            openForwardModal(Array.from(selectedMessages));
+        }
+        
+        // Swipe handling
+        function initMessageSwipe(messageEl, messageId) {
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+            
+            messageEl.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                isDragging = true;
+            }, { passive: true });
+            
+            messageEl.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                currentX = e.touches[0].clientX;
+                const diff = currentX - startX;
+                
+                if (Math.abs(diff) > 50) {
+                    messageEl.style.transform = `translateX(${diff}px)`;
+                }
+            }, { passive: true });
+            
+            messageEl.addEventListener('touchend', () => {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                const diff = currentX - startX;
+                if (Math.abs(diff) > 100) {
+                    selectedMessages.add(messageId);
+                    openForwardModal([messageId]);
+                }
+                
+                messageEl.style.transform = '';
+                currentX = 0;
+            }, { passive: true });
+        }
+
         window.addEventListener('beforeunload', () => {
             if (ws) {
                 ws.close();
@@ -1947,6 +2380,19 @@
 
         window.addEventListener('load', () => {
             autoLogin();
+            
+            // Add Ctrl+Click listener for message selection
+            document.addEventListener('click', (e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    const messageEl = e.target.closest('.message');
+                    if (messageEl) {
+                        const messageId = messageEl.getAttribute('data-message-id');
+                        if (messageId) {
+                            toggleMessageSelection(messageId);
+                        }
+                    }
+                }
+            });
         });
     </script>
 </body>
