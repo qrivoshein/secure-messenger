@@ -611,14 +611,15 @@
         }
 
         .message-bubble {
-            padding: 8px 12px;
+            padding: 10px 14px;
             background: #1a2332;
-            border-radius: 14px;
+            border-radius: 16px;
             word-wrap: break-word;
             word-break: break-word;
             overflow-wrap: break-word;
             line-height: 1.4;
             max-width: 100%;
+            min-width: 120px;
             white-space: pre-wrap;
             width: fit-content;
             display: inline-block;
@@ -1721,7 +1722,8 @@
                 max-width: 100%;
                 font-size: 15px;
                 word-break: break-word;
-                padding: 8px 12px;
+                padding: 10px 14px;
+                min-width: 100px;
             }
 
             .messages-area {
@@ -1912,8 +1914,9 @@
 
             .message-bubble {
                 max-width: 100%;
-                padding: 8px 12px;
+                padding: 10px 14px;
                 word-break: break-word;
+                min-width: 80px;
             }
             
             .message-avatar {
