@@ -28,46 +28,62 @@
         }
 
         .auth-box {
-            background: #1a2332;
-            padding: 50px 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            background: transparent;
+            padding: 60px 40px;
             width: 400px;
             max-width: 90%;
-            border: 1px solid #2d3748;
+            text-align: center;
+        }
+        
+        .auth-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 56px;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+            letter-spacing: -2px;
         }
 
         .auth-box h1 {
             color: #e1e9f0;
             margin-bottom: 8px;
-            font-size: 28px;
-            font-weight: 600;
-            letter-spacing: -0.5px;
+            font-size: 42px;
+            font-weight: 700;
+            letter-spacing: -1px;
         }
 
-        .auth-box p {
-            color: #9ca3af;
-            margin-bottom: 32px;
-            font-size: 15px;
+        .auth-box .auth-subtitle {
+            color: #718096;
+            margin-bottom: 40px;
+            font-size: 14px;
             font-weight: 400;
         }
 
         .auth-box input {
             width: 100%;
-            padding: 12px 14px;
-            margin-bottom: 14px;
-            border: 1px solid #2d3748;
-            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 12px;
+            border: 1px solid transparent;
+            border-radius: 12px;
             font-size: 15px;
-            transition: all 0.2s;
-            background: #0e1621;
+            transition: all 0.3s;
+            background: rgba(26, 35, 50, 0.6);
             color: #e1e9f0;
+            text-align: center;
         }
 
         .auth-box input:focus {
             outline: none;
             border-color: #667eea;
-            background: #151e2b;
+            background: rgba(26, 35, 50, 0.9);
+            text-align: left;
         }
         
         .auth-box input::placeholder {
@@ -76,25 +92,48 @@
 
         .auth-box button {
             width: 100%;
-            padding: 13px;
+            padding: 14px;
             background: #667eea;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 15px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.3s;
+            margin-top: 8px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
 
         .auth-box button:hover {
             background: #5568d3;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
         }
 
         .auth-box button:disabled {
             background: #2d3748;
             cursor: not-allowed;
             opacity: 0.5;
+            transform: none;
+        }
+        
+        .auth-switch {
+            text-align: center;
+            margin-top: 24px;
+            color: #718096;
+            font-size: 13px;
+        }
+        
+        .auth-switch a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .auth-switch a:hover {
+            color: #5568d3;
         }
 
         .messenger-container {
@@ -737,8 +776,18 @@
             background: rgba(239, 68, 68, 0.2);
         }
 
+        #loginMessage, #registerMessage {
+            margin-top: 12px;
+            font-size: 13px;
+            text-align: center;
+            min-height: 20px;
+        }
+        
         .error-message {
             color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
             font-size: 13px;
             margin-top: 10px;
             text-align: center;
@@ -746,6 +795,9 @@
 
         .success-message {
             color: #4ecca3;
+            background: rgba(78, 204, 163, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
             font-size: 13px;
             margin-top: 10px;
             text-align: center;
@@ -1139,17 +1191,19 @@
     </svg>
     <div id="authScreen" class="auth-screen">
         <div class="auth-box">
-            <h1>Secure Messenger</h1>
-            <p>Защищенный мессенджер с end-to-end шифрованием</p>
+            <!-- Logo placeholder - replace "Э" with actual logo image -->
+            <div class="auth-logo">Э</div>
+            <h1>Эгита</h1>
+            <div class="auth-subtitle">Защищенный мессенджер</div>
             
             <div id="loginForm">
                 <input type="text" id="loginUsername" placeholder="Логин" />
                 <input type="password" id="loginPassword" placeholder="Пароль" />
                 <button onclick="login()" id="loginBtn">Войти</button>
                 <div id="loginMessage"></div>
-                <p style="text-align: center; margin-top: 15px; color: #9ca3af; font-size: 14px;">
-                    Нет аккаунта? <a href="#" onclick="showRegisterForm(); return false;" style="color: #667eea; text-decoration: none; font-weight: 500;">Зарегистрироваться</a>
-                </p>
+                <div class="auth-switch">
+                    Нет аккаунта? <a href="#" onclick="showRegisterForm(); return false;">Зарегистрироваться</a>
+                </div>
             </div>
 
             <div id="registerForm" style="display: none;">
@@ -1158,9 +1212,9 @@
                 <input type="password" id="registerPasswordConfirm" placeholder="Подтвердите пароль" />
                 <button onclick="register()" id="registerBtn">Зарегистрироваться</button>
                 <div id="registerMessage"></div>
-                <p style="text-align: center; margin-top: 15px; color: #9ca3af; font-size: 14px;">
-                    Уже есть аккаунт? <a href="#" onclick="showLoginForm(); return false;" style="color: #667eea; text-decoration: none; font-weight: 500;">Войти</a>
-                </p>
+                <div class="auth-switch">
+                    Уже есть аккаунт? <a href="#" onclick="showLoginForm(); return false;">Войти</a>
+                </div>
             </div>
         </div>
     </div>
