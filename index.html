@@ -1535,6 +1535,7 @@
                 display: flex !important;
                 flex-direction: column !important;
                 height: 100vh;
+                max-height: 100vh;
                 overflow: hidden;
             }
 
@@ -1579,16 +1580,18 @@
             }
 
             .messages-area {
-                padding: 20px 15px;
-                flex: 1;
+                padding: 15px 15px;
+                flex: 1 1 auto;
                 overflow-y: auto;
                 overflow-x: hidden;
+                min-height: 0;
             }
 
             /* Chat header */
             .chat-header-bar {
-                padding: 15px;
+                padding: 12px 15px;
                 flex-shrink: 0;
+                min-height: auto;
             }
 
             .chat-header-name {
@@ -1601,16 +1604,25 @@
             
             .pinned-message-banner {
                 flex-shrink: 0;
+                padding: 10px 15px;
+            }
+            
+            .chat-avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
             }
 
             /* Input area */
             .message-input-area {
-                padding: 15px;
+                padding: 10px 15px;
                 flex-shrink: 0;
+                flex-grow: 0;
                 background: #1a2332;
                 border-top: 1px solid #2d3748;
                 position: relative;
                 z-index: 10;
+                min-height: auto;
             }
 
             .input-container {
@@ -1626,18 +1638,21 @@
             }
             
             .input-container input[type="text"] {
-                min-height: 44px;
+                min-height: 40px;
+                max-height: 40px;
             }
 
             .attach-btn, .voice-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 20px;
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+                flex-shrink: 0;
             }
 
             .send-btn {
-                width: 44px;
-                height: 44px;
+                width: 40px;
+                height: 40px;
+                flex-shrink: 0;
             }
 
             /* Media messages */
