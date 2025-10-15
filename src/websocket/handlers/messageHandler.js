@@ -11,7 +11,7 @@ async function handleMessage(ws, message, context) {
         return;
     }
 
-    const { to, text, encrypted, iv, messageId, mediaType, mediaUrl, fileName, fileSize, forwarded, forwardedFrom } = message;
+    const { to, text, encrypted, iv, messageId, mediaType, mediaUrl, fileName, fileSize, forwarded, forwardedFrom, replyTo, replyToText, replyToSender } = message;
     const { onlineUsers } = context;
     
     const msgId = messageId || Date.now().toString();
@@ -26,7 +26,10 @@ async function handleMessage(ws, message, context) {
             mediaUrl,
             fileSize,
             forwarded,
-            forwardedFrom
+            forwardedFrom,
+            replyToMessageId: replyTo,
+            replyToText,
+            replyToSender
         });
 
         const msg = {
@@ -42,6 +45,9 @@ async function handleMessage(ws, message, context) {
             fileSize,
             forwarded: forwarded || false,
             forwardedFrom: forwardedFrom || null,
+            replyTo: replyTo || null,
+            replyToText: replyToText || null,
+            replyToSender: replyToSender || null,
             read: false,
             timestamp: new Date().toISOString(),
             time: new Date().toLocaleTimeString('ru-RU', { 

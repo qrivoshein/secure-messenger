@@ -26,6 +26,9 @@ class MessageService {
             fileSize: row.media_size,
             forwarded: row.forwarded,
             forwardedFrom: row.forwarded_from,
+            replyTo: row.reply_to_message_id,
+            replyToText: row.reply_to_text,
+            replyToSender: row.reply_to_sender,
             read: row.read,
             edited: !!row.edited_at,
             timestamp: row.created_at,
@@ -37,12 +40,12 @@ class MessageService {
     }
 
     async saveMessage(messageData) {
-        const { messageId, from, to, text, mediaType, mediaUrl, fileSize, forwarded, forwardedFrom } = messageData;
+        const { messageId, from, to, text, mediaType, mediaUrl, fileSize, forwarded, forwardedFrom, replyToMessageId, replyToText, replyToSender } = messageData;
         
         await pool.query(
-            `INSERT INTO messages (message_id, from_username, to_username, text, media_type, media_url, media_size, forwarded, forwarded_from)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-            [messageId, from, to, text, mediaType, mediaUrl, fileSize, forwarded || false, forwardedFrom || null]
+            `INSERT INTO messages (message_id, from_username, to_username, text, media_type, media_url, media_size, forwarded, forwarded_from, reply_to_message_id, reply_to_text, reply_to_sender)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+            [messageId, from, to, text, mediaType, mediaUrl, fileSize, forwarded || false, forwardedFrom || null, replyToMessageId || null, replyToText || null, replyToSender || null]
         );
 
         logger.debug(`Message saved: ${messageId} from ${from} to ${to}`);
