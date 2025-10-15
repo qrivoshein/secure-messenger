@@ -1707,7 +1707,10 @@
                     loadLocalPins();
                     
                     document.getElementById('userName').textContent = username;
-                    document.getElementById('userAvatar').textContent = username[0].toUpperCase();
+                    const avatarEl = document.getElementById('userAvatar');
+                    avatarEl.textContent = username[0].toUpperCase();
+                    const avatarColors = getAvatarColor(username);
+                    avatarEl.style.background = `linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)`;
                     
                     document.getElementById('authScreen').style.display = 'none';
                     document.getElementById('messengerContainer').classList.add('active');
@@ -2760,7 +2763,10 @@
                     loadLocalPins();
                     
                     document.getElementById('userName').textContent = savedUsername;
-                    document.getElementById('userAvatar').textContent = savedUsername[0].toUpperCase();
+                    const avatarEl = document.getElementById('userAvatar');
+                    avatarEl.textContent = savedUsername[0].toUpperCase();
+                    const avatarColors = getAvatarColor(savedUsername);
+                    avatarEl.style.background = `linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)`;
                     
                     document.getElementById('authScreen').style.display = 'none';
                     document.getElementById('messengerContainer').classList.add('active');
