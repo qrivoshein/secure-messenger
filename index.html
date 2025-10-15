@@ -240,7 +240,6 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #4ecca3 0%, #45b393 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -452,7 +451,6 @@
             width: 35px;
             height: 35px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #4ecca3 0%, #45b393 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -460,10 +458,7 @@
             font-weight: bold;
             color: white;
             flex-shrink: 0;
-        }
-
-        .message.sent .message-avatar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /* Background set dynamically via style attribute */
         }
 
         .message-content {
@@ -985,7 +980,6 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #4ecca3 0%, #45b393 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1740,7 +1734,8 @@
         
         function renderMessage(message, isSent) {
             const username = isSent ? currentUser : (currentChat ? currentChat.username : message.from);
-            const showActions = isSent && !message.mediaType && !message.forwarded;
+            const showActions = !message.mediaType; // Show menu for all text messages
+            const showEditDelete = isSent && !message.forwarded; // Edit/Delete only for own non-forwarded messages
             
             let contentHtml;
             if (message.mediaType) {
@@ -1763,14 +1758,16 @@
                                 </svg>
                             </button>
                             <div class="message-menu" id="message-menu-${message.id}">
-                                <div class="message-menu-item" onclick="event.stopPropagation(); editMessageStart('${message.id}', '${escapeHtml(message.text).replace(/'/g, "\\'")}'); closeMessageMenu('${message.id}')">
-                                    <svg class="icon-svg" width="16" height="16"><use href="#icon-edit"></use></svg>
-                                    Изменить
-                                </div>
-                                <div class="message-menu-item" onclick="event.stopPropagation(); deleteMessage('${message.id}'); closeMessageMenu('${message.id}')">
-                                    <svg class="icon-svg" width="16" height="16"><use href="#icon-delete"></use></svg>
-                                    Удалить
-                                </div>
+                                ${showEditDelete ? `
+                                    <div class="message-menu-item" onclick="event.stopPropagation(); editMessageStart('${message.id}', '${escapeHtml(message.text).replace(/'/g, "\\'")}'); closeMessageMenu('${message.id}')">
+                                        <svg class="icon-svg" width="16" height="16"><use href="#icon-edit"></use></svg>
+                                        Изменить
+                                    </div>
+                                    <div class="message-menu-item" onclick="event.stopPropagation(); deleteMessage('${message.id}'); closeMessageMenu('${message.id}')">
+                                        <svg class="icon-svg" width="16" height="16"><use href="#icon-delete"></use></svg>
+                                        Удалить
+                                    </div>
+                                ` : ''}
                                 <div class="message-menu-item" onclick="event.stopPropagation(); forwardSingleMessage('${message.id}'); closeMessageMenu('${message.id}')">
                                     <svg class="icon-svg" width="16" height="16"><use href="#icon-forward"></use></svg>
                                     Переслать
@@ -1781,7 +1778,7 @@
                     <div class="message-swipe-indicator">
                         <svg class="icon-svg" width="24" height="24"><use href="#icon-forward"></use></svg>
                     </div>
-                    <div class="message-avatar">${username[0].toUpperCase()}</div>
+                    <div class="message-avatar" style="background: linear-gradient(135deg, ${getAvatarColor(username)[0]} 0%, ${getAvatarColor(username)[1]} 100%)">${username[0].toUpperCase()}</div>
                     <div class="message-content">
                         <div class="message-sender-name">${escapeHtml(username)}</div>
                         ${contentHtml}
@@ -1845,9 +1842,10 @@
 
             chatsList.innerHTML = users.map(user => {
                 const unreadCount = unreadMessages.get(user.username) || 0;
+                const avatarColors = getAvatarColor(user.username);
                 return `
                     <div class="chat-item ${currentChat && currentChat.username === user.username ? 'active' : ''}" onclick="openChat('${user.username}')">
-                        <div class="chat-avatar">
+                        <div class="chat-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">
                             ${user.avatar}
                             ${user.online || onlineUsers.has(user.username) ? '<div class="online-badge"></div>' : ''}
                         </div>
@@ -1896,9 +1894,10 @@
             const chatArea = document.getElementById('chatArea');
             const isOnline = onlineUsers.has(username);
             
+            const avatarColors = getAvatarColor(username);
             chatArea.innerHTML = `
                 <div class="chat-header-bar">
-                    <div class="chat-avatar">
+                    <div class="chat-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">
                         ${user.avatar}
                         ${isOnline ? '<div class="online-badge"></div>' : ''}
                     </div>
@@ -2078,9 +2077,11 @@
             );
             
             const chatsList = document.getElementById('chatsList');
-            chatsList.innerHTML = filtered.map(user => `
+            chatsList.innerHTML = filtered.map(user => {
+                const avatarColors = getAvatarColor(user.username);
+                return `
                 <div class="chat-item ${currentChat && currentChat.username === user.username ? 'active' : ''}" onclick="openChat('${user.username}')">
-                    <div class="chat-avatar">
+                    <div class="chat-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">
                         ${user.avatar}
                         ${user.online || onlineUsers.has(user.username) ? '<div class="online-badge"></div>' : ''}
                     </div>
@@ -2092,13 +2093,43 @@
                         <div class="chat-preview">${escapeHtml(user.lastMessage || 'Начните общение')}</div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+        
+        // Generate random color based on username (consistent for same user)
+        function getAvatarColor(username) {
+            const colors = [
+                ['#4ecca3', '#45b393'], // Green
+                ['#667eea', '#764ba2'], // Purple
+                ['#f093fb', '#f5576c'], // Pink-Red
+                ['#4facfe', '#00f2fe'], // Blue
+                ['#43e97b', '#38f9d7'], // Teal
+                ['#fa709a', '#fee140'], // Pink-Yellow
+                ['#30cfd0', '#330867'], // Blue-Purple
+                ['#a8edea', '#fed6e3'], // Light Blue-Pink
+                ['#ff9a56', '#ff6a88'], // Orange-Pink
+                ['#fbc2eb', '#a6c1ee'], // Light Pink-Blue
+                ['#fdcbf1', '#e6dee9'], // Soft Pink
+                ['#a1c4fd', '#c2e9fb'], // Sky Blue
+                ['#d299c2', '#fef9d7'], // Purple-Yellow
+                ['#89f7fe', '#66a6ff'], // Light Blue
+                ['#fbda61', '#ff5acd']  // Yellow-Pink
+            ];
+            
+            // Simple hash function to get consistent color for username
+            let hash = 0;
+            for (let i = 0; i < username.length; i++) {
+                hash = username.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            const index = Math.abs(hash) % colors.length;
+            return colors[index];
         }
 
         let mediaRecorder = null;
@@ -2168,8 +2199,9 @@
             
             const mediaHtml = renderMediaContent(mediaType, fileInfo.url, fileInfo.name, fileInfo.size);
             
+            const avatarColors = getAvatarColor(currentUser);
             messageDiv.innerHTML = `
-                <div class="message-avatar">${currentUser[0].toUpperCase()}</div>
+                <div class="message-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">${currentUser[0].toUpperCase()}</div>
                 <div class="message-content">
                     ${mediaHtml}
                     <div class="message-time">${getCurrentTime()}</div>
@@ -2359,12 +2391,15 @@
             modal.classList.add('active');
             
             const usersList = document.getElementById('forwardUsersList');
-            usersList.innerHTML = users.filter(u => u.username !== currentUser).map(user => `
+            usersList.innerHTML = users.filter(u => u.username !== currentUser).map(user => {
+                const avatarColors = getAvatarColor(user.username);
+                return `
                 <div class="forward-user-item" onclick="forwardMessagesToUser('${user.username}')">
-                    <div class="forward-user-avatar">${user.avatar}</div>
+                    <div class="forward-user-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">${user.avatar}</div>
                     <div class="forward-user-name">${escapeHtml(user.username)}</div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
         
         function closeForwardModal() {
@@ -2380,12 +2415,15 @@
             );
             
             const usersList = document.getElementById('forwardUsersList');
-            usersList.innerHTML = filtered.map(user => `
+            usersList.innerHTML = filtered.map(user => {
+                const avatarColors = getAvatarColor(user.username);
+                return `
                 <div class="forward-user-item" onclick="forwardMessagesToUser('${user.username}')">
-                    <div class="forward-user-avatar">${user.avatar}</div>
+                    <div class="forward-user-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">${user.avatar}</div>
                     <div class="forward-user-name">${escapeHtml(user.username)}</div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
         
         async function forwardMessagesToUser(toUser) {
