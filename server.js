@@ -39,12 +39,18 @@ let users = new Map();
 const sessions = new Map();
 const messages = new Map();
 const onlineUsers = new Map();
+const pinnedMessages = new Map();
 
 function loadData() {
     try {
         if (fs.existsSync(DATA_FILE)) {
             const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
             users = new Map(Object.entries(data.users || {}));
+            if (data.pinnedMessages) {
+                Object.entries(data.pinnedMessages).forEach(([chatId, pinData]) => {
+                    pinnedMessages.set(chatId, pinData);
+                });
+            }
             console.log(`Loaded ${users.size} users from disk`);
         }
     } catch (error) {
@@ -55,7 +61,8 @@ function loadData() {
 function saveData() {
     try {
         const data = {
-            users: Object.fromEntries(users)
+            users: Object.fromEntries(users),
+            pinnedMessages: Object.fromEntries(pinnedMessages)
         };
         fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
     } catch (error) {
@@ -219,6 +226,21 @@ wss.on('connection', (ws, req) => {
                             username
                         }));
 
+                        // Send pinned messages info
+                        const userPinnedMessages = {};
+                        pinnedMessages.forEach((pinData, chatId) => {
+                            if (chatId.includes(username)) {
+                                userPinnedMessages[chatId] = pinData;
+                            }
+                        });
+                        
+                        if (Object.keys(userPinnedMessages).length > 0) {
+                            ws.send(JSON.stringify({
+                                type: 'pinned_messages_sync',
+                                pinnedMessages: userPinnedMessages
+                            }));
+                        }
+
                         broadcastOnlineUsers();
                         console.log(`User ${username} connected`);
                     } else {
@@ -377,6 +399,52 @@ wss.on('connection', (ws, req) => {
                                 }));
                             }
                         }
+                    }
+                    break;
+
+                case 'pin_message':
+                    if (!username) return;
+                    
+                    const { to: pinTo, messageId: pinId, messageText: pinText } = message;
+                    const pinChatId = [username, pinTo].sort().join('_');
+                    
+                    pinnedMessages.set(pinChatId, {
+                        messageId: pinId,
+                        messageText: pinText,
+                        pinnedBy: username
+                    });
+                    
+                    saveData();
+                    
+                    // Notify recipient
+                    const pinRecipient = onlineUsers.get(pinTo);
+                    if (pinRecipient && pinRecipient.readyState === WebSocket.OPEN) {
+                        pinRecipient.send(JSON.stringify({
+                            type: 'message_pinned',
+                            from: username,
+                            messageId: pinId,
+                            messageText: pinText
+                        }));
+                    }
+                    break;
+
+                case 'unpin_message':
+                    if (!username) return;
+                    
+                    const { to: unpinTo } = message;
+                    const unpinChatId = [username, unpinTo].sort().join('_');
+                    
+                    pinnedMessages.delete(unpinChatId);
+                    
+                    saveData();
+                    
+                    // Notify recipient
+                    const unpinRecipient = onlineUsers.get(unpinTo);
+                    if (unpinRecipient && unpinRecipient.readyState === WebSocket.OPEN) {
+                        unpinRecipient.send(JSON.stringify({
+                            type: 'message_unpinned',
+                            from: username
+                        }));
                     }
                     break;
 

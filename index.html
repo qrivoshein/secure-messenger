@@ -410,6 +410,69 @@
             gap: 5px;
         }
 
+        .pinned-message-banner {
+            display: none;
+            padding: 12px 30px;
+            background: #1a2332;
+            border-bottom: 1px solid #2d3748;
+            border-left: 3px solid #667eea;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .pinned-message-banner:hover {
+            background: #1f2937;
+        }
+
+        .pinned-message-banner.active {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pinned-message-icon {
+            color: #667eea;
+            flex-shrink: 0;
+        }
+
+        .pinned-message-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .pinned-message-title {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .pinned-message-text {
+            font-size: 14px;
+            color: #e1e9f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pinned-message-close {
+            background: none;
+            border: none;
+            color: #718096;
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .pinned-message-close:hover {
+            background: #2d3748;
+            color: #e1e9f0;
+        }
+
         .messages-area {
             flex: 1;
             overflow-y: auto;
@@ -1227,6 +1290,13 @@
                 <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
                 <circle cx="12" cy="16" r="1.5" fill="currentColor"/>
             </symbol>
+            <symbol id="icon-pin" viewBox="0 0 24 24">
+                <path d="M9.5 2v5L7 9.5V13h3.5v7l1 2 1-2v-7H16V9.5L13.5 7V2h-4z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="icon-close" viewBox="0 0 24 24">
+                <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </symbol>
         </defs>
     </svg>
     <div id="authScreen" class="auth-screen">
@@ -1331,6 +1401,7 @@
         let unreadMessages = new Map();
         let editingMessage = null;
         let selectedMessages = new Set();
+        let pinnedMessages = new Map();
         let isSelectionMode = false;
         let swipeStartX = 0;
         let swipeStartY = 0;
@@ -1672,6 +1743,22 @@
                     ws.send(JSON.stringify({ type: 'pong' }));
                     break;
 
+                case 'message_pinned':
+                    handleMessagePinned(data);
+                    break;
+
+                case 'message_unpinned':
+                    handleMessageUnpinned(data);
+                    break;
+
+                case 'pinned_messages_sync':
+                    if (data.pinnedMessages) {
+                        Object.entries(data.pinnedMessages).forEach(([chatId, pinData]) => {
+                            pinnedMessages.set(chatId, pinData.messageId);
+                        });
+                    }
+                    break;
+
                 case 'error':
                     console.error('Server error:', data.error);
                     break;
@@ -1881,6 +1968,11 @@
             const showActions = !message.mediaType; // Show menu for all text messages
             const showEditDelete = isSent && !message.forwarded; // Edit/Delete only for own non-forwarded messages
             
+            // Check if this message is pinned
+            const chatId = currentChat ? [currentUser, currentChat.username].sort().join('_') : null;
+            const pinnedId = chatId ? pinnedMessages.get(chatId) : null;
+            const isPinned = pinnedId === message.id;
+            
             let contentHtml;
             if (message.mediaType) {
                 contentHtml = renderMediaContent(message.mediaType, message.mediaUrl, message.fileName, message.fileSize);
@@ -1922,6 +2014,10 @@
                                     <div class="message-menu-item" onclick="event.stopPropagation(); forwardSingleMessage('${message.id}'); closeMessageMenu('${message.id}')">
                                         <svg class="icon-svg" width="16" height="16"><use href="#icon-forward"></use></svg>
                                         Переслать
+                                    </div>
+                                    <div class="message-menu-item" onclick="event.stopPropagation(); togglePinMessage('${message.id}'); closeMessageMenu('${message.id}')">
+                                        <svg class="icon-svg" width="16" height="16"><use href="#icon-pin"></use></svg>
+                                        ${isPinned ? 'Открепить' : 'Закрепить'}
                                     </div>
                                 </div>
                             </div>
@@ -2062,6 +2158,18 @@
                         <svg class="icon-svg" width="14" height="14"><use href="#icon-lock"></use></svg> ${isSecureContext() ? 'E2E шифрование' : 'Шифрование недоступно (HTTP)'}
                     </div>
                 </div>
+                <div class="pinned-message-banner" id="pinnedMessageBanner" onclick="scrollToPinnedMessage()">
+                    <div class="pinned-message-icon">
+                        <svg class="icon-svg" width="20" height="20"><use href="#icon-pin"></use></svg>
+                    </div>
+                    <div class="pinned-message-content">
+                        <div class="pinned-message-title">Закрепленное сообщение</div>
+                        <div class="pinned-message-text" id="pinnedMessageText"></div>
+                    </div>
+                    <button class="pinned-message-close" onclick="event.stopPropagation(); unpinMessage()">
+                        <svg class="icon-svg" width="16" height="16"><use href="#icon-close"></use></svg>
+                    </button>
+                </div>
                 <div class="messages-area" id="messagesArea">
                     <div style="text-align: center; color: #718096; margin: 20px;">
                         <p><svg class="icon-svg" width="20" height="20" style="vertical-align: middle;"><use href="#icon-lock"></use></svg> Начните защищенное общение с ${escapeHtml(username)}</p>
@@ -2101,6 +2209,20 @@
                         
                         // Mark messages as read
                         markMessagesAsRead(username);
+                    }
+                    
+                    // Show pinned message banner if exists
+                    const chatId = [currentUser, username].sort().join('_');
+                    const pinnedId = pinnedMessages.get(chatId);
+                    if (pinnedId) {
+                        const pinnedMsg = data.messages.find(m => m.id === pinnedId);
+                        if (pinnedMsg) {
+                            let messageText = 'Медиа-сообщение';
+                            if (pinnedMsg.text) {
+                                messageText = pinnedMsg.text;
+                            }
+                            updatePinnedBanner(messageText);
+                        }
                     }
                 }
             } catch (error) {
@@ -2704,6 +2826,120 @@
         function initMessageSwipe(messageEl, messageId) {
             // Swipe gesture disabled - use three-dot menu instead
             return;
+        }
+
+        // Pin message functions
+        function togglePinMessage(messageId) {
+            if (!currentChat) return;
+            
+            const chatId = [currentUser, currentChat].sort().join('_');
+            const currentPinned = pinnedMessages.get(chatId);
+            
+            if (currentPinned === messageId) {
+                // Unpin if already pinned
+                unpinMessage();
+            } else {
+                // Pin new message
+                pinnedMessages.set(chatId, messageId);
+                
+                // Find message text
+                const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+                let messageText = 'Медиа-сообщение';
+                
+                if (messageEl) {
+                    const bubbleEl = messageEl.querySelector('.message-bubble');
+                    if (bubbleEl) {
+                        messageText = bubbleEl.textContent.replace('(изменено)', '').trim();
+                    }
+                }
+                
+                // Update banner
+                updatePinnedBanner(messageText);
+                
+                // Send to server
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({
+                        type: 'pin_message',
+                        to: currentChat,
+                        messageId: messageId,
+                        messageText: messageText
+                    }));
+                }
+            }
+        }
+        
+        function unpinMessage() {
+            if (!currentChat) return;
+            
+            const chatId = [currentUser, currentChat].sort().join('_');
+            pinnedMessages.delete(chatId);
+            
+            // Hide banner
+            const banner = document.getElementById('pinnedMessageBanner');
+            if (banner) {
+                banner.classList.remove('active');
+            }
+            
+            // Send to server
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'unpin_message',
+                    to: currentChat
+                }));
+            }
+        }
+        
+        function updatePinnedBanner(messageText) {
+            const banner = document.getElementById('pinnedMessageBanner');
+            const textEl = document.getElementById('pinnedMessageText');
+            
+            if (banner && textEl) {
+                textEl.textContent = messageText;
+                banner.classList.add('active');
+            }
+        }
+        
+        function scrollToPinnedMessage() {
+            if (!currentChat) return;
+            
+            const chatId = [currentUser, currentChat].sort().join('_');
+            const pinnedId = pinnedMessages.get(chatId);
+            
+            if (!pinnedId) return;
+            
+            const messageEl = document.querySelector(`[data-message-id="${pinnedId}"]`);
+            if (messageEl) {
+                messageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Highlight effect
+                messageEl.style.background = 'rgba(102, 126, 234, 0.2)';
+                setTimeout(() => {
+                    messageEl.style.background = '';
+                }, 1000);
+            }
+        }
+        
+        function handleMessagePinned(data) {
+            const chatId = [currentUser, data.from].sort().join('_');
+            pinnedMessages.set(chatId, data.messageId);
+            
+            // Update banner if this chat is open
+            if (currentChat === data.from) {
+                updatePinnedBanner(data.messageText);
+            }
+        }
+        
+        function handleMessageUnpinned(data) {
+            const chatId = [currentUser, data.from].sort().join('_');
+            pinnedMessages.delete(chatId);
+            
+            // Update banner if this chat is open
+            if (currentChat === data.from) {
+                const banner = document.getElementById('pinnedMessageBanner');
+                if (banner) {
+                    banner.classList.remove('active');
+                }
+            }
         }
 
         window.addEventListener('beforeunload', () => {
