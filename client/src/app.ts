@@ -6,6 +6,11 @@ import { wsService } from './services/websocket.service';
 import { audioService } from './services/audio.service';
 import { uiManager } from './components/ui-manager';
 import { requestNotificationPermission, showBrowserNotification } from './utils/helpers';
+import { initSVGSprite } from './utils/icons';
+import { AuthComponent } from './components/AuthComponent';
+import { MessengerComponent } from './components/MessengerComponent';
+import { ProfileComponent } from './components/ProfileComponent';
+import { SettingsComponent } from './components/SettingsComponent';
 import type { User, Chat, Message } from './types';
 
 class MessengerApp {
@@ -17,6 +22,12 @@ class MessengerApp {
 
     async init(): Promise<void> {
         console.log('Initializing Messenger App...');
+
+        // Initialize SVG sprite
+        initSVGSprite();
+
+        // Initialize UI components
+        this.initializeComponents();
 
         // Setup event listeners
         this.setupEventListeners();
@@ -38,6 +49,25 @@ class MessengerApp {
 
         // Setup global app reference for inline event handlers
         (window as any).app = this;
+    }
+
+    private initializeComponents(): void {
+        const appContainer = document.getElementById('app');
+        if (!appContainer) {
+            console.error('App container not found!');
+            return;
+        }
+
+        // Create and append all components
+        const authComponent = new AuthComponent();
+        const messengerComponent = new MessengerComponent();
+        const profileComponent = new ProfileComponent();
+        const settingsComponent = new SettingsComponent();
+
+        appContainer.appendChild(authComponent.create());
+        appContainer.appendChild(messengerComponent.create());
+        appContainer.appendChild(profileComponent.create());
+        appContainer.appendChild(settingsComponent.create());
     }
 
     private setupEventListeners(): void {
