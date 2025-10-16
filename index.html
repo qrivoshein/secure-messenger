@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Secure Messenger</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -53,12 +54,15 @@
         }
 
         .auth-box h1 {
-            color: #e1e9f0;
+            color: #ffffff;
             margin-bottom: 8px;
             font-size: 42px;
-            font-weight: 700;
-            letter-spacing: -1px;
+            font-weight: 900;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
         }
+        
+
 
         .auth-box .auth-subtitle {
             color: #718096;
@@ -154,6 +158,7 @@
             flex-direction: column;
             height: 100vh;
             overflow: hidden;
+            position: relative;
         }
 
         .sidebar-header {
@@ -251,6 +256,12 @@
             font-weight: 600;
             font-size: 16px;
         }
+        
+        .user-id {
+            font-size: 11px;
+            color: #64748b;
+            opacity: 0.7;
+        }
 
         .user-status {
             font-size: 12px;
@@ -284,6 +295,7 @@
         .chats-list {
             flex: 1;
             overflow-y: auto;
+            padding-bottom: 70px;
         }
 
         .chat-item {
@@ -345,6 +357,13 @@
             font-weight: 600;
             font-size: 16px;
         }
+        
+        .chat-name .user-id {
+            font-size: 11px;
+            color: #64748b;
+            opacity: 0.7;
+            font-weight: 400;
+        }
 
         .chat-time {
             font-size: 12px;
@@ -403,6 +422,13 @@
         .chat-header-name {
             font-size: 18px;
             font-weight: 600;
+        }
+        
+        .chat-header-name .user-id {
+            font-size: 12px;
+            color: #64748b;
+            opacity: 0.7;
+            font-weight: 400;
         }
 
         .chat-header-status {
@@ -666,7 +692,7 @@
             border-radius: 8px;
             padding: 4px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            z-index: 10;
+            z-index: 10003;
         }
         
         .message.sent .message-actions {
@@ -712,7 +738,7 @@
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
             min-width: 150px;
-            z-index: 1000;
+            z-index: 10003;
             display: none;
             overflow: hidden;
         }
@@ -794,48 +820,42 @@
         }
         
         .reply-banner {
-            padding: 12px 16px;
-            background: #151e2b;
-            border-left: 3px solid #667eea;
+            padding: 4px 8px;
+            background: transparent;
+            border-left: 2px solid #667eea;
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-            border-radius: 8px;
-        }
-        
-        .reply-banner-content {
-            display: flex;
-            gap: 12px;
-            flex: 1;
-            min-width: 0;
+            gap: 4px;
+            margin-bottom: 6px;
+            border-radius: 2px;
         }
         
         .reply-banner-line {
-            width: 3px;
-            background: #667eea;
-            border-radius: 2px;
-            align-self: stretch;
+            display: none;
         }
         
         .reply-banner-text {
             flex: 1;
             min-width: 0;
+            line-height: 1.3;
         }
         
         .reply-banner-sender {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 600;
             color: #667eea;
-            margin-bottom: 4px;
+            margin-bottom: 1px;
+            line-height: 1.2;
         }
         
         .reply-banner-message {
-            font-size: 13px;
-            color: #e1e9f0;
+            font-size: 11px;
+            color: #a0aec0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            line-height: 1.2;
+            opacity: 0.8;
         }
         
         .reply-banner-close {
@@ -843,12 +863,13 @@
             border: none;
             color: #718096;
             cursor: pointer;
-            padding: 4px;
+            padding: 2px;
             border-radius: 4px;
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
         
         .reply-banner-close:hover {
@@ -860,29 +881,26 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            padding: 2px 6px;
-            margin: -2px -3px 3px -3px;
-            background: rgba(102, 126, 234, 0.08);
+            padding: 3px 6px;
+            margin: 0 0 4px 0;
+            background: transparent;
             border-left: 2px solid #667eea;
-            border-radius: 3px;
+            border-radius: 2px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            max-width: calc(100% + 6px);
+            transition: all 0.15s ease;
         }
         
         .message-reply-quote:hover {
-            background: rgba(102, 126, 234, 0.12);
-            border-left-width: 3px;
+            background: rgba(102, 126, 234, 0.06);
         }
         
         .message.sent .message-reply-quote {
-            background: rgba(255, 255, 255, 0.12);
-            border-left-color: rgba(255, 255, 255, 0.6);
+            background: transparent;
+            border-left-color: rgba(255, 255, 255, 0.5);
         }
         
         .message.sent .message-reply-quote:hover {
-            background: rgba(255, 255, 255, 0.18);
-            border-left-width: 3px;
+            background: rgba(255, 255, 255, 0.08);
         }
         
         .message-reply-line {
@@ -894,15 +912,14 @@
             min-width: 0;
             display: flex;
             flex-direction: column;
-            gap: 0;
+            gap: 1px;
         }
         
         .message-reply-sender {
-            font-size: 10px;
+            font-size: 11px;
             font-weight: 600;
             color: #667eea;
-            line-height: 1.0;
-            letter-spacing: 0.01em;
+            line-height: 1.2;
         }
         
         .message.sent .message-reply-sender {
@@ -912,12 +929,11 @@
         .message-reply-text {
             font-size: 11px;
             color: #e1e9f0;
-            opacity: 0.75;
-            line-height: 1.1;
+            opacity: 0.7;
+            line-height: 1.3;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 100%;
         }
 
         .input-container {
@@ -1164,21 +1180,31 @@
 
         .voice-waveform {
             flex: 1;
-            height: 30px;
-            background: repeating-linear-gradient(
-                to right,
-                #4ecca3 0px,
-                #4ecca3 3px,
-                transparent 3px,
-                transparent 8px
-            );
-            border-radius: 4px;
-            opacity: 0.3;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            padding: 0 5px;
+        }
+        
+        .voice-waveform-bar {
+            width: 3px;
+            background: rgba(78, 204, 163, 0.3);
+            border-radius: 3px;
+            transition: background 0.15s ease;
+            cursor: pointer;
+        }
+        
+        .voice-waveform-bar.played {
+            background: #4ecca3;
         }
 
         .voice-duration {
             font-size: 12px;
             color: #718096;
+            font-family: 'Courier New', monospace;
+            min-width: 35px;
+            text-align: right;
         }
 
         input[type="file"] {
@@ -1622,9 +1648,10 @@
         }
 
         .search-user-tag {
-            color: #718096;
-            font-size: 13px;
+            color: #64748b;
+            font-size: 11px;
             margin-top: 2px;
+            opacity: 0.7;
         }
 
         .search-no-results {
@@ -1632,6 +1659,249 @@
             text-align: center;
             color: #718096;
             font-size: 14px;
+        }
+
+        /* Voice Recording Modal */
+        .voice-recording-modal {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10002;
+            align-items: flex-end;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .voice-recording-modal.active {
+            display: flex;
+        }
+
+        .voice-recording-content {
+            background: #1a2332;
+            border-radius: 20px 20px 0 0;
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .voice-recording-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .voice-recording-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #e1e9f0;
+        }
+
+        .voice-recording-timer {
+            font-size: 20px;
+            font-weight: 700;
+            color: #4ecca3;
+            font-family: 'Courier New', monospace;
+        }
+
+        .voice-recording-visualizer {
+            height: 80px;
+            background: #0e1621;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            padding: 0 20px;
+            overflow: hidden;
+        }
+
+        .voice-recording-visualizer-bar {
+            width: 3px;
+            background: #4ecca3;
+            border-radius: 3px;
+            transition: height 0.08s ease;
+            min-height: 4px;
+        }
+
+        .voice-recording-controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .voice-recording-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 24px;
+        }
+
+        .voice-recording-btn-stop {
+            background: #ef4444;
+            color: white;
+        }
+
+        .voice-recording-btn-stop:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
+        .voice-recording-btn-cancel {
+            background: #4a5568;
+            color: white;
+        }
+
+        .voice-recording-btn-cancel:hover {
+            background: #2d3748;
+            transform: scale(1.05);
+        }
+
+        .voice-preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10002;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-preview-modal.active {
+            display: flex;
+        }
+
+        .voice-preview-content {
+            background: #1a2332;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .voice-preview-header {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #e1e9f0;
+        }
+
+        .voice-preview-player {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: #0e1621;
+            border-radius: 12px;
+        }
+
+        .voice-preview-play-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4ecca3;
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .voice-preview-play-btn:hover {
+            background: #45b393;
+            transform: scale(1.05);
+        }
+
+        .voice-preview-waveform {
+            flex: 1;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .voice-preview-waveform-bar {
+            width: 3px;
+            background: #4ecca3;
+            border-radius: 3px;
+            min-height: 4px;
+            opacity: 0.3;
+            transition: opacity 0.15s ease;
+            cursor: pointer;
+        }
+
+        .voice-preview-duration {
+            font-size: 14px;
+            color: #718096;
+            font-family: 'Courier New', monospace;
+        }
+
+        .voice-preview-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .voice-preview-btn {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .voice-preview-btn-send {
+            background: #4ecca3;
+            color: white;
+        }
+
+        .voice-preview-btn-send:hover {
+            background: #45b393;
+            transform: scale(1.02);
+        }
+
+        .voice-preview-btn-cancel {
+            background: #ef4444;
+            color: white;
+        }
+
+        .voice-preview-btn-cancel:hover {
+            background: #dc2626;
+            transform: scale(1.02);
         }
 
         /* MOBILE RESPONSIVE STYLES */
@@ -1907,7 +2177,7 @@
 
         @media only screen and (max-width: 480px) {
             .auth-box h1 {
-                font-size: 32px;
+                font-size: 34px;
             }
 
             .auth-logo {
@@ -1943,6 +2213,300 @@
 
         .mobile-back-btn {
             display: none;
+        }
+
+        /* Bottom Navigation */
+        .bottom-navigation {
+            display: none;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1a2332;
+            border-top: 1px solid #2d3748;
+            height: 60px;
+            z-index: 100;
+        }
+        
+        .sidebar .bottom-navigation {
+            display: block;
+        }
+
+        .bottom-nav-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 8px;
+            color: #718096;
+        }
+
+        .bottom-nav-item.active {
+            color: #667eea;
+        }
+
+        .bottom-nav-item svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .bottom-nav-item span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Profile Screen */
+        .profile-screen {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            background: #0e1621;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .profile-screen.active {
+            display: flex;
+        }
+        
+        .profile-screen .bottom-navigation {
+            display: block;
+        }
+
+        .profile-header {
+            background: #1a2332;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: bold;
+            color: white;
+            margin: 0 auto 15px;
+        }
+
+        .profile-username {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .profile-status {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        .profile-section {
+            background: #1a2332;
+            margin: 10px 0;
+            padding: 0;
+        }
+
+        .profile-section-title {
+            padding: 15px 20px 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #718096;
+            text-transform: uppercase;
+        }
+
+        .profile-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-item:last-child {
+            border-bottom: none;
+        }
+
+        .profile-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+        }
+
+        .profile-item-content {
+            flex: 1;
+        }
+
+        .profile-item-label {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .profile-item-value {
+            font-size: 14px;
+            color: #718096;
+        }
+
+        /* Settings Screen */
+        .settings-screen {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            background: #0e1621;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .settings-screen.active {
+            display: flex;
+        }
+        
+        .settings-screen .bottom-navigation {
+            display: block;
+        }
+
+        .settings-header {
+            background: #1a2332;
+            padding: 20px;
+            border-bottom: 1px solid #2d3748;
+        }
+
+        .settings-header h2 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .settings-section {
+            background: #1a2332;
+            margin: 10px 0;
+        }
+
+        .settings-section-title {
+            padding: 15px 20px 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #718096;
+            text-transform: uppercase;
+        }
+
+        .settings-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #2d3748;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .settings-item:hover {
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-item-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .settings-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+        }
+
+        .settings-item-content {
+            flex: 1;
+        }
+
+        .settings-item-label {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .settings-item-description {
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background: #2d3748;
+            border-radius: 14px;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #667eea;
+        }
+
+        .toggle-switch-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-switch-knob {
+            transform: translateX(22px);
+        }
+
+        /* Mobile Responsive for Bottom Nav */
+        @media only screen and (max-width: 768px) {
+            .sidebar .bottom-navigation {
+                display: block !important;
+            }
+
+            .profile-screen,
+            .settings-screen {
+                padding-bottom: 60px;
+            }
+        }
+        
+        /* Always show bottom nav in sidebar on mobile */
+        @media only screen and (max-width: 768px) {
+            .messenger-container.active .sidebar .bottom-navigation {
+                display: block !important;
+            }
         }
     </style>
 </head>
@@ -2011,6 +2575,10 @@
             <symbol id="icon-play" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" fill="currentColor"/>
             </symbol>
+            <symbol id="icon-pause" viewBox="0 0 24 24">
+                <rect x="6" y="4" width="4" height="16" fill="currentColor"/>
+                <rect x="14" y="4" width="4" height="16" fill="currentColor"/>
+            </symbol>
             <symbol id="icon-edit" viewBox="0 0 24 24">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" fill="none"/>
                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -2045,6 +2613,28 @@
                 <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </symbol>
+            <symbol id="icon-user" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="5" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M3 21c0-4.4 3.6-8 8-1s8 3.6 8 8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="icon-settings" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M12 1v6m0 6v6M5.6 5.6l4.2 4.2m4.2 4.2l4.2 4.2M1 12h6m6 0h6M5.6 18.4l4.2-4.2m4.2-4.2l4.2-4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="icon-bell" viewBox="0 0 24 24">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="icon-moon" viewBox="0 0 24 24">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" fill="none"/>
+            </symbol>
+            <symbol id="icon-shield" viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" fill="none"/>
+            </symbol>
+            <symbol id="icon-info" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                <line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="12" cy="8" r="0.5" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+            </symbol>
         </defs>
     </svg>
     <div id="authScreen" class="auth-screen">
@@ -2055,7 +2645,7 @@
                     <use href="#icon-lock-auth"></use>
                 </svg>
             </div>
-            <h1>ЭГИТА</h1>
+            <h1>ЭГИДА</h1>
             <div class="auth-subtitle">Защищенный мессенджер</div>
             
             <div id="loginForm">
@@ -2112,6 +2702,24 @@
                     <p style="text-align: center; color: #718096;">Пользователи загружаются...</p>
                 </div>
             </div>
+
+            <!-- Bottom Navigation -->
+            <div id="bottomNavigation" class="bottom-navigation">
+                <div class="bottom-nav-items">
+                    <div class="bottom-nav-item" onclick="switchTab('profile')">
+                        <svg><use href="#icon-user"></use></svg>
+                        <span>Профиль</span>
+                    </div>
+                    <div class="bottom-nav-item active" onclick="switchTab('chats')">
+                        <svg><use href="#icon-chat"></use></svg>
+                        <span>Диалоги</span>
+                    </div>
+                    <div class="bottom-nav-item" onclick="switchTab('settings')">
+                        <svg><use href="#icon-settings"></use></svg>
+                        <span>Настройки</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="chat-area" id="chatArea">
@@ -2119,6 +2727,172 @@
                 <div class="empty-state-icon"><svg class="icon-svg" width="80" height="80" style="color: #718096;"><use href="#icon-chat"></use></svg></div>
                 <h3>Выберите чат</h3>
                 <p>Выберите пользователя из списка слева, чтобы начать общение</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Screen -->
+    <div id="profileScreen" class="profile-screen">
+        <div class="profile-header">
+            <div class="profile-avatar-large" id="profileAvatar">A</div>
+            <div class="profile-username" id="profileUsername">Пользователь</div>
+            <div class="profile-status"><svg class="icon-svg" width="14" height="14" style="color: #4ecca3;"><use href="#icon-online"></use></svg> В сети</div>
+        </div>
+        
+        <div class="profile-section">
+            <div class="profile-section-title">Аккаунт</div>
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <svg class="icon-svg" width="20" height="20"><use href="#icon-user"></use></svg>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">Логин</div>
+                    <div class="profile-item-value" id="profileLogin">username</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <div class="profile-section-title">Информация</div>
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <svg class="icon-svg" width="20" height="20"><use href="#icon-shield"></use></svg>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">Безопасность</div>
+                    <div class="profile-item-value">Сквозное шифрование</div>
+                </div>
+            </div>
+            <div class="profile-item">
+                <div class="profile-item-icon">
+                    <svg class="icon-svg" width="20" height="20"><use href="#icon-info"></use></svg>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label">О приложении</div>
+                    <div class="profile-item-value">ЭГИТА v1.0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <div class="profile-item" style="cursor: pointer;" onclick="logout()">
+                <div class="profile-item-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                    <svg class="icon-svg" width="20" height="20"><use href="#icon-lock"></use></svg>
+                </div>
+                <div class="profile-item-content">
+                    <div class="profile-item-label" style="color: #ef4444;">Выйти</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-navigation">
+            <div class="bottom-nav-items">
+                <div class="bottom-nav-item active" onclick="switchTab('profile')">
+                    <svg><use href="#icon-user"></use></svg>
+                    <span>Профиль</span>
+                </div>
+                <div class="bottom-nav-item" onclick="switchTab('chats')">
+                    <svg><use href="#icon-chat"></use></svg>
+                    <span>Диалоги</span>
+                </div>
+                <div class="bottom-nav-item" onclick="switchTab('settings')">
+                    <svg><use href="#icon-settings"></use></svg>
+                    <span>Настройки</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="settingsScreen" class="settings-screen">
+        <div class="settings-header">
+            <h2>Настройки</h2>
+        </div>
+
+        <div class="settings-section">
+            <div class="settings-section-title">Внешний вид</div>
+            <div class="settings-item" onclick="toggleSetting('darkMode')">
+                <div class="settings-item-left">
+                    <div class="settings-item-icon">
+                        <svg class="icon-svg" width="20" height="20"><use href="#icon-moon"></use></svg>
+                    </div>
+                    <div class="settings-item-content">
+                        <div class="settings-item-label">Темная тема</div>
+                        <div class="settings-item-description">Темное оформление интерфейса</div>
+                    </div>
+                </div>
+                <div class="toggle-switch active" id="darkModeToggle">
+                    <div class="toggle-switch-knob"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <div class="settings-section-title">Уведомления</div>
+            <div class="settings-item" onclick="toggleSetting('notifications')">
+                <div class="settings-item-left">
+                    <div class="settings-item-icon">
+                        <svg class="icon-svg" width="20" height="20"><use href="#icon-bell"></use></svg>
+                    </div>
+                    <div class="settings-item-content">
+                        <div class="settings-item-label">Push-уведомления</div>
+                        <div class="settings-item-description">Получать уведомления о новых сообщениях</div>
+                    </div>
+                </div>
+                <div class="toggle-switch active" id="notificationsToggle">
+                    <div class="toggle-switch-knob"></div>
+                </div>
+            </div>
+            <div class="settings-item" onclick="toggleSetting('sounds')">
+                <div class="settings-item-left">
+                    <div class="settings-item-icon">
+                        <svg class="icon-svg" width="20" height="20"><use href="#icon-audio"></use></svg>
+                    </div>
+                    <div class="settings-item-content">
+                        <div class="settings-item-label">Звуки</div>
+                        <div class="settings-item-description">Звуковые уведомления</div>
+                    </div>
+                </div>
+                <div class="toggle-switch active" id="soundsToggle">
+                    <div class="toggle-switch-knob"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <div class="settings-section-title">Безопасность</div>
+            <div class="settings-item">
+                <div class="settings-item-left">
+                    <div class="settings-item-icon">
+                        <svg class="icon-svg" width="20" height="20"><use href="#icon-shield"></use></svg>
+                    </div>
+                    <div class="settings-item-content">
+                        <div class="settings-item-label">Сквозное шифрование</div>
+                        <div class="settings-item-description">Все сообщения защищены</div>
+                    </div>
+                </div>
+                <div class="toggle-switch active">
+                    <div class="toggle-switch-knob"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-navigation">
+            <div class="bottom-nav-items">
+                <div class="bottom-nav-item" onclick="switchTab('profile')">
+                    <svg><use href="#icon-user"></use></svg>
+                    <span>Профиль</span>
+                </div>
+                <div class="bottom-nav-item" onclick="switchTab('chats')">
+                    <svg><use href="#icon-chat"></use></svg>
+                    <span>Диалоги</span>
+                </div>
+                <div class="bottom-nav-item active" onclick="switchTab('settings')">
+                    <svg><use href="#icon-settings"></use></svg>
+                    <span>Настройки</span>
+                </div>
             </div>
         </div>
     </div>
@@ -2179,15 +2953,59 @@
                     type="text" 
                     id="searchUsersInput" 
                     class="search-users-input" 
-                    placeholder="Введите username или username#tag..." 
+                    placeholder="Введите уникальный ID (5 цифр)..." 
                     oninput="handleUserSearch(this.value)"
                     autocomplete="off"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="5"
                 >
             </div>
             <div class="search-users-results" id="searchUsersResults">
                 <div class="search-no-results">
-                    Введите имя пользователя или тег для поиска
+                    Введите уникальный ID пользователя (5 цифр)
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Recording Modal -->
+    <div id="voiceRecordingModal" class="voice-recording-modal">
+        <div class="voice-recording-content">
+            <div class="voice-recording-header">
+                <div class="voice-recording-title">Запись голосового сообщения</div>
+                <div class="voice-recording-timer" id="voiceRecordingTimer">00:00</div>
+            </div>
+            <div class="voice-recording-visualizer" id="voiceRecordingVisualizer">
+                <!-- Bars will be generated dynamically -->
+            </div>
+            <div class="voice-recording-controls">
+                <button class="voice-recording-btn voice-recording-btn-cancel" onclick="cancelVoiceRecording()" title="Отменить">
+                    ✕
+                </button>
+                <button class="voice-recording-btn voice-recording-btn-stop" onclick="stopVoiceRecording()" title="Остановить">
+                    ⏹
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Preview Modal -->
+    <div id="voicePreviewModal" class="voice-preview-modal">
+        <div class="voice-preview-content">
+            <div class="voice-preview-header">Прослушать перед отправкой</div>
+            <div class="voice-preview-player">
+                <button class="voice-preview-play-btn" id="voicePreviewPlayBtn" onclick="togglePreviewPlayback()">
+                    <svg class="icon-svg" width="24" height="24"><use href="#icon-play"></use></svg>
+                </button>
+                <div class="voice-preview-waveform" id="voicePreviewWaveform">
+                    <!-- Bars will be generated dynamically -->
+                </div>
+                <div class="voice-preview-duration" id="voicePreviewDuration">00:00</div>
+            </div>
+            <div class="voice-preview-controls">
+                <button class="voice-preview-btn voice-preview-btn-cancel" onclick="cancelVoicePreview()">Отменить</button>
+                <button class="voice-preview-btn voice-preview-btn-send" onclick="sendVoiceMessage()">Отправить</button>
             </div>
         </div>
     </div>
@@ -2215,6 +3033,16 @@
         let isSelectionMode = false;
         let swipeStartX = 0;
         let swipeStartY = 0;
+        
+        // Voice recording variables
+        let voiceRecordingStream = null;
+        let voiceRecordingAnalyser = null;
+        let voiceRecordingAnimationId = null;
+        let voiceRecordingStartTime = null;
+        let voiceRecordingTimerInterval = null;
+        let recordedVoiceBlob = null;
+        let voicePreviewAudio = null;
+        let voicePreviewAnimationId = null;
         
         // Notification sound (simple beep using Web Audio API)
         function playNotificationSound() {
@@ -2417,7 +3245,7 @@
                     // Load local pins from localStorage
                     loadLocalPins();
                     
-                    document.getElementById('userName').textContent = `${username}#${data.userId}`;
+                    document.getElementById('userName').innerHTML = `${username}<span class="user-id">#${data.userId}</span>`;
                     const avatarEl = document.getElementById('userAvatar');
                     avatarEl.textContent = username[0].toUpperCase();
                     const avatarColors = getAvatarColor(username);
@@ -2460,10 +3288,105 @@
             
             document.getElementById('authScreen').style.display = 'flex';
             document.getElementById('messengerContainer').classList.remove('active');
+            document.getElementById('profileScreen').classList.remove('active');
+            document.getElementById('settingsScreen').classList.remove('active');
             document.getElementById('loginUsername').value = '';
             document.getElementById('loginPassword').value = '';
             
             showLoginForm();
+        }
+
+        // Bottom Navigation Functions
+        function switchTab(tab) {
+            // Hide all screens
+            document.getElementById('messengerContainer').classList.remove('active');
+            document.getElementById('profileScreen').classList.remove('active');
+            document.getElementById('settingsScreen').classList.remove('active');
+            
+            // Remove active class from all nav items in all navigations
+            document.querySelectorAll('.bottom-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected screen and activate corresponding nav items
+            if (tab === 'profile') {
+                document.getElementById('profileScreen').classList.add('active');
+                // Activate profile button in all navigations
+                document.querySelectorAll('.bottom-nav-item').forEach((item, index) => {
+                    if (index % 3 === 0) item.classList.add('active');
+                });
+                updateProfileScreen();
+            } else if (tab === 'chats') {
+                document.getElementById('messengerContainer').classList.add('active');
+                // Activate chats button in all navigations
+                document.querySelectorAll('.bottom-nav-item').forEach((item, index) => {
+                    if (index % 3 === 1) item.classList.add('active');
+                });
+            } else if (tab === 'settings') {
+                document.getElementById('settingsScreen').classList.add('active');
+                // Activate settings button in all navigations
+                document.querySelectorAll('.bottom-nav-item').forEach((item, index) => {
+                    if (index % 3 === 2) item.classList.add('active');
+                });
+            }
+        }
+
+        function updateProfileScreen() {
+            if (!currentUser) return;
+            
+            // Update avatar
+            const profileAvatar = document.getElementById('profileAvatar');
+            if (profileAvatar) {
+                profileAvatar.textContent = currentUser.charAt(0).toUpperCase();
+            }
+            
+            // Update username
+            const profileUsername = document.getElementById('profileUsername');
+            if (profileUsername) {
+                profileUsername.textContent = currentUser;
+            }
+            
+            // Update login in profile details
+            const profileLogin = document.getElementById('profileLogin');
+            if (profileLogin) {
+                profileLogin.textContent = currentUser;
+            }
+        }
+
+        function toggleSetting(setting) {
+            const toggleEl = document.getElementById(setting + 'Toggle');
+            if (!toggleEl) return;
+            
+            toggleEl.classList.toggle('active');
+            
+            // Save setting to localStorage
+            const isActive = toggleEl.classList.contains('active');
+            localStorage.setItem('setting_' + setting, isActive);
+            
+            // Apply setting
+            if (setting === 'darkMode') {
+                // Dark mode is always on in this app, but we keep the toggle for UI
+                console.log('Dark mode:', isActive);
+            } else if (setting === 'notifications') {
+                console.log('Notifications:', isActive);
+            } else if (setting === 'sounds') {
+                console.log('Sounds:', isActive);
+            }
+        }
+
+        // Load settings on init
+        function loadSettings() {
+            ['darkMode', 'notifications', 'sounds'].forEach(setting => {
+                const saved = localStorage.getItem('setting_' + setting);
+                const toggleEl = document.getElementById(setting + 'Toggle');
+                if (toggleEl && saved !== null) {
+                    if (saved === 'false') {
+                        toggleEl.classList.remove('active');
+                    } else {
+                        toggleEl.classList.add('active');
+                    }
+                }
+            });
         }
 
         function connectWebSocket() {
@@ -2773,11 +3696,24 @@
         }
         
         // Close menu when clicking outside
-        document.addEventListener('click', () => {
-            document.querySelectorAll('.message-menu.active').forEach(menu => {
-                menu.classList.remove('active');
-            });
+        document.addEventListener('click', (event) => {
+            // Don't close if clicking on the menu or the three-dots button
+            if (!event.target.closest('.message-menu') && !event.target.closest('.message-menu-btn')) {
+                document.querySelectorAll('.message-menu.active').forEach(menu => {
+                    menu.classList.remove('active');
+                });
+            }
         });
+        
+        // Close menu when scrolling
+        document.addEventListener('scroll', (event) => {
+            // Close menu if scrolling in messages area
+            if (event.target.closest('.messages-area') || event.target === document) {
+                document.querySelectorAll('.message-menu.active').forEach(menu => {
+                    menu.classList.remove('active');
+                });
+            }
+        }, true);
         
         function handleMessageEdited(messageId, newText, from) {
             if (!currentChat || (currentChat.username !== from && from !== currentUser)) return;
@@ -2802,8 +3738,8 @@
         
         function renderMessage(message, isSent) {
             const username = isSent ? currentUser : (currentChat ? currentChat.username : message.from);
-            const showActions = !message.mediaType; // Show menu for all text messages
-            const showEditDelete = isSent && !message.forwarded; // Edit/Delete only for own non-forwarded messages
+            const showActions = true; // Show menu for all messages including media
+            const showEditDelete = isSent && !message.forwarded && !message.mediaType; // Edit/Delete only for own non-forwarded text messages
             
             // Check if this message is pinned (shared or local)
             const chatId = currentChat ? [currentUser, currentChat.username].sort().join('_') : null;
@@ -2812,25 +3748,27 @@
             const isPinned = (sharedPinnedId === message.id) || (localPinnedId === message.id);
             
             let contentHtml;
+            const forwardedLabel = message.forwarded ? `<div class="message-forwarded"><svg class="icon-svg" width="12" height="12"><use href="#icon-forward"></use></svg> Переслано от ${escapeHtml(message.forwardedFrom)}</div>` : '';
+            const replyLabel = message.replyTo && message.replyToText ? `
+                <div class="message-reply-quote" onclick="event.stopPropagation(); scrollToMessage('${message.replyTo}')">
+                    <div class="message-reply-line"></div>
+                    <div class="message-reply-content">
+                        <div class="message-reply-sender">${escapeHtml(message.replyToSender || 'Unknown')}</div>
+                        <div class="message-reply-text">${escapeHtml(message.replyToText.substring(0, 50))}${message.replyToText.length > 50 ? '...' : ''}</div>
+                    </div>
+                </div>
+            ` : '';
+            
             if (message.mediaType) {
-                contentHtml = renderMediaContent(message.mediaType, message.mediaUrl, message.fileName, message.fileSize);
+                const mediaContent = renderMediaContent(message.mediaType, message.mediaUrl, message.fileName, message.fileSize);
+                contentHtml = (forwardedLabel || replyLabel) ? `<div class="message-bubble">${forwardedLabel}${replyLabel}${mediaContent}</div>` : mediaContent;
             } else {
                 const editedLabel = message.edited ? ' <span class="message-edited">(изменено)</span>' : '';
-                const forwardedLabel = message.forwarded ? `<div class="message-forwarded"><svg class="icon-svg" width="12" height="12"><use href="#icon-forward"></use></svg> Переслано от ${escapeHtml(message.forwardedFrom)}</div>` : '';
-                const replyLabel = message.replyTo && message.replyToText ? `
-                    <div class="message-reply-quote" onclick="event.stopPropagation(); scrollToMessage('${message.replyTo}')">
-                        <div class="message-reply-line"></div>
-                        <div class="message-reply-content">
-                            <div class="message-reply-sender">${escapeHtml(message.replyToSender || 'Unknown')}</div>
-                            <div class="message-reply-text">${escapeHtml(message.replyToText.substring(0, 50))}${message.replyToText.length > 50 ? '...' : ''}</div>
-                        </div>
-                    </div>
-                ` : '';
                 contentHtml = `<div class="message-bubble">${forwardedLabel}${replyLabel}${escapeHtml(message.text)}${editedLabel}</div>`;
             }
             
             return `
-                <div class="message ${isSent ? 'sent' : ''}" data-message-id="${message.id}" onclick="handleMessageClick(event, '${message.id}')" oncontextmenu="showMessageMenuOnRightClick('${message.id}', event)">
+                <div class="message ${isSent ? 'sent' : ''}" data-message-id="${message.id}" data-media-type="${message.mediaType || ''}" data-media-url="${message.mediaUrl || ''}" data-file-name="${message.fileName || ''}" data-file-size="${message.fileSize || ''}" data-message-text="${escapeHtml(message.text || '')}" onclick="handleMessageClick(event, '${message.id}')" oncontextmenu="showMessageMenuOnRightClick('${message.id}', event)">
                     <div class="message-swipe-indicator">
                         <svg class="icon-svg" width="24" height="24"><use href="#icon-forward"></use></svg>
                     </div>
@@ -2923,11 +3861,7 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    users = data.users.map(user => ({
-                        ...user,
-                        lastMessage: '',
-                        time: ''
-                    }));
+                    users = data.users;
                     loadChats();
                 } else {
                     console.error('Failed to load users');
@@ -2953,7 +3887,7 @@
                 const unreadCount = unreadMessages.get(user.username) || 0;
                 const avatarColors = getAvatarColor(user.username);
                 const isOnline = onlineUsers.has(user.username);
-                const displayName = user.userId ? `${user.username}#${user.userId}` : user.username;
+                const displayName = user.userId ? `${escapeHtml(user.username)}<span class="user-id">#${escapeHtml(user.userId)}</span>` : escapeHtml(user.username);
                 return `
                     <div class="chat-item ${currentChat && currentChat.username === user.username ? 'active' : ''}" onclick="openChat('${user.username}')">
                         <div class="chat-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">
@@ -2962,7 +3896,7 @@
                         </div>
                         <div class="chat-info">
                             <div class="chat-header">
-                                <div class="chat-name">${escapeHtml(displayName)}</div>
+                                <div class="chat-name">${displayName}</div>
                                 <div class="chat-time">${user.time}</div>
                             </div>
                             <div class="chat-preview">${escapeHtml(user.lastMessage || 'Начните общение')}</div>
@@ -3015,7 +3949,7 @@
             
             const chatArea = document.getElementById('chatArea');
             const isOnline = onlineUsers.has(username);
-            const displayName = user.userId ? `${username}#${user.userId}` : username;
+            const displayName = user.userId ? `${escapeHtml(username)}<span class="user-id">#${escapeHtml(user.userId)}</span>` : escapeHtml(username);
             
             const avatarColors = getAvatarColor(username);
             chatArea.innerHTML = `
@@ -3030,7 +3964,7 @@
                         ${isOnline ? '<div class="online-badge"></div>' : ''}
                     </div>
                     <div class="chat-header-info">
-                        <div class="chat-header-name">${escapeHtml(displayName)}</div>
+                        <div class="chat-header-name">${displayName}</div>
                         <div class="chat-header-status ${isOnline ? '' : 'offline'}">${isOnline ? '<svg class="icon-svg" width="12" height="12" style="color: #4ecca3;"><use href="#icon-online"></use></svg> В сети' : '<svg class="icon-svg" width="12" height="12" style="color: #718096;"><use href="#icon-offline"></use></svg> Не в сети'}</div>
                     </div>
                     <div class="encryption-badge" style="${!isSecureContext() ? 'opacity: 0.5;' : ''}">
@@ -3258,7 +4192,9 @@
 
         function getCurrentTime() {
             const now = new Date();
-            return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            // Конвертируем в московское время (UTC+3)
+            const moscowTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Moscow' }));
+            return `${String(moscowTime.getHours()).padStart(2, '0')}:${String(moscowTime.getMinutes()).padStart(2, '0')}`;
         }
 
         function searchChats(query) {
@@ -3273,7 +4209,7 @@
             chatsList.innerHTML = filtered.map(user => {
                 const avatarColors = getAvatarColor(user.username);
                 const isOnline = onlineUsers.has(user.username);
-                const displayName = user.userId ? `${user.username}#${user.userId}` : user.username;
+                const displayName = user.userId ? `${escapeHtml(user.username)}<span class="user-id">#${escapeHtml(user.userId)}</span>` : escapeHtml(user.username);
                 return `
                 <div class="chat-item ${currentChat && currentChat.username === user.username ? 'active' : ''}" onclick="openChat('${user.username}')">
                     <div class="chat-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">
@@ -3282,7 +4218,7 @@
                     </div>
                     <div class="chat-info">
                         <div class="chat-header">
-                            <div class="chat-name">${escapeHtml(displayName)}</div>
+                            <div class="chat-name">${displayName}</div>
                             <div class="chat-time">${user.time}</div>
                         </div>
                         <div class="chat-preview">${escapeHtml(user.lastMessage || 'Начните общение')}</div>
@@ -3509,11 +4445,13 @@
                     return `<div class="media-message"><video id="${vidId}" controls></video></div>`;
                 case 'audio':
                 case 'voice':
+                    const audioId = 'audio-' + Math.random().toString(36).substr(2, 9);
+                    const waveformBars = generateWaveformBars(50);
                     return `
-                        <div class="voice-message">
-                            <button class="voice-play-btn" onclick="playSecureAudio('${url}')"><svg class="icon-svg" width="16" height="16"><use href="#icon-play"></use></svg></button>
-                            <div class="voice-waveform"></div>
-                            <div class="voice-duration">${formatFileSize(size)}</div>
+                        <div class="voice-message" data-audio-id="${audioId}">
+                            <button class="voice-play-btn" data-audio-id="${audioId}" onclick="toggleSecureAudio('${url}', '${audioId}')"><svg class="icon-svg" width="16" height="16"><use href="#icon-play"></use></svg></button>
+                            <div class="voice-waveform" id="waveform-${audioId}">${waveformBars}</div>
+                            <div class="voice-duration" id="duration-${audioId}">0:00</div>
                         </div>
                     `;
                 case 'file':
@@ -3531,12 +4469,157 @@
             }
         }
         
-        async function playSecureAudio(url) {
+        const audioPlayers = {};
+        let audioContext = null;
+        
+        function generateWaveformBars(count) {
+            let html = '';
+            for (let i = 0; i < count; i++) {
+                // Generate natural-looking wave heights with organic variation
+                const baseHeight = Math.random() * 0.6 + 0.2; // 20-80% of container
+                const height = Math.round(baseHeight * 36); // 36px is container height
+                const minHeight = 4;
+                const actualHeight = Math.max(height, minHeight);
+                
+                html += `<div class="voice-waveform-bar" data-bar-index="${i}" style="height: ${actualHeight}px;"></div>`;
+            }
+            return html;
+        }
+        
+        async function toggleSecureAudio(url, audioId) {
+            const button = document.querySelector(`button[data-audio-id="${audioId}"]`);
+            const waveformContainer = document.getElementById(`waveform-${audioId}`);
+            const durationElement = document.getElementById(`duration-${audioId}`);
+            
+            // If already playing, pause it
+            if (audioPlayers[audioId] && !audioPlayers[audioId].audio.paused) {
+                audioPlayers[audioId].audio.pause();
+                button.innerHTML = '<svg class="icon-svg" width="16" height="16"><use href="#icon-play"></use></svg>';
+                if (audioPlayers[audioId].progressInterval) {
+                    clearInterval(audioPlayers[audioId].progressInterval);
+                }
+                return;
+            }
+            
+            // If paused, resume
+            if (audioPlayers[audioId] && audioPlayers[audioId].audio.paused) {
+                audioPlayers[audioId].audio.play();
+                button.innerHTML = '<svg class="icon-svg" width="16" height="16"><use href="#icon-pause"></use></svg>';
+                startProgressUpdate(audioId, waveformContainer, durationElement);
+                return;
+            }
+            
+            // Stop any other playing audio
+            Object.keys(audioPlayers).forEach(id => {
+                if (id !== audioId && audioPlayers[id] && !audioPlayers[id].audio.paused) {
+                    audioPlayers[id].audio.pause();
+                    const otherButton = document.querySelector(`button[data-audio-id="${id}"]`);
+                    if (otherButton) {
+                        otherButton.innerHTML = '<svg class="icon-svg" width="16" height="16"><use href="#icon-play"></use></svg>';
+                    }
+                    if (audioPlayers[id].progressInterval) {
+                        clearInterval(audioPlayers[id].progressInterval);
+                    }
+                }
+            });
+            
+            // Load and play new audio
             const blobUrl = await loadSecureMedia(url);
             if (blobUrl) {
-                if (currentAudio) currentAudio.pause();
-                currentAudio = new Audio(blobUrl);
-                currentAudio.play();
+                const audio = new Audio(blobUrl);
+                
+                audioPlayers[audioId] = {
+                    audio: audio,
+                    progressInterval: null
+                };
+                
+                // Update duration when metadata is loaded
+                audio.addEventListener('loadedmetadata', () => {
+                    if (durationElement) {
+                        const minutes = Math.floor(audio.duration / 60);
+                        const seconds = Math.floor(audio.duration % 60);
+                        durationElement.textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
+                    }
+                });
+                
+                audio.addEventListener('ended', () => {
+                    button.innerHTML = '<svg class="icon-svg" width="16" height="16"><use href="#icon-play"></use></svg>';
+                    if (audioPlayers[audioId].progressInterval) {
+                        clearInterval(audioPlayers[audioId].progressInterval);
+                    }
+                    // Mark all bars as played
+                    if (waveformContainer) {
+                        const bars = waveformContainer.querySelectorAll('.voice-waveform-bar');
+                        bars.forEach(bar => bar.classList.add('played'));
+                    }
+                    // Reset timer to total duration
+                    if (durationElement && audio.duration) {
+                        const minutes = Math.floor(audio.duration / 60);
+                        const seconds = Math.floor(audio.duration % 60);
+                        durationElement.textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
+                    }
+                });
+                
+                // Add click handlers to waveform bars
+                if (waveformContainer) {
+                    const bars = waveformContainer.querySelectorAll('.voice-waveform-bar');
+                    bars.forEach((bar, index) => {
+                        bar.addEventListener('click', () => {
+                            const progress = index / bars.length;
+                            audio.currentTime = progress * audio.duration;
+                            updateWaveformProgress(audioId, waveformContainer, durationElement);
+                        });
+                    });
+                }
+                
+                audio.play();
+                button.innerHTML = '<svg class="icon-svg" width="16" height="16"><use href="#icon-pause"></use></svg>';
+                startProgressUpdate(audioId, waveformContainer, durationElement);
+            }
+        }
+        
+        function startProgressUpdate(audioId, waveformContainer, durationElement) {
+            if (!audioPlayers[audioId]) return;
+            
+            // Clear existing interval
+            if (audioPlayers[audioId].progressInterval) {
+                clearInterval(audioPlayers[audioId].progressInterval);
+            }
+            
+            // Update progress every 100ms
+            audioPlayers[audioId].progressInterval = setInterval(() => {
+                updateWaveformProgress(audioId, waveformContainer, durationElement);
+            }, 100);
+        }
+        
+        function updateWaveformProgress(audioId, waveformContainer, durationElement) {
+            if (!audioPlayers[audioId]) return;
+            
+            const audio = audioPlayers[audioId].audio;
+            
+            // Update waveform
+            if (waveformContainer) {
+                const bars = waveformContainer.querySelectorAll('.voice-waveform-bar');
+                
+                if (bars.length > 0 && audio.duration > 0) {
+                    const progress = audio.currentTime / audio.duration;
+                    const playedBars = Math.floor(progress * bars.length);
+                    
+                    bars.forEach((bar, index) => {
+                        if (index < playedBars) {
+                            bar.classList.add('played');
+                        } else {
+                            bar.classList.remove('played');
+                        }
+                    });
+                }
+            }
+            
+            // Update timer
+            if (durationElement && audio.duration > 0) {
+                const minutes = Math.floor(audio.currentTime / 60);
+                const seconds = Math.floor(audio.currentTime % 60);
+                durationElement.textContent = `${minutes}:${String(seconds).padStart(2, '0')}`;
             }
         }
         
@@ -3584,7 +4667,7 @@
 
         async function toggleVoiceRecording() {
             if (isRecording) {
-                await stopRecording();
+                return;
             } else {
                 await startRecording();
             }
@@ -3593,39 +4676,334 @@
         async function startRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                voiceRecordingStream = stream;
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
-
+                
+                // Setup audio analyser for visualization
+                const source = audioContext.createMediaStreamSource(stream);
+                voiceRecordingAnalyser = audioContext.createAnalyser();
+                voiceRecordingAnalyser.fftSize = 256;
+                source.connect(voiceRecordingAnalyser);
+                
                 mediaRecorder.ondataavailable = (event) => {
                     audioChunks.push(event.data);
                 };
 
                 mediaRecorder.onstop = async () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    const audioFile = new File([audioBlob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+                    recordedVoiceBlob = audioBlob;
                     
-                    await uploadFile(audioFile);
+                    // Stop all tracks
+                    if (voiceRecordingStream) {
+                        voiceRecordingStream.getTracks().forEach(track => track.stop());
+                    }
                     
-                    stream.getTracks().forEach(track => track.stop());
+                    // Stop timer
+                    if (voiceRecordingTimerInterval) {
+                        clearInterval(voiceRecordingTimerInterval);
+                    }
+                    
+                    // Stop visualization
+                    if (voiceRecordingAnimationId) {
+                        cancelAnimationFrame(voiceRecordingAnimationId);
+                    }
+                    
+                    // Show preview modal
+                    showVoicePreview();
                 };
 
                 mediaRecorder.start();
                 isRecording = true;
-                document.getElementById('voiceBtn').classList.add('recording');
-                console.log('Recording started');
+                voiceRecordingStartTime = Date.now();
+                
+                // Show recording modal
+                document.getElementById('voiceRecordingModal').classList.add('active');
+                
+                // Start timer
+                updateRecordingTimer();
+                voiceRecordingTimerInterval = setInterval(updateRecordingTimer, 100);
+                
+                // Start visualization
+                visualizeRecording();
+                
             } catch (error) {
                 console.error('Error starting recording:', error);
                 alert('Не удалось получить доступ к микрофону');
             }
         }
 
-        async function stopRecording() {
+        function updateRecordingTimer() {
+            if (!voiceRecordingStartTime) return;
+            
+            const elapsed = Date.now() - voiceRecordingStartTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            
+            document.getElementById('voiceRecordingTimer').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function visualizeRecording() {
+            const container = document.getElementById('voiceRecordingVisualizer');
+            if (!container) return;
+            
+            // Create bars
+            const numBars = 80;
+            container.innerHTML = '';
+            const bars = [];
+            
+            for (let i = 0; i < numBars; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'voice-recording-visualizer-bar';
+                bar.style.height = '4px';
+                container.appendChild(bar);
+                bars.push(bar);
+            }
+            
+            const bufferLength = voiceRecordingAnalyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            
+            const draw = () => {
+                voiceRecordingAnimationId = requestAnimationFrame(draw);
+                
+                voiceRecordingAnalyser.getByteFrequencyData(dataArray);
+                
+                // Update bar heights based on frequency data
+                for (let i = 0; i < numBars; i++) {
+                    // Sample from frequency data
+                    const dataIndex = Math.floor((i / numBars) * bufferLength);
+                    const value = dataArray[dataIndex] / 255;
+                    
+                    // Calculate height with natural variation
+                    const maxHeight = 72; // 80px container - some padding
+                    const minHeight = 4;
+                    const height = Math.max(minHeight, Math.round(value * maxHeight));
+                    
+                    bars[i].style.height = height + 'px';
+                }
+            };
+            
+            draw();
+        }
+
+        async function stopVoiceRecording() {
             if (mediaRecorder && mediaRecorder.state !== 'inactive') {
                 mediaRecorder.stop();
                 isRecording = false;
-                document.getElementById('voiceBtn').classList.remove('recording');
-                console.log('Recording stopped');
+                
+                // Hide recording modal
+                document.getElementById('voiceRecordingModal').classList.remove('active');
             }
+        }
+
+        function cancelVoiceRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            
+            isRecording = false;
+            
+            // Stop all tracks
+            if (voiceRecordingStream) {
+                voiceRecordingStream.getTracks().forEach(track => track.stop());
+            }
+            
+            // Stop timer
+            if (voiceRecordingTimerInterval) {
+                clearInterval(voiceRecordingTimerInterval);
+            }
+            
+            // Stop visualization
+            if (voiceRecordingAnimationId) {
+                cancelAnimationFrame(voiceRecordingAnimationId);
+            }
+            
+            // Hide modal
+            document.getElementById('voiceRecordingModal').classList.remove('active');
+            
+            // Clear data
+            audioChunks = [];
+            recordedVoiceBlob = null;
+        }
+
+        function showVoicePreview() {
+            if (!recordedVoiceBlob) return;
+            
+            // Show preview modal
+            document.getElementById('voicePreviewModal').classList.add('active');
+            
+            // Create audio for preview
+            const audioUrl = URL.createObjectURL(recordedVoiceBlob);
+            voicePreviewAudio = new Audio(audioUrl);
+            
+            // Draw static waveform (simplified)
+            drawStaticWaveform();
+            
+            // Update duration
+            voicePreviewAudio.addEventListener('loadedmetadata', () => {
+                const minutes = Math.floor(voicePreviewAudio.duration / 60);
+                const seconds = Math.floor(voicePreviewAudio.duration % 60);
+                document.getElementById('voicePreviewDuration').textContent = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            });
+            
+            // Reset button when audio ends
+            voicePreviewAudio.addEventListener('ended', () => {
+                document.getElementById('voicePreviewPlayBtn').innerHTML = 
+                    '<svg class="icon-svg" width="24" height="24"><use href="#icon-play"></use></svg>';
+                if (voicePreviewAnimationId) {
+                    clearInterval(voicePreviewAnimationId);
+                }
+                // Mark all bars as played
+                const container = document.getElementById('voicePreviewWaveform');
+                if (container) {
+                    const bars = container.querySelectorAll('.voice-preview-waveform-bar');
+                    bars.forEach(bar => bar.style.opacity = '1');
+                }
+            });
+        }
+
+        function drawStaticWaveform() {
+            const container = document.getElementById('voicePreviewWaveform');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            // Create bars with natural-looking variation
+            const numBars = 60;
+            
+            for (let i = 0; i < numBars; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'voice-preview-waveform-bar';
+                
+                // Generate natural-looking wave heights with organic variation
+                const baseHeight = Math.random() * 0.4 + 0.15; // 15-55% of container
+                const height = Math.round(baseHeight * 50); // 50px is container height
+                const minHeight = 4;
+                const actualHeight = Math.max(height, minHeight);
+                
+                bar.style.height = actualHeight + 'px';
+                bar.style.opacity = '0.3';
+                bar.style.cursor = 'pointer';
+                bar.style.transition = 'opacity 0.15s ease';
+                
+                // Add click handler for seeking
+                bar.addEventListener('click', () => {
+                    if (voicePreviewAudio) {
+                        const progress = i / numBars;
+                        voicePreviewAudio.currentTime = progress * voicePreviewAudio.duration;
+                        updatePreviewWaveformProgress();
+                    }
+                });
+                
+                container.appendChild(bar);
+            }
+        }
+
+        function togglePreviewPlayback() {
+            if (!voicePreviewAudio) return;
+            
+            const playBtn = document.getElementById('voicePreviewPlayBtn');
+            const waveformContainer = document.getElementById('voicePreviewWaveform');
+            
+            if (voicePreviewAudio.paused) {
+                voicePreviewAudio.play();
+                playBtn.innerHTML = '<svg class="icon-svg" width="24" height="24"><use href="#icon-pause"></use></svg>';
+                startPreviewProgressUpdate();
+            } else {
+                voicePreviewAudio.pause();
+                playBtn.innerHTML = '<svg class="icon-svg" width="24" height="24"><use href="#icon-play"></use></svg>';
+                if (voicePreviewAnimationId) {
+                    clearInterval(voicePreviewAnimationId);
+                }
+            }
+        }
+        
+        function startPreviewProgressUpdate() {
+            if (!voicePreviewAudio) return;
+            
+            if (voicePreviewAnimationId) {
+                clearInterval(voicePreviewAnimationId);
+            }
+            
+            voicePreviewAnimationId = setInterval(() => {
+                updatePreviewWaveformProgress();
+            }, 100);
+        }
+        
+        function updatePreviewWaveformProgress() {
+            if (!voicePreviewAudio) return;
+            
+            const waveformContainer = document.getElementById('voicePreviewWaveform');
+            if (!waveformContainer) return;
+            
+            const bars = waveformContainer.querySelectorAll('.voice-preview-waveform-bar');
+            if (bars.length === 0 || voicePreviewAudio.duration === 0) return;
+            
+            const progress = voicePreviewAudio.currentTime / voicePreviewAudio.duration;
+            const playedBars = Math.floor(progress * bars.length);
+            
+            bars.forEach((bar, index) => {
+                if (index < playedBars) {
+                    bar.style.opacity = '1';
+                } else {
+                    bar.style.opacity = '0.3';
+                }
+            });
+        }
+
+        function cancelVoicePreview() {
+            // Stop and cleanup audio
+            if (voicePreviewAudio) {
+                voicePreviewAudio.pause();
+                voicePreviewAudio = null;
+            }
+            
+            // Clear interval
+            if (voicePreviewAnimationId) {
+                clearInterval(voicePreviewAnimationId);
+                voicePreviewAnimationId = null;
+            }
+            
+            // Hide modal
+            document.getElementById('voicePreviewModal').classList.remove('active');
+            
+            // Clear data
+            recordedVoiceBlob = null;
+            audioChunks = [];
+        }
+
+        async function sendVoiceMessage() {
+            if (!recordedVoiceBlob) return;
+            
+            // Stop and cleanup audio
+            if (voicePreviewAudio) {
+                voicePreviewAudio.pause();
+                voicePreviewAudio = null;
+            }
+            
+            // Clear interval
+            if (voicePreviewAnimationId) {
+                clearInterval(voicePreviewAnimationId);
+                voicePreviewAnimationId = null;
+            }
+            
+            // Hide modal
+            document.getElementById('voicePreviewModal').classList.remove('active');
+            
+            // Create file and upload
+            const audioFile = new File([recordedVoiceBlob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+            await uploadFile(audioFile);
+            
+            // Clear data
+            recordedVoiceBlob = null;
+            audioChunks = [];
         }
 
         async function autoLogin() {
@@ -3655,7 +5033,7 @@
                     
                     localStorage.setItem('userId', data.userId);
                     
-                    document.getElementById('userName').textContent = `${savedUsername}#${data.userId}`;
+                    document.getElementById('userName').innerHTML = `${savedUsername}<span class="user-id">#${data.userId}</span>`;
                     const avatarEl = document.getElementById('userAvatar');
                     avatarEl.textContent = savedUsername[0].toUpperCase();
                     const avatarColors = getAvatarColor(savedUsername);
@@ -3689,11 +5067,11 @@
             const usersList = document.getElementById('forwardUsersList');
             usersList.innerHTML = users.filter(u => u.username !== currentUser).map(user => {
                 const avatarColors = getAvatarColor(user.username);
-                const displayName = user.userId ? `${user.username}#${user.userId}` : user.username;
+                const displayName = user.userId ? `${escapeHtml(user.username)}<span class="user-id">#${escapeHtml(user.userId)}</span>` : escapeHtml(user.username);
                 return `
                 <div class="forward-user-item" onclick="forwardMessagesToUser('${user.username}')">
                     <div class="forward-user-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">${user.avatar}</div>
-                    <div class="forward-user-name">${escapeHtml(displayName)}</div>
+                    <div class="forward-user-name">${displayName}</div>
                 </div>
             `;
             }).join('');
@@ -3716,11 +5094,11 @@
             const usersList = document.getElementById('forwardUsersList');
             usersList.innerHTML = filtered.map(user => {
                 const avatarColors = getAvatarColor(user.username);
-                const displayName = user.userId ? `${user.username}#${user.userId}` : user.username;
+                const displayName = user.userId ? `${escapeHtml(user.username)}<span class="user-id">#${escapeHtml(user.userId)}</span>` : escapeHtml(user.username);
                 return `
                 <div class="forward-user-item" onclick="forwardMessagesToUser('${user.username}')">
                     <div class="forward-user-avatar" style="background: linear-gradient(135deg, ${avatarColors[0]} 0%, ${avatarColors[1]} 100%)">${user.avatar}</div>
-                    <div class="forward-user-name">${escapeHtml(displayName)}</div>
+                    <div class="forward-user-name">${displayName}</div>
                 </div>
             `;
             }).join('');
@@ -3733,28 +5111,51 @@
             
             for (const messageId of selectedMessages) {
                 const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
-                if (messageEl) {
-                    const bubble = messageEl.querySelector('.message-bubble');
-                    if (bubble && ws && ws.readyState === WebSocket.OPEN) {
-                        const text = bubble.textContent.replace(' (изменено)', '').trim();
-                        const newMessageId = Date.now().toString() + Math.random();
-                        
-                        // Get original author
-                        const isSentMessage = messageEl.classList.contains('sent');
-                        const originalAuthor = isSentMessage ? currentUser : (currentChat ? currentChat.username : 'Unknown');
-                        
-                        // Check if already forwarded
-                        const forwardedInfo = messageEl.querySelector('.message-forwarded');
-                        const forwardedFrom = forwardedInfo ? forwardedInfo.textContent.replace('Переслано от ', '').trim() : originalAuthor;
-                        
+                if (messageEl && ws && ws.readyState === WebSocket.OPEN) {
+                    const newMessageId = Date.now().toString() + Math.random();
+                    
+                    // Get original author
+                    const isSentMessage = messageEl.classList.contains('sent');
+                    const originalAuthor = isSentMessage ? currentUser : (currentChat ? currentChat.username : 'Unknown');
+                    
+                    // Check if already forwarded
+                    const forwardedInfo = messageEl.querySelector('.message-forwarded');
+                    const forwardedFrom = forwardedInfo ? forwardedInfo.textContent.replace('Переслано от ', '').trim() : originalAuthor;
+                    
+                    // Check if this is a media message
+                    const mediaType = messageEl.dataset.mediaType;
+                    const mediaUrl = messageEl.dataset.mediaUrl;
+                    const fileName = messageEl.dataset.fileName;
+                    const fileSize = messageEl.dataset.fileSize;
+                    
+                    if (mediaType && mediaUrl) {
+                        // Forward media message
                         ws.send(JSON.stringify({
                             type: 'message',
                             to: toUser,
-                            text: text,
+                            text: '',
                             messageId: newMessageId,
+                            mediaType: mediaType,
+                            mediaUrl: mediaUrl,
+                            fileName: fileName,
+                            fileSize: fileSize ? parseInt(fileSize) : 0,
                             forwarded: true,
                             forwardedFrom: forwardedFrom
                         }));
+                    } else {
+                        // Forward text message
+                        const bubble = messageEl.querySelector('.message-bubble');
+                        if (bubble) {
+                            const text = bubble.textContent.replace(' (изменено)', '').trim();
+                            ws.send(JSON.stringify({
+                                type: 'message',
+                                to: toUser,
+                                text: text,
+                                messageId: newMessageId,
+                                forwarded: true,
+                                forwardedFrom: forwardedFrom
+                            }));
+                        }
                     }
                 }
             }
@@ -3921,24 +5322,34 @@
                 return;
             }
             
-            const bubble = messageEl.querySelector('.message-bubble');
-            if (!bubble) {
-                console.log('Message bubble not found');
-                return;
-            }
+            let messageText = '';
             
-            // Get clean text - remove forwarded label, reply quote, and edited label
-            let messageText = bubble.textContent || bubble.innerText || '';
-            messageText = messageText
-                .replace(/Переслано от .+/g, '')
-                .replace(/\(изменено\)/g, '')
-                .trim();
-            
-            // Get first line only if it's a reply (to skip quoted text)
-            const lines = messageText.split('\n').filter(line => line.trim());
-            if (lines.length > 2) {
-                // If multiple lines, likely has a quote, take last line as actual message
-                messageText = lines[lines.length - 1];
+            // Check if it's a media message
+            const mediaType = messageEl.dataset.mediaType;
+            if (mediaType) {
+                // For media messages, use media type as text
+                messageText = getMediaPreviewText(mediaType);
+            } else {
+                // For text messages, extract text from bubble
+                const bubble = messageEl.querySelector('.message-bubble');
+                if (!bubble) {
+                    console.log('Message bubble not found');
+                    return;
+                }
+                
+                // Get clean text - remove forwarded label, reply quote, and edited label
+                messageText = bubble.textContent || bubble.innerText || '';
+                messageText = messageText
+                    .replace(/Переслано от .+/g, '')
+                    .replace(/\(изменено\)/g, '')
+                    .trim();
+                
+                // Get first line only if it's a reply (to skip quoted text)
+                const lines = messageText.split('\n').filter(line => line.trim());
+                if (lines.length > 2) {
+                    // If multiple lines, likely has a quote, take last line as actual message
+                    messageText = lines[lines.length - 1];
+                }
             }
             
             const senderName = messageEl.classList.contains('sent') ? currentUser : (currentChat?.username || 'Unknown');
@@ -3966,15 +5377,13 @@
             }
             
             replyBanner.innerHTML = `
-                <div class="reply-banner-content">
-                    <div class="reply-banner-line"></div>
-                    <div class="reply-banner-text">
-                        <div class="reply-banner-sender">${escapeHtml(senderName)}</div>
-                        <div class="reply-banner-message">${escapeHtml(messageText.substring(0, 50))}${messageText.length > 50 ? '...' : ''}</div>
-                    </div>
+                <div class="reply-banner-line"></div>
+                <div class="reply-banner-text">
+                    <div class="reply-banner-sender">${escapeHtml(senderName)}</div>
+                    <div class="reply-banner-message">${escapeHtml(messageText.substring(0, 50))}${messageText.length > 50 ? '...' : ''}</div>
                 </div>
                 <button class="reply-banner-close" onclick="closeReplyBanner()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none">
+                    <svg width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" fill="none">
                         <line x1="18" y1="6" x2="6" y2="18"/>
                         <line x1="6" y1="6" x2="18" y2="18"/>
                     </svg>
@@ -4051,7 +5460,7 @@
             
             if (modal) {
                 input.value = '';
-                results.innerHTML = '<div class="search-no-results">Введите имя пользователя или тег для поиска</div>';
+                results.innerHTML = '<div class="search-no-results">Введите уникальный ID пользователя (5 цифр)</div>';
                 modal.classList.add('active');
                 setTimeout(() => input.focus(), 100);
             }
@@ -4072,9 +5481,23 @@
                 clearTimeout(searchTimeout);
             }
             
-            // Show loading or empty state
-            if (!query || query.trim().length < 2) {
-                results.innerHTML = '<div class="search-no-results">Введите минимум 2 символа для поиска</div>';
+            const trimmedQuery = query.trim();
+            
+            // Show hint if empty
+            if (!trimmedQuery) {
+                results.innerHTML = '<div class="search-no-results">Введите уникальный ID пользователя (5 цифр)</div>';
+                return;
+            }
+            
+            // Check if query contains only digits
+            if (!/^\d+$/.test(trimmedQuery)) {
+                results.innerHTML = '<div class="search-no-results">ID должен содержать только цифры</div>';
+                return;
+            }
+            
+            // Require exactly 5 digits
+            if (trimmedQuery.length !== 5) {
+                results.innerHTML = `<div class="search-no-results">Введено ${trimmedQuery.length} из 5 цифр...</div>`;
                 return;
             }
             
@@ -4112,7 +5535,6 @@
             
             results.innerHTML = users.map(user => {
                 const avatarColors = getAvatarColor(user.username);
-                const displayName = `${user.username}#${user.userId}`;
                 const onlineBadge = user.online ? '<div class="online-badge"></div>' : '';
                 
                 return `
@@ -4123,7 +5545,7 @@
                         </div>
                         <div class="search-user-info">
                             <div class="search-user-name">${escapeHtml(user.username)}</div>
-                            <div class="search-user-tag">#${user.userId}</div>
+                            <div class="search-user-tag">#${escapeHtml(user.userId)}</div>
                         </div>
                     </div>
                 `;
@@ -4376,6 +5798,7 @@
         }
 
         window.addEventListener('load', () => {
+            loadSettings();
             autoLogin();
         });
     </script>

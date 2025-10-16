@@ -34,7 +34,8 @@ class MessageService {
             timestamp: row.created_at,
             time: new Date(row.created_at).toLocaleTimeString('ru-RU', { 
                 hour: '2-digit', 
-                minute: '2-digit' 
+                minute: '2-digit',
+                timeZone: 'Europe/Moscow'
             })
         }));
     }

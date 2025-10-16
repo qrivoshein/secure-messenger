@@ -1,0 +1,128 @@
+/* Mobile responsive styles */
+
+@media only screen and (max-width: 768px) {
+    .messenger-container {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        overflow: hidden;
+    }
+
+    .sidebar {
+        width: 100% !important;
+        height: 100vh !important;
+        border-right: none !important;
+    }
+
+    .chat-area {
+        display: none !important;
+        width: 100% !important;
+        height: 100vh !important;
+    }
+
+    .messenger-container.chat-active .sidebar {
+        display: none !important;
+    }
+
+    .messenger-container.chat-active .chat-area {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+    }
+
+    .auth-box {
+        padding: 40px 20px;
+        width: 100%;
+    }
+
+    .auth-box h1 {
+        font-size: 34px;
+    }
+
+    .message {
+        max-width: 85%;
+    }
+
+    .message-bubble {
+        max-width: 100%;
+        font-size: 15px;
+    }
+
+    .messages-area {
+        padding: 15px;
+    }
+
+    .chat-header-bar {
+        padding: 15px;
+    }
+
+    .message-input-area {
+        padding: 12px 15px;
+    }
+
+    .input-container {
+        gap: 10px;
+    }
+
+    .input-container input {
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+
+    .send-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .sidebar-header {
+        padding: 15px;
+        flex-wrap: wrap;
+    }
+
+    .sidebar-header h2 {
+        font-size: 20px;
+    }
+
+    .new-chat-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .logout-btn {
+        width: 100%;
+        order: 3;
+    }
+
+    .user-info {
+        padding: 12px 15px;
+    }
+
+    .search-box {
+        padding: 10px 15px;
+    }
+
+    .chat-item {
+        padding: 12px 15px;
+    }
+}
+
+@media only screen and (max-width: 480px) {
+    .auth-box h1 {
+        font-size: 30px;
+    }
+
+    .auth-logo {
+        width: 100px;
+        height: 100px;
+    }
+
+    .message-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+    }
+
+    .message-time {
+        font-size: 10px;
+    }
+}

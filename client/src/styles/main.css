@@ -1,0 +1,5 @@
+/* Main styles - imported partials */
+@import './base.css';
+@import './auth.css';
+@import './messenger.css';
+@import './mobile.css';

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Secure Messenger - ЭГИДА</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+    <!-- SVG Icons -->
+    <svg style="display: none;">
+        <defs>
+            <symbol id="icon-lock-auth" viewBox="0 0 24 24">
+                <rect x="5" y="11" width="14" height="11" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <circle cx="12" cy="16" r="1.5" fill="currentColor"/>
+            </symbol>
+            <symbol id="icon-chat" viewBox="0 0 24 24">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" stroke="currentColor" stroke-width="2" fill="none"/>
+            </symbol>
+            <symbol id="icon-user" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="5" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M3 21c0-4.4 3.6-8 8-1s8 3.6 8 8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="icon-settings" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M12 1v6m0 6v6M5.6 5.6l4.2 4.2m4.2 4.2l4.2 4.2M1 12h6m6 0h6M5.6 18.4l4.2-4.2m4.2-4.2l4.2-4.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </symbol>
+            <symbol id="icon-check-single" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            <symbol id="icon-check-double" viewBox="0 0 24 24">
+                <polyline points="17 6 6 17 1 12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="23 6 12 17" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+        </defs>
+    </svg>
+
+    <!-- Auth Screen -->
+    <div id="authScreen" class="auth-screen">
+        <div class="auth-box">
+            <div class="auth-logo">
+                <svg width="64" height="64" viewBox="0 0 24 24">
+                    <use href="#icon-lock-auth"></use>
+                </svg>
+            </div>
+            <h1>ЭГИДА</h1>
+            <div class="auth-subtitle">Защищенный мессенджер</div>
+            
+            <div id="loginForm">
+                <input type="text" id="loginUsername" placeholder="Логин" />
+                <input type="password" id="loginPassword" placeholder="Пароль" />
+                <button id="loginBtn">Войти</button>
+                <div id="loginMessage"></div>
+                <div class="auth-switch">
+                    Нет аккаунта? <a href="#" id="showRegisterLink">Зарегистрироваться</a>
+                </div>
+            </div>
+
+            <div id="registerForm" style="display: none;">
+                <input type="text" id="registerUsername" placeholder="Логин" />
+                <input type="password" id="registerPassword" placeholder="Пароль" />
+                <input type="password" id="registerPasswordConfirm" placeholder="Подтвердите пароль" />
+                <button id="registerBtn">Зарегистрироваться</button>
+                <div id="registerMessage"></div>
+                <div class="auth-switch">
+                    Уже есть аккаунт? <a href="#" id="showLoginLink">Войти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messenger Container -->
+    <div id="messengerContainer" class="messenger-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Чаты</h2>
+                <button class="new-chat-btn" id="newChatBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Новый чат
+                </button>
+                <button class="logout-btn" id="logoutBtn">Выйти</button>
+            </div>
+            <div class="connection-status" id="connectionStatus">
+                <div class="connection-indicator"></div>
+                <span id="connectionText">Подключение...</span>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-details">
+                    <div class="user-name" id="userName">Пользователь</div>
+                    <div class="user-status">
+                        <svg class="icon-svg" width="12" height="12" style="color: #4ecca3;">
+                            <use href="#icon-online"></use>
+                        </svg> 
+                        В сети
+                    </div>
+                </div>
+            </div>
+            <div class="search-box">
+                <input type="text" id="searchChatsInput" placeholder="Поиск чатов..." />
+            </div>
+            <div class="chats-list" id="chatsList">
+                <div class="empty-state" style="padding: 40px 20px;">
+                    <p style="text-align: center; color: #718096;">Пользователи загружаются...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-area" id="chatArea">
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <svg class="icon-svg" width="80" height="80" style="color: #718096;">
+                        <use href="#icon-chat"></use>
+                    </svg>
+                </div>
+                <h3>Выберите чат</h3>
+                <p>Выберите пользователя из списка слева, чтобы начать общение</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Screen -->
+    <div id="profileScreen" class="profile-screen">
+        <div class="profile-header">
+            <div class="profile-avatar-large" id="profileAvatar">A</div>
+            <div class="profile-username" id="profileUsername">Пользователь</div>
+            <div class="profile-status">
+                <svg class="icon-svg" width="14" height="14" style="color: #4ecca3;">
+                    <use href="#icon-online"></use>
+                </svg> 
+                В сети
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="settingsScreen" class="settings-screen">
+        <div class="settings-header">
+            <h2>Настройки</h2>
+        </div>
+    </div>
+
+    <script type="module" src="/src/app.ts"></script>
+</body>
+</html>

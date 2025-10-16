@@ -19,24 +19,28 @@ class AuthService {
     }
 
     async generateUserId() {
-        let userId;
         let attempts = 0;
-        const maxAttempts = 10000;
+        const maxAttempts = 100;
         
-        do {
-            userId = String(Math.floor(1000 + Math.random() * 9000));
-            attempts++;
+        while (attempts < maxAttempts) {
+            // Генерируем случайное 5-значное число (10000-99999)
+            const userId = String(Math.floor(Math.random() * 90000) + 10000);
             
-            if (attempts >= maxAttempts) {
-                userId = String(Date.now()).slice(-4);
-                break;
+            // Проверяем что такого ID еще нет
+            const result = await pool.query('SELECT id FROM users WHERE user_id = $1', [userId]);
+            
+            if (result.rows.length === 0) {
+                return userId;
             }
             
-            const result = await pool.query('SELECT id FROM users WHERE user_id = $1', [userId]);
-            if (result.rows.length === 0) break;
-        } while (true);
+            attempts++;
+        }
         
-        return userId;
+        // Если не нашли свободный ID за 100 попыток (что практически невозможно), 
+        // используем timestamp
+        const fallbackId = String(Date.now()).slice(-5);
+        logger.warn(`Failed to generate unique userId after ${maxAttempts} attempts, using fallback: ${fallbackId}`);
+        return fallbackId;
     }
 
     async register(username, password) {

@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "outDir": "./dist",
+    "rootDir": "./client/src",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["client/src/*"]
+    }
+  },
+  "include": ["client/src/**/*"],
+  "exclude": ["node_modules", "dist", "server.js", "src"]
+}
