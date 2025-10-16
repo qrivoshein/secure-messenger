@@ -3,5 +3,12 @@ package-lock.json
 .DS_Store
 *.log
 .env
-uploads/
 data.json
+
+# Backend
+backend/uploads/
+backend/logs/
+backend/dist/
+
+# Frontend
+frontend/dist/
