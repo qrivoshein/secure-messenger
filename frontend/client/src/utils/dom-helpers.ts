@@ -7,7 +7,7 @@ export function createElement<K extends keyof HTMLElementTagNameMap>(
     id?: string;
     text?: string;
     attributes?: Record<string, string>;
-    styles?: Partial<CSSStyleDeclaration>;
+    styles?: Record<string, string | number>;
     events?: Record<string, EventListener>;
     children?: (HTMLElement | SVGElement | Text | null)[];
   }
@@ -33,7 +33,9 @@ export function createElement<K extends keyof HTMLElementTagNameMap>(
   }
 
   if (options?.styles) {
-    Object.assign(element.style, options.styles);
+    Object.entries(options.styles).forEach(([key, value]) => {
+      (element.style as any)[key] = value;
+    });
   }
 
   if (options?.events) {
@@ -53,13 +55,13 @@ export function createElement<K extends keyof HTMLElementTagNameMap>(
 
 export function createSVGElement(
   tag: string,
-  attributes?: Record<string, string>
+  attributes?: Record<string, string | number>
 ): SVGElement {
   const element = document.createElementNS('http://www.w3.org/2000/svg', tag);
 
   if (attributes) {
     Object.entries(attributes).forEach(([key, value]) => {
-      element.setAttribute(key, value);
+      element.setAttribute(key, String(value));
     });
   }
 

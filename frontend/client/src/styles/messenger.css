@@ -139,6 +139,29 @@
 
 .user-status {
     font-size: 12px;
+    color: #4ecca3;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.user-status svg {
+    color: #4ecca3;
+}
+
+.user-status.online {
+    color: #4ecca3;
+}
+
+.user-status.online svg {
+    color: #4ecca3;
+}
+
+.user-status.offline {
+    color: #718096;
+}
+
+.user-status.offline svg {
     color: #718096;
 }
 
@@ -244,6 +267,11 @@
     white-space: nowrap;
 }
 
+.chat-item.has-unread .chat-preview {
+    font-weight: 600;
+    color: #e1e9f0;
+}
+
 .unread-badge {
     min-width: 20px;
     height: 20px;
@@ -275,22 +303,43 @@
     gap: 15px;
 }
 
+.chat-header-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
 .chat-header-info {
     flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .chat-header-name {
     font-size: 18px;
     font-weight: 600;
+    color: #e1e9f0;
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
 }
 
 .chat-header-status {
     font-size: 13px;
     color: #4ecca3;
+    line-height: 1.4;
 }
 
 .chat-header-status.offline {
     color: #718096;
+}
+
+.chat-header-status.typing {
+    color: #667eea;
+    font-style: italic;
 }
 
 .messages-area {
@@ -408,6 +457,56 @@
     border-color: #667eea;
 }
 
+.attach-btn,
+.voice-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #1a2332;
+    border: 1px solid #2d3748;
+    color: #e1e9f0;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.attach-btn svg,
+.voice-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.attach-btn:hover,
+.voice-btn:hover {
+    background: #2d3748;
+    transform: scale(1.05);
+}
+
+.voice-btn.recording {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+    animation: pulse-recording 1s infinite;
+}
+
+.voice-btn.recording svg {
+    color: white;
+}
+
+@keyframes pulse-recording {
+    0%, 100% { 
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+}
+
 .send-btn {
     width: 50px;
     height: 50px;
@@ -429,6 +528,151 @@
 .send-btn:disabled {
     background: #2d3748;
     cursor: not-allowed;
+}
+
+.voice-message {
+    transition: all 0.2s ease;
+}
+
+.voice-message:hover {
+    background: rgba(102, 126, 234, 0.12) !important;
+}
+
+.voice-message audio {
+    outline: none;
+    border-radius: 4px;
+}
+
+.voice-message audio::-webkit-media-controls-panel {
+    background: rgba(102, 126, 234, 0.15);
+    border-radius: 4px;
+}
+
+.voice-message audio::-webkit-media-controls-play-button,
+.voice-message audio::-webkit-media-controls-timeline {
+    filter: brightness(1.2);
+}
+
+.voice-audio-wrapper {
+    overflow: hidden;
+}
+
+.voice-audio-info {
+    user-select: none;
+}
+
+/* Media Messages Styling */
+.media-message {
+    margin: 0;
+    padding: 0;
+}
+
+.media-message img {
+    display: block;
+    max-width: 400px;
+    max-height: 400px;
+    width: auto;
+    height: auto;
+    border-radius: 12px;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.media-message img:hover {
+    transform: scale(1.02);
+}
+
+.media-message video {
+    display: block;
+    max-width: 400px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.media-caption {
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #e1e9f0;
+    word-wrap: break-word;
+}
+
+.message.sent .media-caption {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.file-message {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 260px;
+    max-width: 100%;
+}
+
+.file-message:hover {
+    background: rgba(102, 126, 234, 0.15);
+    transform: translateY(-1px);
+}
+
+.file-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: rgba(102, 126, 234, 0.2);
+    color: #667eea;
+    flex-shrink: 0;
+}
+
+.file-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.file-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #e1e9f0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-size {
+    font-size: 12px;
+    color: #718096;
+}
+
+.message.sent .file-message {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.message.sent .file-message:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.message.sent .file-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.message.sent .file-name {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.message.sent .file-size {
+    color: rgba(255, 255, 255, 0.7);
 }
 
 /* Profile and Settings Screens */
@@ -487,4 +731,56 @@
 .settings-header h2 {
     font-size: 28px;
     font-weight: 600;
+}
+
+/* Image Modal */
+.image-modal {
+    display: none;
+    position: fixed;
+    z-index: 10000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.9);
+    align-items: center;
+    justify-content: center;
+}
+
+.image-modal-content {
+    max-width: 90%;
+    max-height: 90vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.image-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: rgba(26, 35, 50, 0.8);
+    border: 1px solid #2d3748;
+    border-radius: 50%;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-modal-close svg {
+    width: 28px;
+    height: 28px;
+}
+
+.image-modal-close:hover,
+.image-modal-close:focus {
+    background: rgba(45, 55, 72, 0.95);
+    transform: scale(1.1);
+    outline: none;
 }

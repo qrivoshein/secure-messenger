@@ -27,5 +27,6 @@ const upload = multer({
 router.get('/messages/:otherUser', authenticate, ...messageParamValidation, messageController.getMessages.bind(messageController));
 router.post('/messages', authenticate, messageController.sendMessage.bind(messageController));
 router.post('/upload', authenticate, uploadLimiter, upload.single('file'), messageController.uploadFile.bind(messageController));
+router.get('/file/:filename', authenticate, messageController.getFile.bind(messageController));
 
 export default router;

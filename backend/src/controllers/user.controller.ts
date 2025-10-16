@@ -14,6 +14,15 @@ class UserController {
         }
     }
 
+    async getAllUsers(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const users = await userService.getAllUsers(req.user!.username, this.onlineUsers);
+            res.json({ users });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async searchUsers(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
         try {
             const query = req.query.q as string;

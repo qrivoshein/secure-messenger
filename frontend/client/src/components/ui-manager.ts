@@ -3,6 +3,8 @@
 import { getAvatarColor, formatTime } from '../utils/helpers';
 import { createElement, createText, clearElement, createSVGElement } from '../utils/dom-helpers';
 import { createSVGIcon } from '../utils/icons';
+import { mediaLoader } from '../services/media-loader.service';
+import { AudioPlayer } from './AudioPlayer';
 import type { User, Chat, Message } from '../types';
 
 export class UIManager {
@@ -71,6 +73,7 @@ export class UIManager {
     updateUserInfo(user: User): void {
         const userNameEl = document.getElementById('userName');
         const userAvatarEl = document.getElementById('userAvatar');
+        const userStatusEl = document.querySelector('.user-status') as HTMLElement;
         
         if (userNameEl) {
             clearElement(userNameEl);
@@ -86,6 +89,11 @@ export class UIManager {
             userAvatarEl.textContent = user.username[0].toUpperCase();
             const [color1, color2] = getAvatarColor(user.username);
             userAvatarEl.style.background = `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`;
+        }
+        
+        // Update online status if available
+        if (userStatusEl && user.online !== undefined) {
+            userStatusEl.className = user.online ? 'user-status online' : 'user-status offline';
         }
     }
 
@@ -128,8 +136,9 @@ export class UIManager {
     private createChatItem(chat: Chat): HTMLElement {
         const [color1, color2] = getAvatarColor(chat.username);
         
+        const hasUnread = (chat.unreadCount || 0) > 0;
         const chatItem = createElement('div', {
-            className: 'chat-item',
+            className: hasUnread ? 'chat-item has-unread' : 'chat-item',
             attributes: { 'data-username': chat.username }
         });
 
@@ -200,7 +209,26 @@ export class UIManager {
     renderMessage(message: Message, isSent: boolean): HTMLElement {
         const username = isSent ? 'Вы' : message.from;
         const [color1, color2] = getAvatarColor(username);
-        const time = formatTime(message.time || message.timestamp);
+        
+        // Format time - always show time only (not dates) for messages in chat
+        let time = '';
+        if (message.timestamp) {
+            // Format timestamp to time only
+            const date = new Date(message.timestamp);
+            time = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        } else if (message.time) {
+            // If time is already formatted (like "14:30"), use it
+            if (message.time.match(/^\d{1,2}:\d{2}$/)) {
+                time = message.time;
+            } else {
+                // Parse and format to time only
+                const date = new Date(message.time);
+                time = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            }
+        } else {
+            // Default to current time
+            time = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        }
 
         const messageDiv = createElement('div', {
             className: isSent ? 'message sent' : 'message',
@@ -231,14 +259,32 @@ export class UIManager {
         if (message.mediaType) {
             const mediaContent = this.createMediaMessage(message);
             messageBubble.appendChild(mediaContent);
+            
+            // Add caption if there's text with media
+            if (message.text && message.text.trim()) {
+                const caption = createElement('div', {
+                    className: 'media-caption',
+                    text: message.text,
+                    styles: {
+                        marginTop: '8px',
+                        fontSize: '14px'
+                    }
+                });
+                messageBubble.appendChild(caption);
+            }
         } else {
             messageBubble.appendChild(createText(message.text));
             if (message.edited) {
                 const editedTag = createElement('span', {
                     className: 'message-edited',
-                    text: '(изменено)'
+                    text: '(изменено)',
+                    styles: {
+                        fontSize: '11px',
+                        color: '#718096',
+                        fontStyle: 'italic',
+                        marginLeft: '5px'
+                    }
                 });
-                messageBubble.appendChild(createText(' '));
                 messageBubble.appendChild(editedTag);
             }
         }
@@ -295,12 +341,36 @@ export class UIManager {
             case 'image':
                 const img = createElement('img', {
                     attributes: {
-                        src: message.mediaUrl || '',
-                        alt: 'Image'
+                        alt: 'Loading...'
+                    },
+                    styles: {
+                        maxWidth: '300px',
+                        maxHeight: '300px',
+                        borderRadius: '10px',
+                        cursor: 'pointer',
+                        background: '#1a2332',
+                        minHeight: '100px',
+                        minWidth: '100px'
                     }
-                });
+                }) as HTMLImageElement;
+                
+                // Load protected image with authentication
+                if (message.mediaUrl) {
+                    mediaLoader.loadMedia(message.mediaUrl)
+                        .then(blobUrl => {
+                            img.src = blobUrl;
+                            img.alt = 'Image';
+                        })
+                        .catch(err => {
+                            console.error('Failed to load image:', err);
+                            img.alt = 'Failed to load image';
+                        });
+                }
+                
                 img.addEventListener('click', () => {
-                    (window as any).app.openImage(message.mediaUrl);
+                    if (img.src) {
+                        (window as any).app.openImage(img.src);
+                    }
                 });
                 mediaDiv.appendChild(img);
                 break;
@@ -308,26 +378,134 @@ export class UIManager {
             case 'video':
                 const video = createElement('video', {
                     attributes: {
-                        src: message.mediaUrl || '',
                         controls: 'true'
+                    },
+                    styles: {
+                        maxWidth: '300px',
+                        borderRadius: '10px',
+                        background: '#1a2332'
                     }
-                });
+                }) as HTMLVideoElement;
+                
+                // Load protected video with authentication
+                if (message.mediaUrl) {
+                    mediaLoader.loadMedia(message.mediaUrl)
+                        .then(blobUrl => {
+                            video.src = blobUrl;
+                        })
+                        .catch(err => {
+                            console.error('Failed to load video:', err);
+                        });
+                }
+                
                 mediaDiv.appendChild(video);
                 break;
 
             case 'voice':
-                mediaDiv.textContent = `🎤 Голосовое сообщение ${message.duration || '0:00'}`;
-                break;
+                const voiceContainer = createElement('div', {
+                    className: 'voice-message-container',
+                    styles: {
+                        minWidth: '240px',
+                        maxWidth: '320px'
+                    }
+                });
+
+                // Load audio URL with authentication
+                if (message.mediaUrl) {
+                    mediaLoader.loadMedia(message.mediaUrl)
+                        .then(blobUrl => {
+                            // Parse duration
+                            let durationSeconds = 0;
+                            if (message.duration) {
+                                if (typeof message.duration === 'string') {
+                                    const [mins, secs] = message.duration.split(':').map(Number);
+                                    durationSeconds = (mins * 60) + (secs || 0);
+                                } else {
+                                    durationSeconds = message.duration;
+                                }
+                            }
+
+                            // Create audio player with waveform
+                            const audioPlayer = new AudioPlayer({
+                                audioUrl: blobUrl,
+                                waveformData: message.waveformData || undefined,
+                                duration: durationSeconds
+                            });
+
+                            voiceContainer.appendChild(audioPlayer.create());
+                        })
+                        .catch(err => {
+                            console.error('Failed to load voice message:', err);
+                            voiceContainer.appendChild(createText('Ошибка загрузки голосового сообщения'));
+                        });
+                } else {
+                    voiceContainer.appendChild(createText('Голосовое сообщение недоступно'));
+                }
+
+                return voiceContainer;
 
             case 'file':
-                const fileDiv = createElement('div', {
+                const fileContainer = createElement('div', {
                     className: 'file-message',
-                    text: `📎 ${message.fileName} (${message.fileSize})`
+                    styles: {
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '10px 15px',
+                        background: 'rgba(102, 126, 234, 0.1)',
+                        borderRadius: '10px',
+                        cursor: 'pointer'
+                    }
                 });
-                fileDiv.addEventListener('click', () => {
+
+                const fileIconWrapper = createElement('span', {
+                    className: 'file-icon',
+                    styles: {
+                        display: 'flex',
+                        alignItems: 'center',
+                        color: '#667eea'
+                    }
+                });
+                fileIconWrapper.appendChild(createSVGIcon('file', 20, 20));
+
+                const fileInfo = createElement('div', {
+                    className: 'file-info',
+                    styles: {
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2px'
+                    }
+                });
+
+                const fileName = createElement('div', {
+                    className: 'file-name',
+                    text: message.fileName || 'Файл',
+                    styles: {
+                        fontSize: '14px',
+                        fontWeight: '500'
+                    }
+                });
+
+                const fileSize = createElement('div', {
+                    className: 'file-size',
+                    text: String(message.fileSize || ''),
+                    styles: {
+                        fontSize: '12px',
+                        color: '#718096'
+                    }
+                });
+
+                fileInfo.appendChild(fileName);
+                fileInfo.appendChild(fileSize);
+
+                fileContainer.appendChild(fileIconWrapper);
+                fileContainer.appendChild(fileInfo);
+
+                fileContainer.addEventListener('click', () => {
                     window.open(message.mediaUrl);
                 });
-                return fileDiv;
+
+                return fileContainer;
 
             default:
                 mediaDiv.textContent = message.text;
@@ -413,10 +591,18 @@ export class UIManager {
         });
 
         if (messages.length === 0) {
-            const emptyMessages = createElement('div', { className: 'empty-messages' });
+            const emptyMessages = createElement('div', { className: 'empty-state' });
+            
+            const emptyIcon = createElement('div', { className: 'empty-state-icon' });
+            emptyIcon.appendChild(createSVGIcon('chat', 80, 80, 'icon-svg'));
+            
+            const emptyTitle = createElement('h3', { text: 'Нет сообщений' });
             const emptyText = createElement('p', {
-                text: 'Нет сообщений. Начните общение!'
+                text: 'Начните общение с этим пользователем'
             });
+            
+            emptyMessages.appendChild(emptyIcon);
+            emptyMessages.appendChild(emptyTitle);
             emptyMessages.appendChild(emptyText);
             messagesArea.appendChild(emptyMessages);
         } else {
@@ -433,9 +619,15 @@ export class UIManager {
         const inputContainer = this.createMessageInput();
         chatArea.appendChild(inputContainer);
 
-        // Scroll to bottom
+        // Scroll to bottom and focus input
         setTimeout(() => {
             messagesArea.scrollTop = messagesArea.scrollHeight;
+            
+            // Auto-focus on message input
+            const messageInput = document.getElementById('messageInput') as HTMLInputElement;
+            if (messageInput) {
+                messageInput.focus();
+            }
         }, 0);
 
         // Setup handlers
@@ -445,7 +637,7 @@ export class UIManager {
     private createChatHeader(chat: Chat): HTMLElement {
         const [color1, color2] = getAvatarColor(chat.username);
         
-        const header = createElement('div', { className: 'chat-header' });
+        const header = createElement('div', { className: 'chat-header-bar' });
         const headerUser = createElement('div', { className: 'chat-header-user' });
 
         // Avatar
@@ -464,16 +656,18 @@ export class UIManager {
 
         // Header info
         const headerInfo = createElement('div', { className: 'chat-header-info' });
-        const chatName = createElement('div', { className: 'chat-name' });
+        const chatName = createElement('div', { className: 'chat-header-name' });
         chatName.appendChild(createText(chat.username));
         const userIdSpan = createElement('span', {
             className: 'user-id',
-            text: `#${chat.userId}`
+            text: ` #${chat.userId}`,
+            styles: { fontSize: '12px', color: '#718096', fontWeight: '400' }
         });
         chatName.appendChild(userIdSpan);
 
         const chatStatus = createElement('div', {
-            className: 'chat-status',
+            id: 'chatHeaderStatus',
+            className: chat.online ? 'chat-header-status' : 'chat-header-status offline',
             text: chat.online ? 'В сети' : 'Не в сети'
         });
 
@@ -491,7 +685,22 @@ export class UIManager {
         const messageInputArea = createElement('div', { className: 'message-input-area' });
         const inputContainer = createElement('div', { className: 'input-container' });
 
-        // Input
+        // Get voice recorder button from app (will be initialized on first use)
+        const voiceBtn = (window as any).app?.getVoiceRecorderButton();
+        if (!voiceBtn) {
+            // Fallback: create placeholder button
+            const placeholderBtn = createElement('button', {
+                id: 'voiceBtn',
+                className: 'voice-btn',
+                attributes: { title: 'Голосовое сообщение' }
+            });
+            placeholderBtn.appendChild(createSVGIcon('mic', 20, 20));
+            inputContainer.appendChild(placeholderBtn);
+        } else {
+            inputContainer.appendChild(voiceBtn);
+        }
+
+        // Input (center)
         const input = createElement('input', {
             id: 'messageInput',
             attributes: {
@@ -500,15 +709,23 @@ export class UIManager {
             }
         });
 
-        // Send button
+        // Attachment button (right)
+        const attachBtn = createElement('button', {
+            id: 'attachBtn',
+            className: 'attach-btn',
+            attributes: { title: 'Прикрепить фото' }
+        });
+        attachBtn.appendChild(createSVGIcon('attach', 20, 20));
+
+        // Send button (right)
         const sendBtn = createElement('button', {
             id: 'sendBtn',
             className: 'send-btn'
         });
-        const sendIcon = createSVGIcon('send', 20, 20);
-        sendBtn.appendChild(sendIcon);
+        sendBtn.appendChild(createSVGIcon('send', 20, 20));
 
         inputContainer.appendChild(input);
+        inputContainer.appendChild(attachBtn);
         inputContainer.appendChild(sendBtn);
         messageInputArea.appendChild(inputContainer);
 
@@ -518,6 +735,8 @@ export class UIManager {
     private setupMessageInputHandlers(): void {
         const input = document.getElementById('messageInput') as HTMLInputElement;
         const sendBtn = document.getElementById('sendBtn');
+        const attachBtn = document.getElementById('attachBtn');
+        const voiceBtn = document.getElementById('voiceBtn');
 
         if (!input || !sendBtn) return;
 
@@ -537,6 +756,49 @@ export class UIManager {
                 sendBtn.click();
             }
         });
+
+        // Paste handler for images from clipboard
+        input.addEventListener('paste', async (e) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const blob = item.getAsFile();
+                    if (blob && (window as any).app) {
+                        await (window as any).app.handlePastedImage(blob);
+                    }
+                    break;
+                }
+            }
+        });
+
+        // Attach photo
+        if (attachBtn) {
+            attachBtn.addEventListener('click', () => {
+                if ((window as any).app) {
+                    (window as any).app.sendPhoto();
+                }
+            });
+        }
+
+        // Voice message - now handled by VoiceRecorder component
+        // No additional handlers needed here, VoiceRecorder manages its own state
+    }
+
+    updateTypingStatus(username: string, isTyping: boolean): void {
+        const statusEl = document.getElementById('chatHeaderStatus');
+        if (statusEl) {
+            if (isTyping) {
+                statusEl.textContent = 'печатает...';
+                statusEl.className = 'chat-header-status typing';
+            } else {
+                // Check if user is online from chat data
+                statusEl.textContent = 'В сети';
+                statusEl.className = 'chat-header-status';
+            }
+        }
     }
 }
 

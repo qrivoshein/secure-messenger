@@ -16,6 +16,8 @@ export interface Message {
     mediaType?: string;
     mediaUrl?: string;
     fileSize?: number;
+    duration?: string;
+    waveformData?: number[];
     forwarded?: boolean;
     forwardedFrom?: string;
     replyToMessageId?: string;

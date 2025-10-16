@@ -12,6 +12,8 @@ interface MessageData {
     mediaType?: string;
     mediaUrl?: string;
     fileSize?: number;
+    duration?: string;
+    waveformData?: number[];
     forwarded?: boolean;
     forwardedFrom?: string;
     replyToMessageId?: string;
@@ -40,6 +42,8 @@ class MessageService {
             mediaUrl: row.media_url,
             fileName: row.text,
             fileSize: row.media_size,
+            duration: row.duration,
+            waveformData: row.waveform_data,
             forwarded: row.forwarded,
             forwardedFrom: row.forwarded_from,
             replyTo: row.reply_to_message_id,
@@ -57,12 +61,21 @@ class MessageService {
     }
 
     async saveMessage(messageData: MessageData): Promise<void> {
-        const { messageId, from, to, text, mediaType, mediaUrl, fileSize, forwarded, forwardedFrom, replyToMessageId, replyToText, replyToSender } = messageData;
+        const { 
+            messageId, from, to, text, mediaType, mediaUrl, fileSize, duration, waveformData,
+            forwarded, forwardedFrom, replyToMessageId, replyToText, replyToSender 
+        } = messageData;
         
         await pool.query(
-            `INSERT INTO messages (message_id, from_username, to_username, text, media_type, media_url, media_size, forwarded, forwarded_from, reply_to_message_id, reply_to_text, reply_to_sender)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-            [messageId, from, to, text, mediaType, mediaUrl, fileSize, forwarded || false, forwardedFrom || null, replyToMessageId || null, replyToText || null, replyToSender || null]
+            `INSERT INTO messages (message_id, from_username, to_username, text, media_type, media_url, media_size, duration, waveform_data, forwarded, forwarded_from, reply_to_message_id, reply_to_text, reply_to_sender)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+            [
+                messageId, from, to, text, mediaType, mediaUrl, fileSize,
+                duration || null,
+                waveformData ? JSON.stringify(waveformData) : null,
+                forwarded || false, forwardedFrom || null, 
+                replyToMessageId || null, replyToText || null, replyToSender || null
+            ]
         );
 
         logger.debug(`Message saved: ${messageId} from ${from} to ${to}`);

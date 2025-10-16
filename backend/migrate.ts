@@ -1,27 +1,50 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import pg from 'pg';
 
-const fs = require('fs');
-const path = require('path');
-const { Pool } = require('pg');
+const { Pool } = pg;
+
+dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const pool = new Pool({
     user: process.env.DB_USER || 'messenger_app',
     host: process.env.DB_HOST || 'localhost',
     database: process.env.DB_NAME || 'secure_messenger',
     password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT || 5432,
+    port: parseInt(process.env.DB_PORT || '5432'),
 });
 
 const DATA_FILE = path.join(__dirname, 'data.json');
 
-async function migrate() {
+interface UserData {
+    password: string;
+    userId: string;
+}
+
+interface PinData {
+    messageId: string;
+    messageText: string;
+    pinnedBy: string;
+}
+
+interface MigrationData {
+    users?: Record<string, UserData>;
+    pinnedMessages?: Record<string, PinData>;
+}
+
+async function migrate(): Promise<void> {
     try {
         if (!fs.existsSync(DATA_FILE)) {
             console.log('❌ No data.json file found, nothing to migrate');
             process.exit(0);
         }
 
-        const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+        const data: MigrationData = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
         
         console.log('🔄 Starting migration...');
         
@@ -36,7 +59,7 @@ async function migrate() {
                         [username, userData.password, userData.userId]
                     );
                     console.log(`  ✅ Migrated user: ${username}`);
-                } catch (error) {
+                } catch (error: any) {
                     console.log(`  ❌ Failed to migrate user ${username}:`, error.message);
                 }
             }
@@ -53,7 +76,7 @@ async function migrate() {
                         [chatId, pinData.messageId, pinData.messageText, pinData.pinnedBy]
                     );
                     console.log(`  ✅ Migrated pinned message for chat: ${chatId}`);
-                } catch (error) {
+                } catch (error: any) {
                     console.log(`  ❌ Failed to migrate pinned message for ${chatId}:`, error.message);
                 }
             }

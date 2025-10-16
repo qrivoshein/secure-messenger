@@ -5,30 +5,39 @@ import { ExtendedWebSocket, ChatUser } from '../types';
 class UserService {
     async getActiveChats(username: string, onlineUsers: Map<string, ExtendedWebSocket>): Promise<ChatUser[]> {
         const result = await pool.query(
-            `SELECT DISTINCT 
-                u.username, 
-                u.user_id,
-                (
-                    SELECT m2.text 
-                    FROM messages m2 
-                    WHERE (m2.from_username = u.username AND m2.to_username = $1) 
-                       OR (m2.from_username = $1 AND m2.to_username = u.username)
-                    ORDER BY m2.created_at DESC 
-                    LIMIT 1
-                ) as last_message,
-                (
-                    SELECT m2.created_at
-                    FROM messages m2 
-                    WHERE (m2.from_username = u.username AND m2.to_username = $1) 
-                       OR (m2.from_username = $1 AND m2.to_username = u.username)
-                    ORDER BY m2.created_at DESC 
-                    LIMIT 1
-                ) as last_message_time
-             FROM users u
-             INNER JOIN messages m ON (m.from_username = u.username OR m.to_username = u.username)
-             WHERE u.username != $1 
-               AND (m.from_username = $1 OR m.to_username = $1)
-             ORDER BY last_message_time DESC NULLS LAST`,
+            `WITH ranked_messages AS (
+                SELECT DISTINCT ON (u.username)
+                    u.username, 
+                    u.user_id,
+                    COALESCE(m.text, '') as last_message,
+                    m.media_type,
+                    m.created_at as last_message_time
+                FROM users u
+                INNER JOIN messages m ON 
+                    (m.from_username = u.username AND m.to_username = $1) OR
+                    (m.from_username = $1 AND m.to_username = u.username)
+                WHERE u.username != $1
+                ORDER BY u.username, m.created_at DESC
+            ),
+            unread_counts AS (
+                SELECT 
+                    m.from_username,
+                    COUNT(*) as unread_count
+                FROM messages m
+                WHERE m.to_username = $1
+                AND NOT EXISTS (
+                    SELECT 1 FROM read_receipts rr 
+                    WHERE rr.message_id = m.message_id 
+                    AND rr.username = $1
+                )
+                GROUP BY m.from_username
+            )
+            SELECT 
+                rm.*,
+                COALESCE(uc.unread_count, 0) as unread_count
+            FROM ranked_messages rm
+            LEFT JOIN unread_counts uc ON rm.username = uc.from_username
+            ORDER BY rm.last_message_time DESC`,
             [username]
         );
 
@@ -58,13 +67,20 @@ class UserService {
                 }
             }
             
+            // Show [Медиа] for media messages
+            let lastMessageText = row.last_message || '';
+            if (row.media_type && !lastMessageText) {
+                lastMessageText = '[Медиа]';
+            }
+            
             return {
                 username: row.username,
                 userId: row.user_id,
                 online: onlineUsers.has(row.username),
                 avatar: row.username[0].toUpperCase(),
-                lastMessage: row.last_message || '',
-                time: timeStr
+                lastMessage: lastMessageText,
+                time: timeStr,
+                unreadCount: parseInt(row.unread_count) || 0
             } as any;
         });
     }
@@ -82,6 +98,22 @@ class UserService {
              AND user_id LIKE $2
              LIMIT 20`,
             [username, `%${searchQuery}%`]
+        );
+
+        return result.rows.map(row => ({
+            username: row.username,
+            userId: row.user_id,
+            online: onlineUsers.has(row.username),
+            avatar: row.username[0].toUpperCase()
+        } as any));
+    }
+
+    async getAllUsers(username: string, onlineUsers: Map<string, ExtendedWebSocket>): Promise<ChatUser[]> {
+        const result = await pool.query(
+            `SELECT username, user_id FROM users 
+             WHERE username != $1 
+             ORDER BY username ASC`,
+            [username]
         );
 
         return result.rows.map(row => ({

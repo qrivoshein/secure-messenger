@@ -1,6 +1,9 @@
 import { Response, NextFunction } from 'express';
 import messageService from '../services/message.service';
 import { AuthRequest } from '../types';
+import path from 'path';
+import fs from 'fs';
+import config from '../config';
 
 class MessageController {
     async getMessages(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
@@ -49,15 +52,63 @@ class MessageController {
                 return;
             }
 
+            // Return authenticated API URL - requires JWT token to access
             const fileUrl = `/api/file/${req.file.filename}`;
-            const fileInfo = {
-                url: fileUrl,
-                name: req.file.originalname,
-                size: req.file.size,
-                type: req.file.mimetype
-            };
+            
+            res.json({ 
+                fileUrl: fileUrl,
+                fileName: req.file.originalname,
+                fileSize: req.file.size
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 
-            res.json({ success: true, file: fileInfo });
+    async getFile(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+        try {
+            const { filename } = req.params;
+            
+            // Security: prevent path traversal
+            if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+                res.status(400).json({ error: 'Invalid filename' });
+                return;
+            }
+
+            const filePath = path.join(config.upload.uploadDir, filename);
+            
+            // Check if file exists
+            if (!fs.existsSync(filePath)) {
+                res.status(404).json({ error: 'File not found' });
+                return;
+            }
+
+            // Get file stats
+            const stats = fs.statSync(filePath);
+            
+            // Set proper content type based on extension
+            const ext = path.extname(filename).toLowerCase();
+            const contentTypes: Record<string, string> = {
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.png': 'image/png',
+                '.gif': 'image/gif',
+                '.webp': 'image/webp',
+                '.webm': 'audio/webm',
+                '.mp3': 'audio/mpeg',
+                '.mp4': 'video/mp4',
+                '.pdf': 'application/pdf',
+            };
+            
+            const contentType = contentTypes[ext] || 'application/octet-stream';
+            
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Content-Length', stats.size);
+            res.setHeader('Cache-Control', 'public, max-age=2592000'); // 30 days
+            
+            // Stream file
+            const fileStream = fs.createReadStream(filePath);
+            fileStream.pipe(res);
         } catch (error) {
             next(error);
         }

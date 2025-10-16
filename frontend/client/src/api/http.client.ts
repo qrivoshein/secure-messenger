@@ -67,6 +67,12 @@ export class HttpClient {
         }>('/api/users');
     }
 
+    async getAllUsers() {
+        return this.request<{
+            users: Array<{ username: string; userId: string }>;
+        }>('/api/users/all');
+    }
+
     async getMessages(otherUser: string) {
         return this.request<{
             messages: any[];
@@ -94,7 +100,8 @@ export class HttpClient {
         formData.append('file', file);
         formData.append('to', to);
 
-        const headers: HeadersInit = {};
+        // Don't set Content-Type header - let browser set it with boundary
+        const headers: Record<string, string> = {};
         if (this.token) {
             headers['Authorization'] = `Bearer ${this.token}`;
         }
@@ -108,7 +115,7 @@ export class HttpClient {
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.error || 'Upload failed');
+            throw new Error(data.error || 'Ошибка загрузки файла');
         }
 
         return data;
