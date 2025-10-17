@@ -160,7 +160,7 @@ export class AudioWaveform {
         this.bars.forEach((bar, i) => {
             const barProgress = i / this.options.barCount;
             if (barProgress <= this.currentProgress) {
-                bar.style.backgroundColor = '#2E7D32'; // Darker green for played
+                bar.style.backgroundColor = '#4a5dc7'; // Darker blue for played
             } else {
                 bar.style.backgroundColor = this.options.color;
             }

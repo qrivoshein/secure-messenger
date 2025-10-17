@@ -5,6 +5,7 @@ import { createElement, createText, clearElement, createSVGElement } from '../ut
 import { createSVGIcon } from '../utils/icons';
 import { mediaLoader } from '../services/media-loader.service';
 import { AudioPlayer } from './AudioPlayer';
+import { messageContextMenu } from './MessageContextMenu';
 import type { User, Chat, Message } from '../types';
 
 export class UIManager {
@@ -207,8 +208,11 @@ export class UIManager {
     }
 
     renderMessage(message: Message, isSent: boolean): HTMLElement {
-        const username = isSent ? 'Вы' : message.from;
-        const [color1, color2] = getAvatarColor(username);
+        // Use message.from for color generation to keep consistency with profile
+        const [color1, color2] = getAvatarColor(message.from);
+        // Use 'Вы' for display text, but message.from for avatar letter
+        const displayName = isSent ? 'Вы' : message.from;
+        const avatarLetter = message.from[0].toUpperCase();
         
         // Format time - always show time only (not dates) for messages in chat
         let time = '';
@@ -238,7 +242,7 @@ export class UIManager {
         // Avatar
         const avatar = createElement('div', {
             className: 'message-avatar',
-            text: username[0].toUpperCase(),
+            text: avatarLetter,
             styles: {
                 background: `linear-gradient(135deg, ${color1} 0%, ${color2} 100%)`
             }
@@ -305,26 +309,137 @@ export class UIManager {
         messageDiv.appendChild(avatar);
         messageDiv.appendChild(messageContent);
 
+        // Add click handler for selection mode
+        messageDiv.addEventListener('click', (e) => {
+            const app = (window as any).app;
+            if (app && app.selectionMode) {
+                e.stopPropagation();
+                app.toggleMessageSelection(message.id);
+            }
+        });
+
+        // Add context menu handler
+        messageDiv.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            this.showMessageContextMenu(e, message, isSent);
+        });
+
+        // Add long press handler for mobile
+        let longPressTimer: any;
+        messageDiv.addEventListener('touchstart', (e) => {
+            longPressTimer = setTimeout(() => {
+                const app = (window as any).app;
+                if (app && !app.selectionMode) {
+                    app.toggleMessageSelection(message.id);
+                }
+            }, 500);
+        });
+
+        messageDiv.addEventListener('touchend', () => {
+            clearTimeout(longPressTimer);
+        });
+
+        messageDiv.addEventListener('touchmove', () => {
+            clearTimeout(longPressTimer);
+        });
+
         return messageDiv;
     }
 
+    private showMessageContextMenu(e: MouseEvent, message: Message, isSent: boolean): void {
+        // Only show edit for sent text messages (not for media)
+        const canEdit = isSent && !message.mediaType;
+        
+        const app = (window as any).app;
+
+        messageContextMenu.show(e.clientX, e.clientY, {
+            onSelect: () => {
+                if (app && app.toggleMessageSelection) {
+                    app.toggleMessageSelection(message.id);
+                }
+            },
+            onReply: () => {
+                if (app && app.replyToMessage) {
+                    app.replyToMessage(message);
+                }
+            },
+            onForward: () => {
+                if (app && app.forwardMessage) {
+                    app.forwardMessage(message);
+                }
+            },
+            onEdit: canEdit ? () => {
+                if (app && app.editMessage) {
+                    app.editMessage(message);
+                }
+            } : undefined,
+            onPin: () => {
+                if (app && app.pinMessage) {
+                    app.pinMessage(message);
+                }
+            },
+            onDelete: () => {
+                if (app && app.deleteMessage) {
+                    app.deleteMessage(message, isSent);
+                }
+            }
+        });
+    }
+
     private createReplyQuote(replyTo: any): HTMLElement {
-        const replyQuote = createElement('div', { className: 'message-reply-quote' });
+        const replyQuote = createElement('div', {
+            className: 'message-reply-quote',
+            styles: {
+                background: 'rgba(102, 126, 234, 0.1)',
+                borderLeft: '3px solid #667eea',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                marginBottom: '8px',
+                cursor: 'pointer',
+                transition: 'background 0.2s'
+            }
+        });
         
         replyQuote.addEventListener('click', () => {
             (window as any).app.scrollToMessage(replyTo.id);
         });
 
-        const replyContent = createElement('div', { className: 'message-reply-content' });
+        replyQuote.addEventListener('mouseenter', () => {
+            replyQuote.style.background = 'rgba(102, 126, 234, 0.15)';
+        });
+
+        replyQuote.addEventListener('mouseleave', () => {
+            replyQuote.style.background = 'rgba(102, 126, 234, 0.1)';
+        });
+
+        const replyContent = createElement('div', { 
+            className: 'message-reply-content',
+            styles: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '4px'
+            }
+        });
         
         const replySender = createElement('div', {
             className: 'message-reply-sender',
-            text: replyTo.from
+            text: replyTo.from,
+            styles: {
+                fontSize: '12px',
+                fontWeight: '600',
+                color: '#667eea'
+            }
         });
         
         const replyText = createElement('div', {
             className: 'message-reply-text',
-            text: replyTo.text
+            text: replyTo.text,
+            styles: {
+                fontSize: '13px',
+                color: '#a0aec0',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word'
+            }
         });
 
         replyContent.appendChild(replySender);
@@ -412,32 +527,65 @@ export class UIManager {
 
                 // Load audio URL with authentication
                 if (message.mediaUrl) {
-                    mediaLoader.loadMedia(message.mediaUrl)
-                        .then(blobUrl => {
-                            // Parse duration
-                            let durationSeconds = 0;
-                            if (message.duration) {
-                                if (typeof message.duration === 'string') {
-                                    const [mins, secs] = message.duration.split(':').map(Number);
-                                    durationSeconds = (mins * 60) + (secs || 0);
-                                } else {
-                                    durationSeconds = message.duration;
-                                }
+                    // Safari workaround: use direct authenticated URL instead of blob
+                    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                    
+                    if (isSafari) {
+                        console.log('Safari detected, using direct URL for audio');
+                        
+                        // Parse duration
+                        let durationSeconds = 0;
+                        if (message.duration) {
+                            if (typeof message.duration === 'string') {
+                                const [mins, secs] = message.duration.split(':').map(Number);
+                                durationSeconds = (mins * 60) + (secs || 0);
+                            } else {
+                                durationSeconds = message.duration;
                             }
+                        }
 
-                            // Create audio player with waveform
-                            const audioPlayer = new AudioPlayer({
-                                audioUrl: blobUrl,
-                                waveformData: message.waveformData || undefined,
-                                duration: durationSeconds
-                            });
+                        // Use direct URL (authentication will be handled by fetch interceptor or custom audio element)
+                        const directUrl = message.mediaUrl.startsWith('http') 
+                            ? message.mediaUrl 
+                            : `${window.location.origin}${message.mediaUrl}`;
 
-                            voiceContainer.appendChild(audioPlayer.create());
-                        })
-                        .catch(err => {
-                            console.error('Failed to load voice message:', err);
-                            voiceContainer.appendChild(createText('Ошибка загрузки голосового сообщения'));
+                        // Create audio player with direct URL
+                        const audioPlayer = new AudioPlayer({
+                            audioUrl: directUrl,
+                            waveformData: message.waveformData || undefined,
+                            duration: durationSeconds
                         });
+
+                        voiceContainer.appendChild(audioPlayer.create());
+                    } else {
+                        // Chrome and others: use blob URL (works fine)
+                        mediaLoader.loadMedia(message.mediaUrl)
+                            .then(blobUrl => {
+                                // Parse duration
+                                let durationSeconds = 0;
+                                if (message.duration) {
+                                    if (typeof message.duration === 'string') {
+                                        const [mins, secs] = message.duration.split(':').map(Number);
+                                        durationSeconds = (mins * 60) + (secs || 0);
+                                    } else {
+                                        durationSeconds = message.duration;
+                                    }
+                                }
+
+                                // Create audio player with waveform
+                                const audioPlayer = new AudioPlayer({
+                                    audioUrl: blobUrl,
+                                    waveformData: message.waveformData || undefined,
+                                    duration: durationSeconds
+                                });
+
+                                voiceContainer.appendChild(audioPlayer.create());
+                            })
+                            .catch(err => {
+                                console.error('Failed to load voice message:', err);
+                                voiceContainer.appendChild(createText('Ошибка загрузки голосового сообщения'));
+                            });
+                    }
                 } else {
                     voiceContainer.appendChild(createText('Голосовое сообщение недоступно'));
                 }
@@ -685,20 +833,13 @@ export class UIManager {
         const messageInputArea = createElement('div', { className: 'message-input-area' });
         const inputContainer = createElement('div', { className: 'input-container' });
 
-        // Get voice recorder button from app (will be initialized on first use)
-        const voiceBtn = (window as any).app?.getVoiceRecorderButton();
-        if (!voiceBtn) {
-            // Fallback: create placeholder button
-            const placeholderBtn = createElement('button', {
-                id: 'voiceBtn',
-                className: 'voice-btn',
-                attributes: { title: 'Голосовое сообщение' }
-            });
-            placeholderBtn.appendChild(createSVGIcon('mic', 20, 20));
-            inputContainer.appendChild(placeholderBtn);
-        } else {
-            inputContainer.appendChild(voiceBtn);
-        }
+        // Attachment button (left)
+        const attachBtn = createElement('button', {
+            id: 'attachBtn',
+            className: 'attach-btn',
+            attributes: { title: 'Прикрепить фото' }
+        });
+        attachBtn.appendChild(createSVGIcon('attach', 20, 20));
 
         // Input (center)
         const input = createElement('input', {
@@ -709,13 +850,20 @@ export class UIManager {
             }
         });
 
-        // Attachment button (right)
-        const attachBtn = createElement('button', {
-            id: 'attachBtn',
-            className: 'attach-btn',
-            attributes: { title: 'Прикрепить фото' }
-        });
-        attachBtn.appendChild(createSVGIcon('attach', 20, 20));
+        // Get voice recorder button from app (will be initialized on first use)
+        const voiceBtn = (window as any).app?.getVoiceRecorderButton();
+        let voiceBtnElement;
+        if (!voiceBtn) {
+            // Fallback: create placeholder button
+            voiceBtnElement = createElement('button', {
+                id: 'voiceBtn',
+                className: 'voice-btn',
+                attributes: { title: 'Голосовое сообщение' }
+            });
+            voiceBtnElement.appendChild(createSVGIcon('mic', 20, 20));
+        } else {
+            voiceBtnElement = voiceBtn;
+        }
 
         // Send button (right)
         const sendBtn = createElement('button', {
@@ -724,8 +872,10 @@ export class UIManager {
         });
         sendBtn.appendChild(createSVGIcon('send', 20, 20));
 
-        inputContainer.appendChild(input);
+        // Add in correct order: attach, input, voice, send
         inputContainer.appendChild(attachBtn);
+        inputContainer.appendChild(input);
+        inputContainer.appendChild(voiceBtnElement);
         inputContainer.appendChild(sendBtn);
         messageInputArea.appendChild(inputContainer);
 

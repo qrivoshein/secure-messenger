@@ -44,7 +44,7 @@ export interface Chat {
 
 export interface WebSocketMessage {
     type: 'auth' | 'message' | 'typing' | 'mark_read' | 'edit_message' | 'delete_message' | 
-          'forward_message' | 'pin_message' | 'unpin_message' | 'pong';
+          'delete_message_for_me' | 'forward_message' | 'pin_message' | 'unpin_message' | 'pong';
     token?: string;
     message?: Message;
     from?: string;

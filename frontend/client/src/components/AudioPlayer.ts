@@ -54,7 +54,7 @@ export class AudioPlayer {
                 height: '36px',
                 borderRadius: '50%',
                 border: 'none',
-                backgroundColor: '#4CAF50',
+                backgroundColor: '#667eea',
                 color: 'white',
                 cursor: 'pointer',
                 display: 'flex',
@@ -72,8 +72,9 @@ export class AudioPlayer {
             styles: {
                 flex: '1',
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '4px'
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: '8px'
             }
         });
 
@@ -83,7 +84,7 @@ export class AudioPlayer {
             barWidth: 3,
             barGap: 2,
             maxHeight: 24,
-            color: '#4CAF50',
+            color: '#667eea',
             interactive: true
         });
 
@@ -97,7 +98,9 @@ export class AudioPlayer {
             styles: {
                 fontSize: '12px',
                 color: '#666',
-                fontVariantNumeric: 'tabular-nums'
+                fontVariantNumeric: 'tabular-nums',
+                flexShrink: '0',
+                minWidth: '40px'
             }
         });
 
@@ -121,7 +124,10 @@ export class AudioPlayer {
     }
 
     private setupAudio(): void {
-        this.audio = new Audio(this.options.audioUrl);
+        this.audio = new Audio();
+        
+        // Set CORS for cross-origin audio
+        this.audio.crossOrigin = 'anonymous';
         
         this.audio.addEventListener('loadedmetadata', () => {
             this.duration = this.audio!.duration;
@@ -143,12 +149,92 @@ export class AudioPlayer {
         });
 
         this.audio.addEventListener('error', (e) => {
-            console.error('Audio playback error:', e);
-            alert('Ошибка воспроизведения аудио');
+            console.error('Audio playback error:', e, this.audio?.error);
+            console.error('Audio URL:', this.options.audioUrl);
+            const errorDetails = this.audio?.error;
+            let errorMessage = 'Ошибка воспроизведения аудио';
+            
+            if (errorDetails) {
+                switch(errorDetails.code) {
+                    case MediaError.MEDIA_ERR_ABORTED:
+                        errorMessage = 'Воспроизведение прервано';
+                        break;
+                    case MediaError.MEDIA_ERR_NETWORK:
+                        errorMessage = 'Ошибка сети при загрузке аудио';
+                        break;
+                    case MediaError.MEDIA_ERR_DECODE:
+                        errorMessage = 'Ошибка декодирования аудио. Попробуйте обновить страницу.';
+                        break;
+                    case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                        errorMessage = 'Формат аудио не поддерживается браузером';
+                        break;
+                }
+            }
+            
+            console.error('Audio error details:', errorMessage);
+            alert(errorMessage);
         });
 
-        // Preload
+        this.audio.addEventListener('canplaythrough', () => {
+            console.log('Audio can play through');
+        });
+
+        // Preload and set source
         this.audio.preload = 'metadata';
+        
+        // Log audio URL for debugging
+        console.log('Setting up audio player for:', this.options.audioUrl);
+        
+        // For Safari with direct URLs, add Authorization header via fetch
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        const isDirectUrl = !this.options.audioUrl.startsWith('blob:');
+        
+        if (isSafari && isDirectUrl) {
+            console.log('Safari + direct URL: fetching with auth and creating blob');
+            const token = localStorage.getItem('token');
+            
+            fetch(this.options.audioUrl, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            })
+            .then(async response => {
+                console.log('Fetch response:', response.status, response.headers.get('content-type'));
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const contentType = response.headers.get('content-type') || 'audio/mp4';
+                const blob = await response.blob();
+                
+                // Create blob with explicit type
+                const typedBlob = new Blob([blob], { type: contentType });
+                const blobUrl = URL.createObjectURL(typedBlob);
+                
+                console.log(`Created typed blob: ${typedBlob.size} bytes, type: ${typedBlob.type}`);
+                
+                this.audio!.src = blobUrl;
+                this.audio!.load();
+            })
+            .catch(err => {
+                console.error('Failed to load audio for Safari:', err);
+                this.audio!.src = this.options.audioUrl;
+                this.audio!.load();
+            });
+        } else {
+            // Fetch headers to verify server response
+            fetch(this.options.audioUrl, { method: 'HEAD' })
+                .then(response => {
+                    console.log('Audio file headers:');
+                    console.log('  Content-Type:', response.headers.get('content-type'));
+                    console.log('  Content-Length:', response.headers.get('content-length'));
+                    console.log('  Accept-Ranges:', response.headers.get('accept-ranges'));
+                    console.log('  Status:', response.status);
+                })
+                .catch(err => console.error('Failed to fetch audio headers:', err));
+            
+            this.audio.src = this.options.audioUrl;
+            this.audio.load();
+        }
     }
 
     private async togglePlayPause(): Promise<void> {

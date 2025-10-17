@@ -70,8 +70,8 @@ export class MessengerComponent {
       text: 'Пользователь'
     });
     const userStatus = createElement('div', { className: 'user-status' });
-    userStatus.appendChild(createSVGIcon('online', 12, 12, 'icon-svg'));
-    userStatus.appendChild(createText(' В сети'));
+    // Don't show online indicator icon here, just text
+    userStatus.appendChild(createText('В сети'));
     
     userDetails.appendChild(userName);
     userDetails.appendChild(userStatus);

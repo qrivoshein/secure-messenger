@@ -45,9 +45,9 @@ export class VoiceRecorder {
                 width: '40px',
                 height: '40px',
                 borderRadius: '50%',
-                border: 'none',
-                backgroundColor: '#4CAF50',
-                color: 'white',
+                border: '1px solid #2d3748',
+                backgroundColor: '#1a2332',
+                color: '#e1e9f0',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -93,7 +93,7 @@ export class VoiceRecorder {
         const content = createElement('div', {
             className: 'recording-content',
             styles: {
-                backgroundColor: 'white',
+                backgroundColor: '#1a2332',
                 borderRadius: '16px',
                 padding: '32px',
                 minWidth: '320px',
@@ -138,7 +138,7 @@ export class VoiceRecorder {
             styles: {
                 fontSize: '18px',
                 fontWeight: 'bold',
-                color: '#333',
+                color: '#e1e9f0',
                 fontVariantNumeric: 'tabular-nums'
             }
         });
@@ -160,7 +160,7 @@ export class VoiceRecorder {
             styles: {
                 marginBottom: '24px',
                 padding: '16px',
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#0e1621',
                 borderRadius: '12px'
             }
         });
@@ -173,9 +173,9 @@ export class VoiceRecorder {
                 textAlign: 'center',
                 marginBottom: '16px',
                 padding: '12px',
-                backgroundColor: '#fff3e0',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
                 borderRadius: '8px',
-                color: '#e65100',
+                color: '#ef4444',
                 fontSize: '14px',
                 opacity: '0',
                 transition: 'opacity 0.3s ease'
@@ -198,9 +198,9 @@ export class VoiceRecorder {
             styles: {
                 padding: '12px 24px',
                 borderRadius: '8px',
-                border: '2px solid #f44336',
-                backgroundColor: 'white',
-                color: '#f44336',
+                border: '2px solid #ef4444',
+                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                color: '#ef4444',
                 fontSize: '16px',
                 fontWeight: '500',
                 cursor: 'pointer',
@@ -331,9 +331,9 @@ export class VoiceRecorder {
             // Start waveform animation
             this.animateWaveform();
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to start recording:', error);
-            alert('Не удалось получить доступ к микрофону');
+            alert(error.message || 'Не удалось получить доступ к микрофону');
         }
     }
 
@@ -416,7 +416,7 @@ export class VoiceRecorder {
 
         // Reset button
         if (this.recordButton) {
-            this.recordButton.style.backgroundColor = '#4CAF50';
+            this.recordButton.style.backgroundColor = '#1a2332';
             this.recordButton.style.transform = 'scale(1)';
         }
 

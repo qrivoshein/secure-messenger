@@ -18,10 +18,10 @@ const validate = (req: Request, res: Response, next: NextFunction): void => {
 export const registerValidation: ValidationChain[] = [
     body('username')
         .trim()
-        .isLength({ min: 3 })
-        .withMessage('Username must be at least 3 characters')
-        .matches(/^[a-zA-Z0-9_-]+$/)
-        .withMessage('Username can only contain letters, numbers, underscores and hyphens'),
+        .isLength({ min: 1, max: 30 })
+        .withMessage('Username must be between 1 and 30 characters')
+        .matches(/^[a-zA-Z0-9._-]+$/)
+        .withMessage('Username can only contain latin letters, numbers, dots, underscores and hyphens'),
     
     body('password')
         .isLength({ min: 6 })

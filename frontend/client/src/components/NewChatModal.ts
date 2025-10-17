@@ -98,8 +98,10 @@ export class NewChatModal {
             id: 'newChatSearchInput',
             attributes: {
                 type: 'text',
-                placeholder: 'Поиск пользователей...',
-                autocomplete: 'off'
+                placeholder: 'ID пользователя',
+                autocomplete: 'off',
+                inputmode: 'numeric',
+                pattern: '[0-9]*'
             },
             styles: {
                 width: '100%',
@@ -121,7 +123,27 @@ export class NewChatModal {
             searchInput.style.borderColor = '#2d3748';
         });
 
+        // Only allow digits
+        searchInput.addEventListener('keypress', (e) => {
+            const charCode = e.charCode;
+            // Allow only digits (0-9)
+            if (charCode < 48 || charCode > 57) {
+                e.preventDefault();
+            }
+        });
+
+        // Also filter on paste
+        searchInput.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pastedText = e.clipboardData?.getData('text') || '';
+            const digitsOnly = pastedText.replace(/\D/g, '');
+            searchInput.value = digitsOnly;
+            this.filterUsers(digitsOnly);
+        });
+
         searchInput.addEventListener('input', () => {
+            // Remove any non-digit characters
+            searchInput.value = searchInput.value.replace(/\D/g, '');
             this.filterUsers(searchInput.value);
         });
 
@@ -167,7 +189,8 @@ export class NewChatModal {
         
         if (this.modal) {
             this.modal.style.display = 'flex';
-            this.renderUsers(users);
+            // Don't show any users initially - show empty state
+            this.renderUsers([]);
             
             // Focus search input
             setTimeout(() => {
@@ -201,12 +224,34 @@ export class NewChatModal {
                     color: '#718096'
                 }
             });
-            const emptyText = createElement('p', {
-                text: 'Пользователи не найдены',
-                styles: {
-                    fontSize: '14px'
-                }
-            });
+            
+            const input = document.getElementById('newChatSearchInput') as HTMLInputElement;
+            const inputValue = input?.value || '';
+            
+            let emptyText;
+            if (inputValue.length === 0) {
+                emptyText = createElement('p', {
+                    text: 'Введите ID пользователя (5 цифр)',
+                    styles: {
+                        fontSize: '14px'
+                    }
+                });
+            } else if (inputValue.length < 5) {
+                emptyText = createElement('p', {
+                    text: 'Введите минимум 5 цифр для поиска',
+                    styles: {
+                        fontSize: '14px'
+                    }
+                });
+            } else {
+                emptyText = createElement('p', {
+                    text: 'Пользователь не найден',
+                    styles: {
+                        fontSize: '14px'
+                    }
+                });
+            }
+            
             emptyState.appendChild(emptyText);
             usersList.appendChild(emptyState);
             return;
@@ -303,26 +348,27 @@ export class NewChatModal {
     }
 
     private filterUsers(query: string): void {
+        // Show nothing if query is empty
         if (!query.trim()) {
-            this.renderUsers(this.allUsers);
+            this.renderUsers([]);
             return;
         }
         
-        const searchQuery = query.toLowerCase().trim();
+        // Only search if at least 5 digits entered
+        if (query.length < 5) {
+            this.renderUsers([]);
+            return;
+        }
+        
+        const searchQuery = query.trim();
+        // Search only by userId (exact match or contains)
         const filtered = this.allUsers.filter(user => {
-            const username = user.username.toLowerCase();
-            // Convert userId to string to ensure search works with numbers
-            const userId = String(user.userId).toLowerCase();
-            
-            // Search by username or userId (with or without #)
-            return username.includes(searchQuery) || 
-                   userId.includes(searchQuery) ||
-                   userId.includes(searchQuery.replace('#', '')) ||
-                   `#${userId}`.includes(searchQuery);
+            const userId = String(user.userId);
+            return userId.includes(searchQuery);
         });
         
-        console.log('Search query:', searchQuery);
-        console.log('Filtered users:', filtered.map(u => ({ username: u.username, userId: u.userId })));
+        console.log('Search by ID:', searchQuery);
+        console.log('Found users:', filtered.map(u => ({ username: u.username, userId: u.userId })));
         
         this.renderUsers(filtered);
     }

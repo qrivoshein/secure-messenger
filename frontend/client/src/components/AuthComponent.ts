@@ -100,6 +100,50 @@ export class AuthComponent {
       }
     });
 
+    const usernameHint = createElement('div', {
+      styles: {
+        fontSize: '12px',
+        color: '#718096',
+        marginTop: '-8px',
+        marginBottom: '12px',
+        padding: '8px 12px',
+        background: 'rgba(113, 128, 150, 0.1)',
+        borderRadius: '8px',
+        lineHeight: '1.6',
+        border: '1px solid rgba(113, 128, 150, 0.2)'
+      }
+    });
+
+    const hintTitle = createElement('div', {
+      styles: {
+        fontWeight: '500',
+        marginBottom: '4px',
+        color: '#a0aec0'
+      },
+      text: 'Требования к логину:'
+    });
+
+    const requirements = createElement('ul', {
+      styles: {
+        margin: '0',
+        paddingLeft: '18px',
+        listStyle: 'disc'
+      }
+    });
+
+    const req1 = createElement('li', { text: '1-30 символов' });
+    const req2 = createElement('li', { text: 'Латинские буквы (A-Z, a-z)' });
+    const req3 = createElement('li', { text: 'Цифры (0-9)' });
+    const req4 = createElement('li', { text: 'Символы: . _ -' });
+
+    requirements.appendChild(req1);
+    requirements.appendChild(req2);
+    requirements.appendChild(req3);
+    requirements.appendChild(req4);
+
+    usernameHint.appendChild(hintTitle);
+    usernameHint.appendChild(requirements);
+
     const passwordInput = createElement('input', {
       id: 'registerPassword',
       attributes: {
@@ -133,6 +177,7 @@ export class AuthComponent {
     switchDiv.appendChild(loginLink);
 
     form.appendChild(usernameInput);
+    form.appendChild(usernameHint);
     form.appendChild(passwordInput);
     form.appendChild(passwordConfirmInput);
     form.appendChild(registerButton);

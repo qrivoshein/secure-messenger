@@ -1,5 +1,5 @@
 import { handleAuth } from './authHandler';
-import { handleMessage, handleEditMessage, handleDeleteMessage, handleMarkRead } from './messageHandler';
+import { handleMessage, handleEditMessage, handleDeleteMessage, handleDeleteMessageForMe, handleMarkRead } from './messageHandler';
 import { handlePinMessage, handleUnpinMessage } from './pinHandler';
 import { handleTyping } from './typingHandler';
 import { handlePing } from './pingHandler';
@@ -9,6 +9,7 @@ const messageHandlers: Record<string, any> = {
     'message': handleMessage,
     'edit_message': handleEditMessage,
     'delete_message': handleDeleteMessage,
+    'delete_message_for_me': handleDeleteMessageForMe,
     'mark_read': handleMarkRead,
     'pin_message': handlePinMessage,
     'unpin_message': handleUnpinMessage,

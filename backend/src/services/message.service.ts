@@ -33,31 +33,41 @@ class MessageService {
             [username, otherUser]
         );
 
-        return result.rows.map(row => ({
-            id: row.message_id,
-            from: row.from_username,
-            to: row.to_username,
-            text: row.text,
-            mediaType: row.media_type,
-            mediaUrl: row.media_url,
-            fileName: row.text,
-            fileSize: row.media_size,
-            duration: row.duration,
-            waveformData: row.waveform_data,
-            forwarded: row.forwarded,
-            forwardedFrom: row.forwarded_from,
-            replyTo: row.reply_to_message_id,
-            replyToText: row.reply_to_text,
-            replyToSender: row.reply_to_sender,
-            read: row.read,
-            edited: !!row.edited_at,
-            timestamp: row.created_at,
-            time: new Date(row.created_at).toLocaleTimeString('ru-RU', { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                timeZone: 'Europe/Moscow'
-            })
-        }));
+        return result.rows.map(row => {
+            const message: any = {
+                id: row.message_id,
+                from: row.from_username,
+                to: row.to_username,
+                text: row.text,
+                mediaType: row.media_type,
+                mediaUrl: row.media_url,
+                fileName: row.text,
+                fileSize: row.media_size,
+                duration: row.duration,
+                waveformData: row.waveform_data,
+                forwarded: row.forwarded,
+                forwardedFrom: row.forwarded_from,
+                read: row.read,
+                edited: !!row.edited_at,
+                timestamp: row.created_at,
+                time: new Date(row.created_at).toLocaleTimeString('ru-RU', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    timeZone: 'Europe/Moscow'
+                })
+            };
+
+            // Add replyTo as nested object if exists
+            if (row.reply_to_message_id) {
+                message.replyTo = {
+                    id: row.reply_to_message_id,
+                    from: row.reply_to_sender,
+                    text: row.reply_to_text || ''
+                };
+            }
+
+            return message;
+        });
     }
 
     async saveMessage(messageData: MessageData): Promise<void> {

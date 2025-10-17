@@ -9,6 +9,7 @@ import { mediaService } from './services/media.service';
 import { uiManager } from './components/ui-manager';
 import { requestNotificationPermission, showBrowserNotification, generateId } from './utils/helpers';
 import { initSVGSprite } from './utils/icons';
+import { createElement } from './utils/dom-helpers';
 import { AuthComponent } from './components/AuthComponent';
 import { MessengerComponent } from './components/MessengerComponent';
 import { ProfileComponent } from './components/ProfileComponent';
@@ -16,6 +17,9 @@ import { SettingsComponent } from './components/SettingsComponent';
 import { newChatModal } from './components/NewChatModal';
 import { uploadIndicator } from './components/UploadIndicator';
 import { VoiceRecorder } from './components/VoiceRecorder';
+import { messageContextMenu } from './components/MessageContextMenu';
+import { deleteMessageModal } from './components/DeleteMessageModal';
+import { selectionAppBar } from './components/SelectionAppBar';
 import type { User, Chat, Message } from './types';
 
 class MessengerApp {
@@ -25,6 +29,9 @@ class MessengerApp {
     private unreadMessages: Map<string, number> = new Map();
     private onlineUsers: Set<string> = new Set();
     private voiceRecorder: VoiceRecorder | null = null;
+    private replyingTo: Message | null = null;
+    private selectedMessages: Set<string> = new Set();
+    private selectionMode: boolean = false;
 
     async init(): Promise<void> {
         console.log('Initializing Messenger App...');
@@ -75,6 +82,8 @@ class MessengerApp {
         appContainer.appendChild(profileComponent.create());
         appContainer.appendChild(settingsComponent.create());
         appContainer.appendChild(newChatModal.create());
+        appContainer.appendChild(deleteMessageModal.create());
+        appContainer.appendChild(selectionAppBar.create());
     }
 
     private setupEventListeners(): void {
@@ -177,6 +186,26 @@ class MessengerApp {
         wsService.on('ping', () => {
             wsService.send({ type: 'pong' });
         });
+
+        wsService.on('message_deleted', ({ messageId, from }) => {
+            console.log('Message deleted:', messageId, 'from:', from);
+            
+            // Remove message from UI
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageEl) {
+                messageEl.remove();
+            }
+        });
+
+        wsService.on('message_deleted_for_me', ({ messageId }) => {
+            console.log('Message deleted for me:', messageId);
+            
+            // Remove message from UI
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageEl) {
+                messageEl.remove();
+            }
+        });
     }
 
     // Auth methods
@@ -208,8 +237,15 @@ class MessengerApp {
                 return;
             }
 
-            if (username.length < 3) {
-                uiManager.showError('registerMessage', 'Логин должен содержать минимум 3 символа');
+            if (username.length < 1 || username.length > 30) {
+                uiManager.showError('registerMessage', 'Логин должен содержать от 1 до 30 символов');
+                return;
+            }
+
+            // Validate username format: only A-Z, a-z, 0-9, ., _, -
+            const usernameRegex = /^[a-zA-Z0-9._-]+$/;
+            if (!usernameRegex.test(username)) {
+                uiManager.showError('registerMessage', 'Логин может содержать только латинские буквы, цифры, точку (.), подчеркивание (_) и дефис (-)');
                 return;
             }
 
@@ -227,15 +263,13 @@ class MessengerApp {
             
             await authService.register(username, password);
             
-            uiManager.showSuccess('registerMessage', 'Регистрация успешна! Войдите в систему');
+            uiManager.showSuccess('registerMessage', 'Регистрация успешна! Вход в систему...');
             
-            setTimeout(() => {
-                uiManager.showLoginForm();
-            }, 1500);
+            // Auto-login after successful registration
+            await this.login(username, password);
             
         } catch (error: any) {
             uiManager.showError('registerMessage', error.message || 'Ошибка регистрации');
-        } finally {
             uiManager.setButtonLoading('registerBtn', false);
         }
     }
@@ -339,7 +373,33 @@ class MessengerApp {
         return 0;
     }
 
+    private getMessagePreview(message: Message): string {
+        if (message.text) {
+            return message.text;
+        }
+        
+        if (message.mediaType) {
+            switch (message.mediaType) {
+                case 'image':
+                    return '[Фото]';
+                case 'voice':
+                    return '[Голосовое сообщение]';
+                case 'file':
+                    return '[Файл]';
+                default:
+                    return '[Медиа]';
+            }
+        }
+        
+        return '[Медиа]';
+    }
+
     async openChat(username: string): Promise<void> {
+        // Exit selection mode when opening a new chat
+        if (this.selectionMode) {
+            this.exitSelectionMode();
+        }
+
         let user = this.users.find(u => u.username === username);
         
         // If user not in active chats list, fetch all users to get their info
@@ -375,8 +435,17 @@ class MessengerApp {
         try {
             const data = await httpClient.getMessages(username);
             
+            // Ensure all sent messages have read status
+            const currentUsername = authService.getCurrentUser()?.username;
+            const messages = (data.messages || []).map((msg: Message) => {
+                if (msg.from === currentUsername && msg.read === undefined) {
+                    return { ...msg, read: false };
+                }
+                return msg;
+            });
+            
             // Render chat UI with messages
-            uiManager.renderChatArea(this.currentChat, data.messages || []);
+            uiManager.renderChatArea(this.currentChat, messages);
             
             // Mark all messages from this user as read
             if (data.messages && data.messages.length > 0) {
@@ -403,13 +472,48 @@ class MessengerApp {
         try {
             const messageId = generateId();
             
-            // Send via WebSocket for real-time delivery
-            wsService.send({
+            const messageData: any = {
                 type: 'message',
                 to: this.currentChat.username,
                 text: text.trim(),
                 messageId: messageId
-            });
+            };
+
+            // Add reply information if replying to a message
+            if (this.replyingTo) {
+                let replyText = this.replyingTo.text || '';
+                
+                // If text is empty but mediaType exists, show media type
+                if (!replyText && this.replyingTo.mediaType) {
+                    switch (this.replyingTo.mediaType) {
+                        case 'image':
+                            replyText = '[Фото]';
+                            break;
+                        case 'voice':
+                            replyText = '[Голосовое сообщение]';
+                            break;
+                        case 'file':
+                            replyText = '[Файл]';
+                            break;
+                        default:
+                            replyText = '[Медиа]';
+                    }
+                }
+                
+                messageData.replyTo = {
+                    id: this.replyingTo.id,
+                    from: this.replyingTo.from,
+                    text: replyText
+                };
+            }
+            
+            // Send via WebSocket for real-time delivery
+            wsService.send(messageData);
+
+            // Clear reply state
+            if (this.replyingTo) {
+                this.cancelReply();
+            }
 
             // Message will be added via WebSocket event (message_sent or message)
         } catch (error) {
@@ -472,7 +576,8 @@ class MessengerApp {
 
         try {
             // Convert blob to file
-            const fileName = `voice-${Date.now()}.webm`;
+            const extension = audioService.getFileExtension();
+            const fileName = `voice-${Date.now()}.${extension}`;
             const audioFile = mediaService.blobToFile(audioBlob, fileName);
 
             // Show upload indicator
@@ -545,6 +650,11 @@ class MessengerApp {
         const isSentMessage = fromUser === currentUsername;
         const isReceivedMessage = toUser === currentUsername;
         
+        // Ensure sent messages have read status (default to false if not set)
+        if (isSentMessage && message.read === undefined) {
+            message.read = false;
+        }
+        
         // Determine the other user in conversation
         const otherUsername = isSentMessage ? toUser : fromUser;
         
@@ -564,7 +674,7 @@ class MessengerApp {
                         const userWithMessage: any = {
                             username: newUser.username,
                             userId: newUser.userId,
-                            lastMessage: message.text || '[Медиа]',
+                            lastMessage: this.getMessagePreview(message),
                             time: timeStr,
                             _timestamp: timestamp
                         };
@@ -583,7 +693,7 @@ class MessengerApp {
             const timeStr = formatTime(message.timestamp || message.time || new Date().toISOString());
             const timestamp = message.timestamp ? new Date(message.timestamp).getTime() : Date.now();
             
-            (userInList as any).lastMessage = message.text || '[Медиа]';
+            (userInList as any).lastMessage = this.getMessagePreview(message);
             (userInList as any).time = timeStr;
             (userInList as any)._timestamp = timestamp;
         }
@@ -620,7 +730,7 @@ class MessengerApp {
             audioService.playNotificationSound();
             showBrowserNotification(
                 `Новое сообщение от ${fromUser}`,
-                message.text || '[Медиа]',
+                this.getMessagePreview(message),
                 fromUser
             );
         }
@@ -680,7 +790,7 @@ class MessengerApp {
                         readIcon.classList.add('read');
                         const useEl = readIcon.querySelector('use');
                         if (useEl) {
-                            useEl.setAttribute('href', '#icon-check-double');
+                            useEl.setAttribute('href', '#icon-checkDouble');
                         }
                     }
                 }
@@ -804,15 +914,343 @@ class MessengerApp {
             uploadIndicator.showError(error.message || 'Ошибка отправки');
         }
     }
+
+    // Message context menu actions
+    replyToMessage(message: Message): void {
+        this.replyingTo = message;
+        this.showReplyPreview(message);
+        
+        // Focus input
+        const input = document.getElementById('messageInput') as HTMLInputElement;
+        if (input) {
+            input.focus();
+        }
+    }
+
+    private showReplyPreview(message: Message): void {
+        // Remove existing preview if any
+        this.hideReplyPreview();
+
+        const inputArea = document.querySelector('.message-input-area');
+        if (!inputArea) return;
+
+        const preview = createElement('div', {
+            id: 'replyPreview',
+            className: 'reply-preview',
+            styles: {
+                padding: '8px 12px',
+                background: 'rgba(102, 126, 234, 0.1)',
+                borderLeft: '3px solid #667eea',
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px',
+                margin: '8px 0'
+            }
+        });
+
+        const content = createElement('div', {
+            styles: {
+                flex: '1',
+                minWidth: '0'
+            }
+        });
+
+        const replyLabel = createElement('div', {
+            text: `Ответ на: ${message.from}`,
+            styles: {
+                fontSize: '12px',
+                color: '#667eea',
+                fontWeight: '600',
+                marginBottom: '4px'
+            }
+        });
+
+        // Get display text for reply
+        let displayText = message.text || '';
+        if (!displayText && message.mediaType) {
+            switch (message.mediaType) {
+                case 'image':
+                    displayText = '[Фото]';
+                    break;
+                case 'voice':
+                    displayText = '[Голосовое сообщение]';
+                    break;
+                case 'file':
+                    displayText = '[Файл]';
+                    break;
+                default:
+                    displayText = '[Медиа]';
+            }
+        }
+
+        const replyText = createElement('div', {
+            text: displayText.length > 50 ? displayText.substring(0, 50) + '...' : displayText,
+            styles: {
+                fontSize: '13px',
+                color: '#a0aec0',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+            }
+        });
+
+        content.appendChild(replyLabel);
+        content.appendChild(replyText);
+
+        const closeBtn = createElement('button', {
+            className: 'reply-preview-close',
+            text: '×',
+            styles: {
+                background: 'transparent',
+                border: 'none',
+                color: '#718096',
+                fontSize: '24px',
+                cursor: 'pointer',
+                padding: '0',
+                width: '24px',
+                height: '24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '4px',
+                transition: 'all 0.2s'
+            }
+        });
+
+        closeBtn.addEventListener('mouseenter', () => {
+            closeBtn.style.background = 'rgba(102, 126, 234, 0.2)';
+            closeBtn.style.color = '#667eea';
+        });
+
+        closeBtn.addEventListener('mouseleave', () => {
+            closeBtn.style.background = 'transparent';
+            closeBtn.style.color = '#718096';
+        });
+
+        closeBtn.addEventListener('click', () => {
+            this.cancelReply();
+        });
+
+        preview.appendChild(content);
+        preview.appendChild(closeBtn);
+
+        // Insert before input container
+        const inputContainer = inputArea.querySelector('.input-container');
+        if (inputContainer) {
+            inputArea.insertBefore(preview, inputContainer);
+        }
+    }
+
+    private hideReplyPreview(): void {
+        const preview = document.getElementById('replyPreview');
+        if (preview) {
+            preview.remove();
+        }
+    }
+
+    cancelReply(): void {
+        this.replyingTo = null;
+        this.hideReplyPreview();
+    }
+
+    // Message selection
+    toggleMessageSelection(messageId: string): void {
+        if (!this.selectionMode) {
+            this.enterSelectionMode();
+        }
+
+        if (this.selectedMessages.has(messageId)) {
+            this.selectedMessages.delete(messageId);
+            this.updateMessageSelectionUI(messageId, false);
+        } else {
+            this.selectedMessages.add(messageId);
+            this.updateMessageSelectionUI(messageId, true);
+        }
+
+        if (this.selectedMessages.size === 0) {
+            this.exitSelectionMode();
+        } else {
+            selectionAppBar.updateCount(this.selectedMessages.size);
+        }
+    }
+
+    private enterSelectionMode(): void {
+        this.selectionMode = true;
+        
+        selectionAppBar.show(0, {
+            onDelete: () => this.deleteSelectedMessages(),
+            onForward: () => this.forwardSelectedMessages(),
+            onCancel: () => this.exitSelectionMode()
+        });
+
+        // Add selection-mode class to chat area
+        const chatArea = document.querySelector('.chat-area');
+        if (chatArea) {
+            chatArea.classList.add('selection-mode');
+        }
+    }
+
+    exitSelectionMode(): void {
+        this.selectionMode = false;
+        this.selectedMessages.forEach(messageId => {
+            this.updateMessageSelectionUI(messageId, false);
+        });
+        this.selectedMessages.clear();
+        
+        selectionAppBar.hide();
+
+        // Remove selection-mode class
+        const chatArea = document.querySelector('.chat-area');
+        if (chatArea) {
+            chatArea.classList.remove('selection-mode');
+        }
+    }
+
+    private updateMessageSelectionUI(messageId: string, selected: boolean): void {
+        const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (!messageEl) return;
+
+        if (selected) {
+            messageEl.classList.add('selected');
+        } else {
+            messageEl.classList.remove('selected');
+        }
+    }
+
+    private async deleteSelectedMessages(): Promise<void> {
+        if (this.selectedMessages.size === 0) return;
+
+        const count = this.selectedMessages.size;
+        const confirmMsg = `Удалить ${count} ${this.getMessageWord(count)}?`;
+        
+        if (confirm(confirmMsg)) {
+            const messagesToDelete = Array.from(this.selectedMessages);
+            
+            for (const messageId of messagesToDelete) {
+                const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (messageEl) {
+                    messageEl.remove();
+                }
+
+                // Send delete request for each message
+                wsService.send({
+                    type: 'delete_message',
+                    messageId: messageId,
+                    to: this.currentChat?.username || ''
+                });
+            }
+
+            this.exitSelectionMode();
+        }
+    }
+
+    private forwardSelectedMessages(): void {
+        if (this.selectedMessages.size === 0) return;
+
+        alert(`Пересылка ${this.selectedMessages.size} ${this.getMessageWord(this.selectedMessages.size)} будет реализована позже`);
+    }
+
+    private getMessageWord(count: number): string {
+        const lastDigit = count % 10;
+        const lastTwoDigits = count % 100;
+
+        if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+            return 'сообщений';
+        }
+
+        if (lastDigit === 1) {
+            return 'сообщение';
+        }
+
+        if (lastDigit >= 2 && lastDigit <= 4) {
+            return 'сообщения';
+        }
+
+        return 'сообщений';
+    }
+
+    forwardMessage(message: Message): void {
+        console.log('Forward message:', message.id);
+        // TODO: Implement forward functionality
+        // Show dialog to select users to forward to
+        alert('Функция "Переслать" будет реализована позже');
+    }
+
+    editMessage(message: Message): void {
+        console.log('Edit message:', message.id);
+        // TODO: Implement edit functionality
+        // Load message text into input and switch to edit mode
+        alert('Функция "Редактировать" будет реализована позже');
+    }
+
+    pinMessage(message: Message): void {
+        console.log('Pin message:', message.id);
+        // TODO: Implement pin functionality
+        // Send pin request to server and update UI
+        alert('Функция "Закрепить" будет реализована позже');
+    }
+
+    deleteMessage(message: Message, isSent: boolean): void {
+        const currentUsername = authService.getCurrentUser()?.username;
+        const canDeleteForEveryone = isSent && message.from === currentUsername;
+
+        deleteMessageModal.show(canDeleteForEveryone, {
+            onDeleteForMe: () => {
+                this.deleteMessageForMe(message);
+            },
+            onDeleteForEveryone: () => {
+                this.deleteMessageForEveryone(message);
+            },
+            onCancel: () => {
+                // Just close modal
+            }
+        });
+    }
+
+    private deleteMessageForMe(message: Message): void {
+        // Hide message locally
+        const messageEl = document.querySelector(`[data-message-id="${message.id}"]`);
+        if (messageEl) {
+            messageEl.remove();
+        }
+
+        // Send request to hide message for current user
+        wsService.send({
+            type: 'delete_message_for_me',
+            messageId: message.id,
+            to: message.from === authService.getCurrentUser()?.username ? message.to : message.from
+        });
+    }
+
+    private deleteMessageForEveryone(message: Message): void {
+        // Remove message from UI immediately
+        const messageEl = document.querySelector(`[data-message-id="${message.id}"]`);
+        if (messageEl) {
+            messageEl.remove();
+        }
+
+        // Send delete request via WebSocket
+        wsService.send({
+            type: 'delete_message',
+            messageId: message.id,
+            to: message.to
+        });
+    }
 }
 
 // Initialize app when DOM is ready
 const app = new MessengerApp();
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => app.init());
+    document.addEventListener('DOMContentLoaded', () => {
+        app.init();
+        messageContextMenu.create();
+    });
 } else {
     app.init();
+    messageContextMenu.create();
 }
 
 export default app;

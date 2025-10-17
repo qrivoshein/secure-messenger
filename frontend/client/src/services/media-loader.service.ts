@@ -39,8 +39,20 @@ export class MediaLoaderService {
                 throw new Error(`Failed to load media: ${response.status}`);
             }
 
+            // Get Content-Type from response
+            const contentType = response.headers.get('Content-Type') || 'application/octet-stream';
+            console.log(`Loading media ${mediaUrl}, Content-Type: ${contentType}`);
+
             // Get blob from response
-            const blob = await response.blob();
+            let blob = await response.blob();
+            
+            // Safari requires explicit MIME type - recreate blob if needed
+            if (!blob.type || blob.type === 'application/octet-stream') {
+                console.log(`Recreating blob with explicit type: ${contentType}`);
+                blob = new Blob([blob], { type: contentType });
+            }
+            
+            console.log(`Created blob: size=${blob.size}, type=${blob.type}`);
             
             // Create blob URL
             const blobUrl = URL.createObjectURL(blob);
