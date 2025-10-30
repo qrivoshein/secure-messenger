@@ -9,7 +9,8 @@ class MessageController {
     async getMessages(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
         try {
             const { otherUser } = req.params;
-            const messages = await messageService.getMessages(req.user!.username, otherUser);
+            const limit = parseInt(req.query.limit as string) || 100; // Default 100 messages
+            const messages = await messageService.getMessages(req.user!.username, otherUser, limit);
             res.json({ messages });
         } catch (error) {
             next(error);

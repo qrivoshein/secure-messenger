@@ -1,6 +1,6 @@
 // UI Manager for DOM manipulation and component rendering - Pure TypeScript, no innerHTML
 
-import { getAvatarColor, formatTime } from '../utils/helpers';
+import { getAvatarColor, formatTime, debounce } from '../utils/helpers';
 import { createElement, createText, clearElement, createSVGElement } from '../utils/dom-helpers';
 import { createSVGIcon } from '../utils/icons';
 import { mediaLoader } from '../services/media-loader.service';
@@ -9,6 +9,7 @@ import { messageContextMenu } from './MessageContextMenu';
 import type { User, Chat, Message } from '../types';
 
 export class UIManager {
+    private debouncedRenderChatsList: ((chats: Chat[]) => void) | null = null;
     // Show/hide screens
     showAuthScreen(): void {
         document.getElementById('authScreen')?.style.setProperty('display', 'flex');
@@ -108,7 +109,22 @@ export class UIManager {
         }
     }
 
-    renderChatsList(chats: Chat[]): void {
+    renderChatsList(chats: Chat[], immediate = false): void {
+        // Initialize debounced version on first call
+        if (!this.debouncedRenderChatsList) {
+            this.debouncedRenderChatsList = debounce((chats: Chat[]) => {
+                this._renderChatsListInternal(chats);
+            }, 50);
+        }
+
+        if (immediate) {
+            this._renderChatsListInternal(chats);
+        } else {
+            this.debouncedRenderChatsList(chats);
+        }
+    }
+
+    private _renderChatsListInternal(chats: Chat[]): void {
         const chatsListEl = document.getElementById('chatsList');
         if (!chatsListEl) return;
 
@@ -128,10 +144,13 @@ export class UIManager {
             return;
         }
 
+        // Use DocumentFragment for better performance
+        const fragment = document.createDocumentFragment();
         chats.forEach(chat => {
             const chatItem = this.createChatItem(chat);
-            chatsListEl.appendChild(chatItem);
+            fragment.appendChild(chatItem);
         });
+        chatsListEl.appendChild(fragment);
     }
 
     private createChatItem(chat: Chat): HTMLElement {
@@ -754,11 +773,14 @@ export class UIManager {
             emptyMessages.appendChild(emptyText);
             messagesArea.appendChild(emptyMessages);
         } else {
+            // Use DocumentFragment for better performance
+            const fragment = document.createDocumentFragment();
             messages.forEach(msg => {
                 const isSent = msg.to === chat.username;
                 const messageEl = this.renderMessage(msg, isSent);
-                messagesArea.appendChild(messageEl);
+                fragment.appendChild(messageEl);
             });
+            messagesArea.appendChild(fragment);
         }
 
         chatArea.appendChild(messagesArea);

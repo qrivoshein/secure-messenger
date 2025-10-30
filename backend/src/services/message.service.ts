@@ -22,16 +22,21 @@ interface MessageData {
 }
 
 class MessageService {
-    async getMessages(username: string, otherUser: string): Promise<any[]> {
+    async getMessages(username: string, otherUser: string, limit: number = 100): Promise<any[]> {
+        // Get last N messages for performance (default 100)
         const result = await pool.query(
             `SELECT m.*, 
              EXISTS(SELECT 1 FROM read_receipts WHERE message_id = m.message_id AND username = $2) as read
              FROM messages m 
              WHERE (from_username = $1 AND to_username = $2) 
                 OR (from_username = $2 AND to_username = $1)
-             ORDER BY created_at ASC`,
-            [username, otherUser]
+             ORDER BY created_at DESC
+             LIMIT $3`,
+            [username, otherUser, limit]
         );
+        
+        // Reverse to get chronological order
+        result.rows.reverse();
 
         return result.rows.map(row => {
             const message: any = {

@@ -24,7 +24,14 @@ export function formatFileSize(bytes: number): string {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
+// Cache for avatar colors to avoid repeated hash calculations
+const avatarColorCache = new Map<string, [string, string]>();
+
 export function getAvatarColor(username: string): [string, string] {
+    // Check cache first
+    if (avatarColorCache.has(username)) {
+        return avatarColorCache.get(username)!;
+    }
     const colors = [
         ['#667eea', '#764ba2'],
         ['#f093fb', '#f5576c'],
@@ -44,7 +51,12 @@ export function getAvatarColor(username: string): [string, string] {
     }
 
     const index = Math.abs(hash) % colors.length;
-    return colors[index] as [string, string];
+    const color = colors[index] as [string, string];
+    
+    // Cache the result
+    avatarColorCache.set(username, color);
+    
+    return color;
 }
 
 export function debounce<T extends (...args: any[]) => any>(
