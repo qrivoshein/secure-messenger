@@ -240,7 +240,22 @@ export class AudioPlayer {
                     throw new Error(`HTTP ${response.status}`);
                 }
                 
-                const contentType = response.headers.get('content-type') || 'audio/mp4';
+                let contentType = response.headers.get('content-type') || 'audio/mp4';
+                
+                // Fix for backend returning application/octet-stream
+                if (contentType === 'application/octet-stream') {
+                    const ext = this.options.audioUrl.split('.').pop()?.toLowerCase();
+                    const mimeTypes: Record<string, string> = {
+                        'm4a': 'audio/mp4',
+                        'wav': 'audio/wav',
+                        'webm': 'audio/webm',
+                        'ogg': 'audio/ogg',
+                        'mp3': 'audio/mpeg'
+                    };
+                    contentType = (ext && mimeTypes[ext]) || 'audio/mp4';
+                    console.warn(`Backend returned octet-stream, using ${contentType} based on extension .${ext}`);
+                }
+                
                 const blob = await response.blob();
                 
                 // Create blob with explicit type
