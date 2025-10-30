@@ -149,8 +149,11 @@ export class AudioPlayer {
         });
 
         this.audio.addEventListener('error', (e) => {
+            const fileExtension = this.options.audioUrl.split('.').pop();
+            
             console.error('Audio playback error:', e, this.audio?.error);
             console.error('Audio URL:', this.options.audioUrl);
+            console.error('File extension:', fileExtension);
             console.error('Audio src:', this.audio?.src);
             console.error('Audio networkState:', this.audio?.networkState);
             console.error('Audio readyState:', this.audio?.readyState);
@@ -174,13 +177,34 @@ export class AudioPlayer {
                         console.error('Decode error - file may be corrupted or format unsupported');
                         break;
                     case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                        errorMessage = 'Формат аудио не поддерживается браузером. Попробуйте другой браузер.';
-                        console.error('Format not supported. File extension:', this.options.audioUrl.split('.').pop());
+                        // Check if it's an old .m4a file that Safari can't play
+                        if (fileExtension === 'm4a') {
+                            errorMessage = 'Старый формат голосового сообщения не поддерживается. Новые сообщения будут в поддерживаемом формате.';
+                            console.warn('Legacy .m4a file detected - Safari cannot play it. New recordings use WAV format.');
+                        } else {
+                            errorMessage = 'Формат аудио не поддерживается браузером.';
+                        }
+                        console.error('Format not supported. File extension:', fileExtension);
                         break;
                 }
             }
             
             console.error('Audio error details:', errorMessage);
+            
+            // Show error in UI instead of alert
+            if (this.container && errorDetails?.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+                // Replace player with error message
+                this.container.innerHTML = '';
+                this.container.style.padding = '12px 16px';
+                this.container.style.background = 'rgba(239, 68, 68, 0.1)';
+                this.container.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                this.container.style.borderRadius = '12px';
+                this.container.style.color = '#ef4444';
+                this.container.style.fontSize = '13px';
+                this.container.textContent = fileExtension === 'm4a' 
+                    ? '⚠️ Старый формат не поддерживается' 
+                    : '⚠️ Формат не поддерживается';
+            }
             
             // Don't show alert in production, just log
             if (window.location.hostname === 'localhost') {
