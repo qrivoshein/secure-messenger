@@ -98,6 +98,9 @@ class MessageController {
                 '.webm': 'audio/webm',
                 '.mp3': 'audio/mpeg',
                 '.mp4': 'video/mp4',
+                '.m4a': 'audio/mp4',
+                '.ogg': 'audio/ogg',
+                '.wav': 'audio/wav',
                 '.pdf': 'application/pdf',
             };
             

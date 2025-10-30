@@ -151,10 +151,17 @@ export class AudioPlayer {
         this.audio.addEventListener('error', (e) => {
             console.error('Audio playback error:', e, this.audio?.error);
             console.error('Audio URL:', this.options.audioUrl);
+            console.error('Audio src:', this.audio?.src);
+            console.error('Audio networkState:', this.audio?.networkState);
+            console.error('Audio readyState:', this.audio?.readyState);
+            
             const errorDetails = this.audio?.error;
             let errorMessage = 'Ошибка воспроизведения аудио';
             
             if (errorDetails) {
+                console.error('MediaError code:', errorDetails.code);
+                console.error('MediaError message:', errorDetails.message);
+                
                 switch(errorDetails.code) {
                     case MediaError.MEDIA_ERR_ABORTED:
                         errorMessage = 'Воспроизведение прервано';
@@ -163,16 +170,22 @@ export class AudioPlayer {
                         errorMessage = 'Ошибка сети при загрузке аудио';
                         break;
                     case MediaError.MEDIA_ERR_DECODE:
-                        errorMessage = 'Ошибка декодирования аудио. Попробуйте обновить страницу.';
+                        errorMessage = 'Ошибка декодирования аудио. Возможно, файл поврежден.';
+                        console.error('Decode error - file may be corrupted or format unsupported');
                         break;
                     case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                        errorMessage = 'Формат аудио не поддерживается браузером';
+                        errorMessage = 'Формат аудио не поддерживается браузером. Попробуйте другой браузер.';
+                        console.error('Format not supported. File extension:', this.options.audioUrl.split('.').pop());
                         break;
                 }
             }
             
             console.error('Audio error details:', errorMessage);
-            alert(errorMessage);
+            
+            // Don't show alert in production, just log
+            if (window.location.hostname === 'localhost') {
+                alert(errorMessage);
+            }
         });
 
         this.audio.addEventListener('canplaythrough', () => {

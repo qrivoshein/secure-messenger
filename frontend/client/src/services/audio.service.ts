@@ -64,17 +64,18 @@ export class AudioService {
     }
 
     private getSupportedMimeType(): string {
-        // Safari has limited MediaRecorder support, check what's available
+        // Prioritize webm/opus for better browser compatibility
         const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
         
         console.log('Browser:', isSafari ? 'Safari' : 'Other');
         console.log('MediaRecorder supported:', typeof MediaRecorder !== 'undefined');
         
+        // Prioritize webm formats first, they have better cross-browser playback support
         const types = [
-            'audio/mp4',
             'audio/webm;codecs=opus',
             'audio/webm',
             'audio/ogg;codecs=opus',
+            'audio/mp4', // Safari fallback, but less compatible
             'audio/wav'
         ];
 
