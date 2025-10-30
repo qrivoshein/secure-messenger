@@ -70,25 +70,47 @@ export class AudioService {
         console.log('Browser:', isSafari ? 'Safari' : 'Other');
         console.log('MediaRecorder supported:', typeof MediaRecorder !== 'undefined');
         
-        // Prioritize webm formats first, they have better cross-browser playback support
+        // Test which formats the browser can actually PLAY (not just record)
+        const audioElement = new Audio();
+        console.log('Browser playback support:');
+        console.log('  audio/webm: ', audioElement.canPlayType('audio/webm'));
+        console.log('  audio/webm;codecs=opus: ', audioElement.canPlayType('audio/webm;codecs=opus'));
+        console.log('  audio/mp4: ', audioElement.canPlayType('audio/mp4'));
+        console.log('  audio/mp4;codecs=mp4a.40.2: ', audioElement.canPlayType('audio/mp4;codecs=mp4a.40.2'));
+        console.log('  audio/ogg: ', audioElement.canPlayType('audio/ogg'));
+        console.log('  audio/wav: ', audioElement.canPlayType('audio/wav'));
+        
+        // Prioritize formats that can be both recorded AND played
         const types = [
             'audio/webm;codecs=opus',
             'audio/webm',
             'audio/ogg;codecs=opus',
-            'audio/mp4', // Safari fallback, but less compatible
+            'audio/mp4;codecs=mp4a.40.2', // More specific codec for Safari
+            'audio/mp4',
             'audio/wav'
         ];
 
         for (const type of types) {
-            const supported = MediaRecorder.isTypeSupported(type);
-            console.log(`Testing ${type}: ${supported}`);
-            if (supported) {
+            const canRecord = MediaRecorder.isTypeSupported(type);
+            const canPlay = audioElement.canPlayType(type);
+            console.log(`Testing ${type}: record=${canRecord}, play=${canPlay}`);
+            
+            // Only use if both recording AND playback are supported
+            if (canRecord && canPlay !== '') {
                 console.log('✓ Selected MIME type:', type);
                 return type;
             }
         }
 
-        console.warn('No supported MIME type found, using browser default');
+        console.warn('No supported MIME type found with playback support');
+        // Last resort: try without playback check
+        for (const type of types) {
+            if (MediaRecorder.isTypeSupported(type)) {
+                console.warn('⚠ Using type without playback verification:', type);
+                return type;
+            }
+        }
+        
         // Return empty to let browser choose default
         return '';
     }
@@ -123,13 +145,26 @@ export class AudioService {
                 const testUrl = URL.createObjectURL(blob);
                 console.log('Test blob URL:', testUrl);
                 const testAudio = new Audio(testUrl);
+                
+                // Check if browser can play this format
+                const canPlayBlob = testAudio.canPlayType(blob.type);
+                console.log(`Browser canPlayType('${blob.type}'): ${canPlayBlob}`);
+                
                 testAudio.addEventListener('canplaythrough', () => {
                     console.log('✓ Blob can be played');
                     URL.revokeObjectURL(testUrl);
                 });
                 testAudio.addEventListener('error', (e) => {
                     console.error('✗ Blob cannot be played:', e, testAudio.error);
+                    console.error('Error code:', testAudio.error?.code);
+                    console.error('Error message:', testAudio.error?.message);
                     URL.revokeObjectURL(testUrl);
+                });
+                testAudio.addEventListener('loadstart', () => {
+                    console.log('Blob load started');
+                });
+                testAudio.addEventListener('loadedmetadata', () => {
+                    console.log('✓ Blob metadata loaded, duration:', testAudio.duration);
                 });
                 testAudio.load();
                 
