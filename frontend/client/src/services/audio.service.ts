@@ -81,13 +81,21 @@ export class AudioService {
         console.log('  audio/wav: ', audioElement.canPlayType('audio/wav'));
         
         // Prioritize formats that can be both recorded AND played
-        const types = [
+        // For Safari: WAV is the most reliable format for both recording and playback
+        const types = isSafari ? [
+            'audio/wav',  // Safari's most reliable format
             'audio/webm;codecs=opus',
             'audio/webm',
-            'audio/ogg;codecs=opus',
-            'audio/mp4;codecs=mp4a.40.2', // More specific codec for Safari
+            'audio/mp4;codecs=mp4a.40.2',
             'audio/mp4',
-            'audio/wav'
+            'audio/ogg;codecs=opus'
+        ] : [
+            'audio/webm;codecs=opus',  // Chrome/Firefox prefer webm
+            'audio/webm',
+            'audio/ogg;codecs=opus',
+            'audio/wav',
+            'audio/mp4;codecs=mp4a.40.2',
+            'audio/mp4'
         ];
 
         for (const type of types) {
@@ -213,6 +221,7 @@ export class AudioService {
             'audio/ogg': 'ogg',
             'audio/ogg;codecs=opus': 'ogg',
             'audio/mp4': 'm4a',
+            'audio/mp4;codecs=mp4a.40.2': 'm4a',
             'audio/mpeg': 'mp3',
             'audio/wav': 'wav'
         };
@@ -220,7 +229,7 @@ export class AudioService {
         // If no mime type was set, default based on browser
         if (!this.currentMimeType) {
             const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-            return isSafari ? 'm4a' : 'webm';
+            return isSafari ? 'wav' : 'webm';  // Changed Safari default to wav
         }
         
         return mimeToExt[this.currentMimeType] || 'webm';
