@@ -1,0 +1,23 @@
+# FastAPI и сервер
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+
+# Парсинг документов
+pymupdf==1.23.21  # PDF parsing
+python-docx==1.1.0  # DOCX parsing
+openpyxl==3.1.2  # XLSX reading/writing
+pandas==2.2.0  # Data manipulation and Excel export
+python-magic==0.4.27  # File type detection
+
+# OCR (опционально для Фазы 2)
+# pytesseract==0.3.10
+# Pillow==10.2.0
+
+# Утилиты
+python-dateutil==2.8.2
+pydantic==2.6.0
+aiofiles==23.2.1
+
+# Кэширование и очереди (для масштабирования)
+redis==5.0.1

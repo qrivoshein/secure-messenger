@@ -20,6 +20,7 @@ import { VoiceRecorder } from './components/VoiceRecorder';
 import { messageContextMenu } from './components/MessageContextMenu';
 import { deleteMessageModal } from './components/DeleteMessageModal';
 import { selectionAppBar } from './components/SelectionAppBar';
+import { documentParser } from './components/DocumentParser';
 import type { User, Chat, Message } from './types';
 
 class MessengerApp {
@@ -333,6 +334,9 @@ class MessengerApp {
             return timeB - timeA;
         });
 
+        // Add document parser trigger button at the top of chats list
+        this.addDocumentParserTrigger();
+
         uiManager.renderChatsList(this.chats);
     }
 
@@ -392,6 +396,21 @@ class MessengerApp {
         }
         
         return '[Медиа]';
+    }
+
+    private addDocumentParserTrigger(): void {
+        const chatsList = document.getElementById('chatsList');
+        if (!chatsList) return;
+
+        // Remove existing parser trigger if any
+        const existing = chatsList.querySelector('.document-parser-trigger');
+        if (existing) {
+            existing.remove();
+        }
+
+        // Create and prepend trigger button
+        const triggerButton = documentParser.createTriggerButton();
+        chatsList.prepend(triggerButton);
     }
 
     async openChat(username: string): Promise<void> {

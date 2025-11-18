@@ -1,0 +1,316 @@
+/* Document Parser Component Styles */
+
+.document-parser-trigger {
+    position: relative;
+    overflow: hidden;
+}
+
+.document-parser-trigger::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.document-parser-trigger:hover::before {
+    left: 100%;
+}
+
+.document-parser-panel {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+.document-parser-panel * {
+    box-sizing: border-box;
+}
+
+/* Upload Area */
+.upload-container {
+    animation: fadeIn 0.3s ease;
+}
+
+.drop-zone {
+    position: relative;
+    overflow: hidden;
+}
+
+.drop-zone:hover {
+    border-color: #667eea !important;
+    background-color: #2d3748 !important;
+}
+
+.drop-zone::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.drop-zone:hover::after {
+    opacity: 1;
+}
+
+/* Results Area */
+.results-container {
+    animation: slideInUp 0.3s ease;
+}
+
+/* Tabs */
+.tab-button:hover {
+    background-color: rgba(102, 126, 234, 0.1) !important;
+}
+
+.tab-button.active {
+    position: relative;
+}
+
+.tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    animation: expandWidth 0.3s ease;
+}
+
+/* Results Content */
+.results-content {
+    scrollbar-width: thin;
+    scrollbar-color: #4a5568 #1a2332;
+}
+
+.results-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.results-content::-webkit-scrollbar-track {
+    background: #1a2332;
+}
+
+.results-content::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 4px;
+}
+
+.results-content::-webkit-scrollbar-thumb:hover {
+    background: #667eea;
+}
+
+.results-content pre {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+}
+
+/* Action Buttons */
+.results-container button {
+    position: relative;
+    overflow: hidden;
+}
+
+.results-container button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width 0.5s ease, height 0.5s ease;
+}
+
+.results-container button:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+.results-container button:first-child:hover {
+    background-color: #5568d3 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.results-container button:last-child:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-color: #667eea !important;
+    color: #667eea !important;
+}
+
+/* Loading State */
+.loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(102, 126, 234, 0.3);
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes expandWidth {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Progress Bar */
+.progress-bar {
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+    transform-origin: left;
+    animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+    0% {
+        transform: scaleX(0);
+    }
+    50% {
+        transform: scaleX(0.7);
+    }
+    100% {
+        transform: scaleX(1);
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .document-parser-panel {
+        width: 100vw !important;
+        right: -100vw !important;
+    }
+    
+    .document-parser-panel.open {
+        right: 0 !important;
+    }
+}
+
+/* Dark Theme Variables */
+:root {
+    --parser-bg-primary: #1a2332;
+    --parser-bg-secondary: #141b26;
+    --parser-bg-tertiary: #202938;
+    --parser-border-color: #2d3748;
+    --parser-text-primary: #e1e9f0;
+    --parser-text-secondary: #718096;
+    --parser-accent: #667eea;
+    --parser-accent-hover: #5568d3;
+}
+
+/* Accessibility */
+.document-parser-panel button:focus {
+    outline: 2px solid var(--parser-accent);
+    outline-offset: 2px;
+}
+
+.document-parser-panel a:focus {
+    outline: 2px solid var(--parser-accent);
+    outline-offset: 2px;
+}
+
+/* File Preview (if added later) */
+.file-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--parser-bg-tertiary);
+    border-radius: 8px;
+    margin-top: 16px;
+}
+
+.file-preview-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justif-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+}
+
+.file-preview-info {
+    flex: 1;
+}
+
+.file-preview-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--parser-text-primary);
+    margin-bottom: 4px;
+}
+
+.file-preview-size {
+    font-size: 12px;
+    color: var(--parser-text-secondary);
+}
+
+/* Status Messages */
+.status-message {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-message.success {
+    background: rgba(72, 187, 120, 0.1);
+    color: #48bb78;
+    border: 1px solid rgba(72, 187, 120, 0.3);
+}
+
+.status-message.error {
+    background: rgba(245, 101, 101, 0.1);
+    color: #f56565;
+    border: 1px solid rgba(245, 101, 101, 0.3);
+}
+
+.status-message.info {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+}

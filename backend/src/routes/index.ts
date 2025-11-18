@@ -3,6 +3,7 @@ import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import messageRoutes from './message.routes';
 import fileRoutes from './file.routes';
+import parserRoutes from './parser.routes';
 
 const router = express.Router();
 
@@ -10,5 +11,6 @@ router.use('/api', authRoutes);
 router.use('/api', userRoutes);
 router.use('/api', messageRoutes);
 router.use('/api', fileRoutes);
+router.use('/api/parser', parserRoutes);
 
 export default router;
