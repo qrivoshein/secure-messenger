@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     user_id VARCHAR(10) UNIQUE NOT NULL,
+    public_key TEXT,                              -- ECDH P-256 публичный ключ в JWK
+    public_key_updated_at TIMESTAMP,              -- ротация ключей раз в 90 дней
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
