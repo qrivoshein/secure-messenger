@@ -18,7 +18,12 @@ const server = http.createServer(app);
 app.set('trust proxy', 1);
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: [
+        process.env.FRONTEND_URL || 'http://localhost:5173',
+        'http://localhost:5174',
+        'http://localhost:5173',
+        'http://localhost:3000'
+    ],
     credentials: true
 }));
 
@@ -44,7 +49,10 @@ const wss = setupWebSocket(server);
 
 async function startServer(): Promise<void> {
     try {
-        await connectRedis();
+        // Try to connect to Redis, but don't fail if it's not available
+        connectRedis().catch(err => {
+            logger.warn('Redis not available, continuing without it:', err.message);
+        });
         
         server.listen(config.server.port, config.server.host, () => {
             logger.info(`🚀 Secure Messenger Server running on port ${config.server.port}`);

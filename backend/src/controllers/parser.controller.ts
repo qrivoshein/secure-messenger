@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../types';
 import { documentParserService } from '../services/document-parser.service';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 export class ParserController {
     /**

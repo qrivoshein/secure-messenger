@@ -1,6 +1,6 @@
 import FormData from 'form-data';
 import axios from 'axios';
-import { logger } from '../utils/logger';
+import logger from '../utils/logger';
 
 const PARSER_SERVICE_URL = process.env.PARSER_SERVICE_URL || 'http://localhost:8000';
 

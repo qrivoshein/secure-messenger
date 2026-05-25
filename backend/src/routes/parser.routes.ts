@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { parserController } from '../controllers/parser.controller';
-import { authMiddleware } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
 
 const router = Router();
 
@@ -14,7 +14,7 @@ const upload = multer({
 });
 
 // All routes require authentication
-router.use(authMiddleware);
+router.use(authenticate);
 
 // Parse document
 router.post('/parse', upload.single('file'), (req, res) => {

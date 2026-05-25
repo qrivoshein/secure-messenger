@@ -38,19 +38,25 @@ class MessengerApp {
         console.log('Initializing Messenger App...');
 
         // Initialize SVG sprite
+        console.log('1. Initializing SVG sprite...');
         initSVGSprite();
 
         // Initialize UI components
+        console.log('2. Initializing UI components...');
         this.initializeComponents();
 
         // Setup event listeners
+        console.log('3. Setting up event listeners...');
         this.setupEventListeners();
 
         // Setup WebSocket event handlers
+        console.log('4. Setting up WebSocket handlers...');
         this.setupWebSocketHandlers();
 
         // Try to restore session
+        console.log('5. Trying to restore session...');
         const user = await authService.tryRestoreSession();
+        console.log('6. Session restore result:', user);
         if (user) {
             uiManager.updateUserInfo(user);
             uiManager.showMessengerScreen();
