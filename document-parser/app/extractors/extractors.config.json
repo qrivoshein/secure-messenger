@@ -1,0 +1,19 @@
+{
+  "enabled": [
+    "inn",
+    "kpp",
+    "ogrn",
+    "bik",
+    "bank_accounts",
+    "amounts",
+    "dates",
+    "document_numbers",
+    "document_type"
+  ],
+  "templates": {
+    "invoice": ["inn", "kpp", "amounts", "dates", "document_numbers"],
+    "act": ["inn", "kpp", "amounts", "dates", "document_numbers"],
+    "contract": ["inn", "kpp", "ogrn", "amounts", "dates", "document_numbers"],
+    "waybill": ["inn", "kpp", "amounts", "dates", "document_numbers"]
+  }
+}

@@ -53,6 +53,7 @@ class ParseResponse(BaseModel):
     document_id: str
     structure: Optional[DocumentStructure] = None
     text_content: Optional[str] = None
+    extracted_fields: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
     processing_time: float
 

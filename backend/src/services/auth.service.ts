@@ -39,24 +39,79 @@ class AuthService {
         return fallbackId;
     }
 
-    async register(username: string, password: string): Promise<{ username: string; userId: string }> {
+    async register(
+        username: string,
+        password: string,
+        publicKey?: string
+    ): Promise<{ username: string; userId: string }> {
         const existingUser = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
-        
+
         if (existingUser.rows.length > 0) {
             throw new Error('USER_EXISTS');
         }
 
         const hashedPassword = await this.hashPassword(password);
         const userId = await this.generateUserId();
-        
+
         await pool.query(
-            'INSERT INTO users (username, password_hash, user_id) VALUES ($1, $2, $3)',
-            [username, hashedPassword, userId]
+            `INSERT INTO users (username, password_hash, user_id, public_key, public_key_updated_at)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [
+                username,
+                hashedPassword,
+                userId,
+                publicKey ?? null,
+                publicKey ? new Date() : null,
+            ]
         );
-        
-        logger.info(`User registered: ${username}#${userId}`);
-        
+
+        logger.info(`User registered: ${username}#${userId}${publicKey ? ' (with E2E key)' : ''}`);
+
         return { username, userId };
+    }
+
+    /**
+     * Сохраняет / обновляет публичный ECDH-ключ пользователя.
+     * Используется при первом запуске клиента, ротации ключей (раз в 90 дней)
+     * или восстановлении пары ключей на новом устройстве.
+     */
+    async updatePublicKey(username: string, publicKey: string): Promise<void> {
+        const result = await pool.query(
+            `UPDATE users
+             SET public_key = $2,
+                 public_key_updated_at = CURRENT_TIMESTAMP
+             WHERE username = $1`,
+            [username, publicKey]
+        );
+        if (result.rowCount === 0) {
+            throw new Error('USER_NOT_FOUND');
+        }
+        logger.info(`Public ECDH key updated for ${username}`);
+    }
+
+    /**
+     * Возвращает публичный ECDH-ключ пользователя (для вычисления общего ключа
+     * пары собеседников через crypto.subtle.deriveKey на стороне клиента).
+     * Сам сервер не вычисляет и не хранит общий симметричный ключ.
+     */
+    async getPublicKey(
+        username: string
+    ): Promise<{ publicKey: string; updatedAt: Date | null }> {
+        const result = await pool.query(
+            'SELECT public_key, public_key_updated_at FROM users WHERE username = $1',
+            [username]
+        );
+        if (result.rows.length === 0) {
+            throw new Error('USER_NOT_FOUND');
+        }
+        const row = result.rows[0];
+        if (!row.public_key) {
+            throw new Error('PUBLIC_KEY_NOT_SET');
+        }
+        return {
+            publicKey: row.public_key,
+            updatedAt: row.public_key_updated_at,
+        };
     }
 
     async login(username: string, password: string): Promise<{ token: string; username: string; userId: string }> {

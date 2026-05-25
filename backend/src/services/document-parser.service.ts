@@ -9,6 +9,12 @@ export interface ParseResult {
     document_id: string;
     structure: any;
     text_content: string;
+    /**
+     * Ключевые реквизиты, извлечённые модулем app/extractors:
+     * inn, kpp, ogrn, bik, bank_accounts, amounts, dates, document_numbers,
+     * document_type_hint. Структуру см. app/extractors/field_extractor.py.
+     */
+    extracted_fields?: Record<string, any>;
     processing_time: number;
     error?: string;
 }

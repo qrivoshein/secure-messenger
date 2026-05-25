@@ -51,14 +51,31 @@ export class HttpClient {
         });
     }
 
-    async register(username: string, password: string) {
+    async register(username: string, password: string, publicKey?: string) {
         return this.request<{
             userId: string;
             username: string;
         }>('/api/register', {
             method: 'POST',
-            body: JSON.stringify({ username, password }),
+            body: JSON.stringify({ username, password, publicKey }),
         });
+    }
+
+    /** Загружает / обновляет собственный публичный ECDH-ключ (JWK-строка). */
+    async uploadPublicKey(publicKey: string) {
+        return this.request<{ success: boolean }>('/api/public-key', {
+            method: 'PUT',
+            body: JSON.stringify({ publicKey }),
+        });
+    }
+
+    /** Возвращает публичный ECDH-ключ собеседника для вывода общего ключа. */
+    async fetchPeerPublicKey(username: string) {
+        return this.request<{
+            username: string;
+            publicKey: string;
+            updatedAt: string | null;
+        }>(`/api/users/${encodeURIComponent(username)}/public-key`);
     }
 
     async getUsers() {
@@ -95,7 +112,12 @@ export class HttpClient {
         }>(`/api/users/search?q=${encodeURIComponent(query)}`);
     }
 
-    async uploadFile(file: File, to: string): Promise<{ fileUrl: string; fileName: string; fileSize: number }> {
+    async uploadFile(file: File, to: string): Promise<{
+        fileUrl: string;
+        fileName: string;
+        fileSize: number;
+        extractedFields?: any;
+    }> {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('to', to);

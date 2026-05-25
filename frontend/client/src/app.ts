@@ -6,6 +6,7 @@ import { httpClient } from './api/http.client';
 import { wsService } from './services/websocket.service';
 import { audioService } from './services/audio.service';
 import { mediaService } from './services/media.service';
+import { messageCipher } from './services/message-cipher.service';
 import { uiManager } from './components/ui-manager';
 import { requestNotificationPermission, showBrowserNotification, generateId } from './utils/helpers';
 import { initSVGSprite } from './utils/icons';
@@ -459,16 +460,34 @@ class MessengerApp {
         // Load messages
         try {
             const data = await httpClient.getMessages(username);
-            
+
             // Ensure all sent messages have read status
             const currentUsername = authService.getCurrentUser()?.username;
-            const messages = (data.messages || []).map((msg: Message) => {
+            const rawMessages = (data.messages || []).map((msg: Message) => {
                 if (msg.from === currentUsername && msg.read === undefined) {
                     return { ...msg, read: false };
                 }
                 return msg;
             });
-            
+
+            // E2E: расшифровываем тексты сообщений и reply из истории.
+            // Старые plaintext-сообщения проходят через decryptIncoming() как есть.
+            const messages = await Promise.all(
+                rawMessages.map(async (msg: Message) => {
+                    const out = { ...msg };
+                    if (messageCipher.isEncrypted(out.text)) {
+                        out.text = await messageCipher.decryptIncoming(out.text, username);
+                    }
+                    if (out.replyTo && messageCipher.isEncrypted(out.replyTo.text)) {
+                        out.replyTo = {
+                            ...out.replyTo,
+                            text: await messageCipher.decryptIncoming(out.replyTo.text, username),
+                        };
+                    }
+                    return out;
+                }),
+            );
+
             // Render chat UI with messages
             uiManager.renderChatArea(this.currentChat, messages);
             
@@ -496,18 +515,26 @@ class MessengerApp {
 
         try {
             const messageId = generateId();
-            
+            const peer = this.currentChat.username;
+
+            // E2E: шифруем text под общим ключом пары собеседников.
+            // Если шифрование недоступно (нет HTTPS / нет публичного ключа
+            // собеседника) — отдаём plaintext c warning в консоли.
+            const encryptedText = await messageCipher.prepareForSend(text.trim(), peer);
+
             const messageData: any = {
                 type: 'message',
-                to: this.currentChat.username,
-                text: text.trim(),
+                to: peer,
+                text: encryptedText,
                 messageId: messageId
             };
 
-            // Add reply information if replying to a message
+            // Add reply information if replying to a message.
+            // reply.text оригинала шифруем тем же ключом — он содержит часть
+            // оригинального сообщения и должен иметь тот же уровень защиты.
             if (this.replyingTo) {
                 let replyText = this.replyingTo.text || '';
-                
+
                 // If text is empty but mediaType exists, show media type
                 if (!replyText && this.replyingTo.mediaType) {
                     switch (this.replyingTo.mediaType) {
@@ -524,14 +551,19 @@ class MessengerApp {
                             replyText = '[Медиа]';
                     }
                 }
-                
+
+                // Если оригинал уже зашифрован (свежее сообщение в активной
+                // сессии), reply.text приходит сюда уже расшифрованным —
+                // зашифруем заново для отправки.
+                const encryptedReply = await messageCipher.prepareForSend(replyText, peer);
+
                 messageData.replyTo = {
                     id: this.replyingTo.id,
                     from: this.replyingTo.from,
-                    text: replyText
+                    text: encryptedReply
                 };
             }
-            
+
             // Send via WebSocket for real-time delivery
             wsService.send(messageData);
 
@@ -561,10 +593,10 @@ class MessengerApp {
 
             // Upload file
             const uploadData = await httpClient.uploadFile(file, this.currentChat.username);
-            
+
             // Hide indicator
             uploadIndicator.hide();
-            
+
             // Send message with image
             const messageId = generateId();
             wsService.send({
@@ -582,6 +614,49 @@ class MessengerApp {
         } catch (error: any) {
             console.error('Failed to send photo:', error);
             uploadIndicator.showError(error.message || 'Ошибка отправки фото');
+        }
+    }
+
+    /**
+     * Отправка делового документа. После загрузки бэкенд автоматически
+     * прогоняет файл через парсер и возвращает extractedFields (ИНН, КПП,
+     * суммы, даты и т.д.) — мы пробрасываем их в WS-сообщение, и получатель
+     * сразу видит превью реквизитов в карточке сообщения, без открытия
+     * отдельного модуля парсинга.
+     */
+    async sendDocument(): Promise<void> {
+        if (!this.currentChat) {
+            alert('Сначала выберите чат');
+            return;
+        }
+        try {
+            const file = await mediaService.selectDocument();
+            if (!file) return;
+
+            uploadIndicator.show(file.name);
+            const uploadData = await httpClient.uploadFile(file, this.currentChat.username);
+            uploadIndicator.hide();
+
+            const messageId = generateId();
+            wsService.send({
+                type: 'message',
+                to: this.currentChat.username,
+                text: '',
+                messageId: messageId,
+                mediaType: 'file',
+                mediaUrl: uploadData.fileUrl,
+                fileName: uploadData.fileName,
+                fileSize: uploadData.fileSize,
+                extractedFields: uploadData.extractedFields || null,
+            });
+
+            console.log('Document sent successfully', {
+                file: uploadData.fileName,
+                extractedFields: uploadData.extractedFields,
+            });
+        } catch (error: any) {
+            console.error('Failed to send document:', error);
+            uploadIndicator.showError(error.message || 'Ошибка отправки документа');
         }
     }
 
@@ -670,10 +745,20 @@ class MessengerApp {
         const currentUsername = authService.getCurrentUser()?.username;
         const fromUser = message.from;
         const toUser = message.to;
-        
+
         // Check if this is a sent message (from current user)
         const isSentMessage = fromUser === currentUsername;
         const isReceivedMessage = toUser === currentUsername;
+
+        // E2E: расшифровываем text и reply.text перед дальнейшей обработкой.
+        // Peer — это собеседник в этой переписке (не текущий пользователь).
+        const peer = isSentMessage ? toUser : fromUser;
+        if (peer && messageCipher.isEncrypted(message.text)) {
+            message.text = await messageCipher.decryptIncoming(message.text, peer);
+        }
+        if (peer && message.replyTo && messageCipher.isEncrypted(message.replyTo.text)) {
+            message.replyTo.text = await messageCipher.decryptIncoming(message.replyTo.text, peer);
+        }
         
         // Ensure sent messages have read status (default to false if not set)
         if (isSentMessage && message.read === undefined) {

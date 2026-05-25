@@ -11,7 +11,7 @@ export class AuthService {
 
     async login(username: string, password: string): Promise<User> {
         const data = await httpClient.login(username, password);
-        
+
         this.currentUser = {
             username: data.username,
             userId: data.userId,
@@ -26,8 +26,9 @@ export class AuthService {
         // Set token for HTTP client
         httpClient.setToken(data.token);
 
-        // Generate encryption key
-        await encryptionService.generateKey();
+        // E2E: либо берём существующий identity, либо генерируем новый
+        // и публикуем публичный ключ на сервере. Безопасно для повторного входа.
+        await encryptionService.ensureIdentity(true);
 
         // Connect WebSocket
         wsService.connect(data.token);
@@ -36,7 +37,10 @@ export class AuthService {
     }
 
     async register(username: string, password: string): Promise<void> {
-        await httpClient.register(username, password);
+        // Генерируем ECDH-пару ДО регистрации, чтобы публичный ключ улетел
+        // вместе с запросом — это позволяет сразу собирать пары shared-ключей.
+        const publicKeyJwk = await encryptionService.getOwnPublicKeyJwk();
+        await httpClient.register(username, password, publicKeyJwk ?? undefined);
     }
 
     logout(): void {
@@ -76,9 +80,10 @@ export class AuthService {
         if (token && username && userId) {
             this.currentUser = { username, userId };
             this.currentToken = token;
-            
+
             httpClient.setToken(token);
-            await encryptionService.generateKey();
+            // Восстанавливаем ECDH identity (если ключ был ротирован — будет переиздан)
+            await encryptionService.ensureIdentity(true);
             wsService.connect(token);
 
             return this.currentUser;

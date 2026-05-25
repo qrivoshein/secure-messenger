@@ -11,4 +11,8 @@ router.post('/login', authLimiter, ...loginValidation, authController.login.bind
 router.get('/verify', authenticate, authController.verify.bind(authController));
 router.post('/logout', authenticate, authController.logout.bind(authController));
 
+// E2E: загрузка и получение публичных ECDH-ключей
+router.put('/public-key', authenticate, authController.setPublicKey.bind(authController));
+router.get('/users/:username/public-key', authenticate, authController.getPublicKey.bind(authController));
+
 export default router;

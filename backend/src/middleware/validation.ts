@@ -22,11 +22,19 @@ export const registerValidation: ValidationChain[] = [
         .withMessage('Username must be between 1 and 30 characters')
         .matches(/^[a-zA-Z0-9._-]+$/)
         .withMessage('Username can only contain latin letters, numbers, dots, underscores and hyphens'),
-    
+
     body('password')
         .isLength({ min: 6 })
         .withMessage('Password must be at least 6 characters'),
-    
+
+    // Публичный ECDH-ключ (JWK-сериализация) опционален при регистрации:
+    // если не передан, клиент догружает его отдельным запросом PUT /api/public-key.
+    body('publicKey')
+        .optional({ values: 'falsy' })
+        .isString()
+        .isLength({ max: 4096 })
+        .withMessage('publicKey must be a JWK string up to 4096 chars'),
+
     validate as any
 ];
 

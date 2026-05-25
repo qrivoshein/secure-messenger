@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     user_id VARCHAR(10) UNIQUE NOT NULL,
+    public_key TEXT,                              -- ECDH P-256 публичный ключ в JWK
+    public_key_updated_at TIMESTAMP,              -- ротация ключей раз в 90 дней
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -13,10 +15,11 @@ CREATE TABLE IF NOT EXISTS messages (
     message_id VARCHAR(255) UNIQUE NOT NULL,
     from_username VARCHAR(255) NOT NULL,
     to_username VARCHAR(255) NOT NULL,
-    text TEXT,
+    text TEXT,                              -- E2E-шифротекст в формате "ENC:{...}" либо legacy plaintext
     media_type VARCHAR(50),
     media_url TEXT,
     media_size INTEGER,
+    extracted_fields JSONB,                 -- автоматически распознанные реквизиты вложения
     forwarded BOOLEAN DEFAULT FALSE,
     forwarded_from VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
