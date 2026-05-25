@@ -13,8 +13,16 @@ from app.models.schemas import (
 )
 from app.parsers import PDFParser, DOCXParser, XLSXParser, TXTParser
 from app.exporters import TextExporter, MarkdownExporter, JSONExporter, ExcelExporter
+from app.extractors import FieldExtractor
 from app.utils.file_utils import get_file_hash, detect_file_type, validate_file_size
 from app.utils.cache_manager import cache_manager
+
+# Подгружаем конфиг экстракторов из JSON; при ошибке — дефолт
+_EXTRACTORS_CFG = Path(__file__).parent / "extractors" / "extractors.config.json"
+try:
+    field_extractor = FieldExtractor.from_config_file(_EXTRACTORS_CFG)
+except Exception:
+    field_extractor = FieldExtractor()
 
 # Initialize directories
 config.init_directories()
@@ -111,22 +119,28 @@ async def parse_document(
                 detail=f"Unsupported file type: {mime_type}"
             )
         
+        # Извлекаем ключевые реквизиты российских деловых документов
+        extracted = field_extractor.extract(text_content or "")
+        extracted_fields = extracted.model_dump(exclude_none=False)
+
         # Store parsed document
         documents_store[document_id] = {
             "structure": structure,
             "text_content": text_content,
+            "extracted_fields": extracted_fields,
             "file_path": file_path,
             "filename": file.filename
         }
-        
+
         # Calculate processing time
         processing_time = time.time() - start_time
-        
+
         return ParseResponse(
             status=ProcessingStatus.COMPLETED,
             document_id=document_id,
             structure=structure,
             text_content=text_content,
+            extracted_fields=extracted_fields,
             processing_time=processing_time
         )
     
