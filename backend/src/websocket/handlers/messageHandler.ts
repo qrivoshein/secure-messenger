@@ -16,7 +16,12 @@ export async function handleMessage(ws: ExtendedWebSocket, message: WebSocketMes
         return;
     }
 
-    const { to, text, encrypted, iv, messageId, mediaType, mediaUrl, fileName, fileSize, forwarded, forwardedFrom, replyTo } = message;
+    const {
+        to, text, encrypted, iv, messageId,
+        mediaType, mediaUrl, fileName, fileSize,
+        forwarded, forwardedFrom, replyTo,
+        extractedFields
+    } = message;
     const { onlineUsers } = context;
     
     const msgId = messageId || Date.now().toString();
@@ -45,7 +50,8 @@ export async function handleMessage(ws: ExtendedWebSocket, message: WebSocketMes
             forwardedFrom,
             replyToMessageId,
             replyToText,
-            replyToSender
+            replyToSender,
+            extractedFields
         });
 
         const msg: any = {
@@ -59,13 +65,14 @@ export async function handleMessage(ws: ExtendedWebSocket, message: WebSocketMes
             mediaUrl,
             fileName,
             fileSize,
+            extractedFields: extractedFields || null,
             forwarded: forwarded || false,
             forwardedFrom: forwardedFrom || null,
             read: false,
             timestamp: new Date().toISOString(),
-            time: new Date().toLocaleTimeString('ru-RU', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+            time: new Date().toLocaleTimeString('ru-RU', {
+                hour: '2-digit',
+                minute: '2-digit'
             })
         };
 

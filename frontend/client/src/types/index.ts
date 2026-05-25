@@ -6,6 +6,23 @@ export interface User {
     online?: boolean;
 }
 
+/**
+ * Структура реквизитов, извлечённых из вложенного документа модулем
+ * document-parser/app/extractors. Заполняется бэкендом автоматически
+ * при загрузке поддерживаемого формата (PDF/DOCX/XLSX/TXT).
+ */
+export interface ExtractedFields {
+    inn?: string[];
+    kpp?: string[];
+    ogrn?: string[];
+    bik?: string[];
+    bank_accounts?: string[];
+    amounts?: Array<{ value: number; currency: string; raw: string }>;
+    dates?: string[];
+    document_numbers?: string[];
+    document_type_hint?: 'invoice' | 'act' | 'contract' | 'waybill' | null;
+}
+
 export interface Message {
     id: string;
     from: string;
@@ -21,6 +38,7 @@ export interface Message {
     mediaUrl?: string;
     fileName?: string;
     fileSize?: number;
+    extractedFields?: ExtractedFields | null;
     duration?: string | number;
     waveformData?: number[];
     edited?: boolean;

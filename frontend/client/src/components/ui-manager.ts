@@ -6,6 +6,7 @@ import { createSVGIcon } from '../utils/icons';
 import { mediaLoader } from '../services/media-loader.service';
 import { AudioPlayer } from './AudioPlayer';
 import { messageContextMenu } from './MessageContextMenu';
+import { renderExtractedFieldsPreview } from './ExtractedFieldsPreview';
 import type { User, Chat, Message } from '../types';
 
 export class UIManager {
@@ -671,6 +672,20 @@ export class UIManager {
                 fileContainer.addEventListener('click', () => {
                     window.open(message.mediaUrl);
                 });
+
+                // Превью автоматически извлечённых реквизитов вложенного документа.
+                // Если backend распарсил файл и вернул extracted_fields, показываем
+                // их прямо в карточке сообщения — ИНН, сумма, дата, тип документа.
+                const extractedPreview = renderExtractedFieldsPreview(message.extractedFields ?? null);
+                if (extractedPreview) {
+                    const wrapper = createElement('div', {
+                        className: 'file-with-fields',
+                        styles: { display: 'flex', flexDirection: 'column' }
+                    });
+                    wrapper.appendChild(fileContainer);
+                    wrapper.appendChild(extractedPreview);
+                    return wrapper;
+                }
 
                 return fileContainer;
 

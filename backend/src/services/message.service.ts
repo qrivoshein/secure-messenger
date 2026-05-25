@@ -19,6 +19,7 @@ interface MessageData {
     replyToMessageId?: string;
     replyToText?: string;
     replyToSender?: string;
+    extractedFields?: Record<string, any>;
 }
 
 class MessageService {
@@ -54,6 +55,7 @@ class MessageService {
                 forwardedFrom: row.forwarded_from,
                 read: row.read,
                 edited: !!row.edited_at,
+                extractedFields: row.extracted_fields || null,
                 timestamp: row.created_at,
                 time: new Date(row.created_at).toLocaleTimeString('ru-RU', { 
                     hour: '2-digit', 
@@ -76,20 +78,22 @@ class MessageService {
     }
 
     async saveMessage(messageData: MessageData): Promise<void> {
-        const { 
+        const {
             messageId, from, to, text, mediaType, mediaUrl, fileSize, duration, waveformData,
-            forwarded, forwardedFrom, replyToMessageId, replyToText, replyToSender 
+            forwarded, forwardedFrom, replyToMessageId, replyToText, replyToSender,
+            extractedFields
         } = messageData;
-        
+
         await pool.query(
-            `INSERT INTO messages (message_id, from_username, to_username, text, media_type, media_url, media_size, duration, waveform_data, forwarded, forwarded_from, reply_to_message_id, reply_to_text, reply_to_sender)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+            `INSERT INTO messages (message_id, from_username, to_username, text, media_type, media_url, media_size, duration, waveform_data, forwarded, forwarded_from, reply_to_message_id, reply_to_text, reply_to_sender, extracted_fields)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
             [
                 messageId, from, to, text, mediaType, mediaUrl, fileSize,
                 duration || null,
                 waveformData ? JSON.stringify(waveformData) : null,
-                forwarded || false, forwardedFrom || null, 
-                replyToMessageId || null, replyToText || null, replyToSender || null
+                forwarded || false, forwardedFrom || null,
+                replyToMessageId || null, replyToText || null, replyToSender || null,
+                extractedFields ? JSON.stringify(extractedFields) : null
             ]
         );
 

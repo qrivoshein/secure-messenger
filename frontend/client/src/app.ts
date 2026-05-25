@@ -593,10 +593,10 @@ class MessengerApp {
 
             // Upload file
             const uploadData = await httpClient.uploadFile(file, this.currentChat.username);
-            
+
             // Hide indicator
             uploadIndicator.hide();
-            
+
             // Send message with image
             const messageId = generateId();
             wsService.send({
@@ -614,6 +614,49 @@ class MessengerApp {
         } catch (error: any) {
             console.error('Failed to send photo:', error);
             uploadIndicator.showError(error.message || 'Ошибка отправки фото');
+        }
+    }
+
+    /**
+     * Отправка делового документа. После загрузки бэкенд автоматически
+     * прогоняет файл через парсер и возвращает extractedFields (ИНН, КПП,
+     * суммы, даты и т.д.) — мы пробрасываем их в WS-сообщение, и получатель
+     * сразу видит превью реквизитов в карточке сообщения, без открытия
+     * отдельного модуля парсинга.
+     */
+    async sendDocument(): Promise<void> {
+        if (!this.currentChat) {
+            alert('Сначала выберите чат');
+            return;
+        }
+        try {
+            const file = await mediaService.selectDocument();
+            if (!file) return;
+
+            uploadIndicator.show(file.name);
+            const uploadData = await httpClient.uploadFile(file, this.currentChat.username);
+            uploadIndicator.hide();
+
+            const messageId = generateId();
+            wsService.send({
+                type: 'message',
+                to: this.currentChat.username,
+                text: '',
+                messageId: messageId,
+                mediaType: 'file',
+                mediaUrl: uploadData.fileUrl,
+                fileName: uploadData.fileName,
+                fileSize: uploadData.fileSize,
+                extractedFields: uploadData.extractedFields || null,
+            });
+
+            console.log('Document sent successfully', {
+                file: uploadData.fileName,
+                extractedFields: uploadData.extractedFields,
+            });
+        } catch (error: any) {
+            console.error('Failed to send document:', error);
+            uploadIndicator.showError(error.message || 'Ошибка отправки документа');
         }
     }
 

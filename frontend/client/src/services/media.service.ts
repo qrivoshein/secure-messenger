@@ -66,7 +66,31 @@ export class MediaService {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = 'image/*';
-            
+
+            input.onchange = (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                resolve(file || null);
+            };
+
+            input.oncancel = () => {
+                resolve(null);
+            };
+
+            input.click();
+        });
+    }
+
+    /**
+     * Выбор делового документа для прикрепления к сообщению.
+     * Поддерживаются форматы, для которых работает автоматический парсинг
+     * реквизитов на бэкенде: PDF, DOCX, XLSX, TXT.
+     */
+    async selectDocument(): Promise<File | null> {
+        return new Promise((resolve) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf,.docx,.xlsx,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain';
+
             input.onchange = (e) => {
                 const file = (e.target as HTMLInputElement).files?.[0];
                 resolve(file || null);

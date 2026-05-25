@@ -112,7 +112,12 @@ export class HttpClient {
         }>(`/api/users/search?q=${encodeURIComponent(query)}`);
     }
 
-    async uploadFile(file: File, to: string): Promise<{ fileUrl: string; fileName: string; fileSize: number }> {
+    async uploadFile(file: File, to: string): Promise<{
+        fileUrl: string;
+        fileName: string;
+        fileSize: number;
+        extractedFields?: any;
+    }> {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('to', to);

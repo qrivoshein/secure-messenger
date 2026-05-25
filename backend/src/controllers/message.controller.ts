@@ -4,6 +4,10 @@ import { AuthRequest } from '../types';
 import path from 'path';
 import fs from 'fs';
 import config from '../config';
+import logger from '../utils/logger';
+import { documentParserService } from '../services/document-parser.service';
+
+const PARSEABLE_EXTENSIONS = new Set(['.pdf', '.docx', '.xlsx', '.txt']);
 
 class MessageController {
     async getMessages(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
@@ -55,11 +59,35 @@ class MessageController {
 
             // Return authenticated API URL - requires JWT token to access
             const fileUrl = `/api/file/${req.file.filename}`;
-            
-            res.json({ 
+
+            // Авто-парсинг ключевых реквизитов для поддерживаемых документов.
+            // Зашифрованные вложения не имеют расширения в имени на сервере
+            // (multer кладёт через timestamp+suffix), поэтому смотрим
+            // originalname от пользователя.
+            let extractedFields: Record<string, any> | null = null;
+            const ext = path.extname(req.file.originalname || '').toLowerCase();
+            if (PARSEABLE_EXTENSIONS.has(ext)) {
+                try {
+                    const buffer = await fs.promises.readFile(req.file.path);
+                    const parseResult = await documentParserService.parseDocument(
+                        buffer,
+                        req.file.originalname,
+                    );
+                    if (parseResult.extracted_fields) {
+                        extractedFields = parseResult.extracted_fields;
+                    }
+                } catch (parseErr: any) {
+                    // Парсер недоступен или файл не распарсился — не блокируем
+                    // саму загрузку, просто отдаём fileUrl без реквизитов.
+                    logger.warn(`Auto-parse failed for ${req.file.originalname}: ${parseErr.message}`);
+                }
+            }
+
+            res.json({
                 fileUrl: fileUrl,
                 fileName: req.file.originalname,
-                fileSize: req.file.size
+                fileSize: req.file.size,
+                extractedFields,
             });
         } catch (error) {
             next(error);

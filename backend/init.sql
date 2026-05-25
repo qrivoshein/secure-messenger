@@ -15,10 +15,11 @@ CREATE TABLE IF NOT EXISTS messages (
     message_id VARCHAR(255) UNIQUE NOT NULL,
     from_username VARCHAR(255) NOT NULL,
     to_username VARCHAR(255) NOT NULL,
-    text TEXT,
+    text TEXT,                              -- E2E-шифротекст в формате "ENC:{...}" либо legacy plaintext
     media_type VARCHAR(50),
     media_url TEXT,
     media_size INTEGER,
+    extracted_fields JSONB,                 -- автоматически распознанные реквизиты вложения
     forwarded BOOLEAN DEFAULT FALSE,
     forwarded_from VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
