@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ЭГИДА — защищённый корпоративный мессенджер с парсингом документов</title>
-    <meta name="description" content="ЭГИДА — российская on-premise альтернатива корпоративным мессенджерам с E2E-шифрованием и автоматическим извлечением реквизитов из деловых документов.">
+    <meta name="description" content="Отечественный корпоративный мессенджер с E2E-шифрованием и автоматическим извлечением реквизитов (ИНН, КПП, ОГРН, БИК, суммы, даты) из счетов, актов и договоров. Self-hosted, open-source.">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -18,49 +18,237 @@
                 <span class="title-name">ЭГИДА</span>
             </h1>
             <p class="tagline">
-                Защищённый корпоративный мессенджер<br>
-                с парсингом российских деловых документов
+                Корпоративный мессенджер для малых предприятий,<br>
+                который ещё и разбирает за вас счета и договоры
             </p>
             <p class="subtitle">
-                Отечественная on-premise альтернатива публичным мессенджерам.
-                Сквозное шифрование, автоматическое извлечение реквизитов из счетов, актов и договоров,
-                полный контроль над данными.
+                Self-hosted замена WhatsApp и Telegram для рабочей переписки. Сообщения
+                шифруются сквозным шифрованием прямо в браузере, файлы хранятся на сервере
+                вашей компании, а вложенные PDF и Excel-документы автоматически разбираются —
+                из них вытаскиваются ИНН, КПП, ОГРН, БИК, расчётные счета, суммы, даты
+                и номера договоров. Превью реквизитов появляется прямо в карточке сообщения.
             </p>
             <div class="cta">
                 <a href="https://github.com/qrivoshein/secure-messenger" class="btn btn-primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
                     </svg>
-                    Открыть на GitHub
+                    Исходный код на GitHub
                 </a>
             </div>
         </div>
     </section>
 
-    <!-- ============ KEY METRICS ============ -->
-    <section class="metrics">
+    <!-- ============ PROBLEM ============ -->
+    <section class="problem">
         <div class="container">
-            <div class="metrics-grid">
-                <div class="metric">
-                    <div class="metric-value">12</div>
-                    <div class="metric-label">пользователей в&nbsp;пилоте</div>
+            <h2 class="section-title">Зачем это нужно</h2>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="problem-num">1</div>
+                    <h3>Публичные мессенджеры — это юридический риск</h3>
+                    <p>
+                        Когда сотрудники компании пересылают сканы договоров и сметы через
+                        WhatsApp или Telegram, серверы которых находятся за пределами РФ,
+                        предприятие нарушает ФЗ-242 о локализации персональных данных.
+                        С 30 мая 2025 года штрафы за утечку ПД для юридических лиц —
+                        от 3 до 15 миллионов рублей, при повторном нарушении — оборотный
+                        штраф от 25 до 500 миллионов.
+                    </p>
                 </div>
-                <div class="metric">
-                    <div class="metric-value">2&nbsp;847</div>
-                    <div class="metric-label">сообщений за&nbsp;26&nbsp;дней</div>
+                <div class="problem-card">
+                    <div class="problem-num">2</div>
+                    <h3>Извлечение данных из документов отнимает время</h3>
+                    <p>
+                        Бухгалтер открывает PDF-счёт, ищет в нём ИНН, КПП, сумму, дату,
+                        номер договора и вручную переносит всё в 1С или таблицу. На один
+                        документ — 5–10 минут. При 50 документах в месяц это около
+                        25 часов чистого рабочего времени, которое сотрудник мог бы
+                        потратить на что-то полезнее.
+                    </p>
                 </div>
-                <div class="metric">
-                    <div class="metric-value">67</div>
-                    <div class="metric-label">документов через&nbsp;парсер</div>
+                <div class="problem-card">
+                    <div class="problem-num">3</div>
+                    <h3>Корпоративные мессенджеры на рынке — дорого или неудобно</h3>
+                    <p>
+                        VK Teams и Яндекс 360 — от 249 ₽/мес за пользователя, без E2E
+                        и без возможности развернуть у себя. eXpress — от 300 ₽/мес и
+                        минимум 50 лицензий, парсинга документов нет. Mattermost — open-source,
+                        но без сквозного шифрования в бесплатной версии и без парсинга.
+                    </p>
                 </div>
-                <div class="metric metric-success">
-                    <div class="metric-value">0</div>
-                    <div class="metric-label">инцидентов безопасности</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ HOW IT WORKS ============ -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="section-title">Как это работает</h2>
+            <ol class="steps">
+                <li>
+                    <span class="step-num">01</span>
+                    <div>
+                        <h3>Развёртываете на своём сервере</h3>
+                        <p>
+                            Один VPS с 2 vCPU и 4 ГБ RAM в российском дата-центре. Установка
+                            идёт по систему: PostgreSQL, Redis, Nginx, Node.js, Python. Скрипты
+                            развёртывания и systemd-юниты лежат в репозитории. Среднее время
+                            установки на чистый Ubuntu 22.04 — около 4 часов вместе с настройкой
+                            SSL через Let's Encrypt.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">02</span>
+                    <div>
+                        <h3>Сотрудники открывают сайт в браузере и регистрируются</h3>
+                        <p>
+                            Логин, пароль (хешируется bcrypt), уникальный 5-значный ID для
+                            добавления в чат. При регистрации браузер генерирует пару
+                            ECDH-ключей P-256: приватный остаётся локально в IndexedDB
+                            и помечен как non-extractable, публичный отправляется на
+                            сервер. Никаких настольных приложений и магазинов — открыли
+                            ссылку и работаете.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">03</span>
+                    <div>
+                        <h3>Переписываются и обмениваются файлами</h3>
+                        <p>
+                            При первой переписке с конкретным собеседником клиент скачивает
+                            его публичный ключ и через <code>crypto.subtle.deriveKey()</code> вычисляет
+                            общий ключ AES-GCM-256. Каждое сообщение шифруется этим ключом
+                            с уникальным IV. Сервер видит только шифротекст — общим ключом
+                            не располагает и расшифровать не может. Поддерживаются
+                            голосовые сообщения, ответы на конкретное сообщение, статусы
+                            прочтения, поиск по переписке.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">04</span>
+                    <div>
+                        <h3>Прикладывают деловой документ — система разбирает его автоматически</h3>
+                        <p>
+                            Сотрудник перетаскивает в чат PDF, DOCX или XLSX. Бэкенд
+                            отправляет файл в отдельный микросервис на Python+FastAPI.
+                            Тот извлекает текст и структуру через PyMuPDF, python-docx
+                            и openpyxl, а затем прогоняет содержимое через модуль
+                            <code>extractors</code> — набор регулярных выражений с проверкой
+                            контрольных сумм. На выходе — структурированный JSON с реквизитами.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <span class="step-num">05</span>
+                    <div>
+                        <h3>Получатель видит ключевые поля прямо в чате</h3>
+                        <p>
+                            Под карточкой файла появляется блок с типом документа
+                            (счёт-фактура / акт / договор), ИНН, КПП, основной суммой,
+                            датой и номером документа. Получателю не нужно открывать
+                            файл и искать реквизиты глазами — они уже есть. Полный
+                            результат разбора по клику открывается в модальном окне
+                            со вкладками «Текст», «Структура», «Таблицы», «Метаданные»
+                            и кнопками экспорта в JSON, Markdown, Excel, HTML.
+                        </p>
+                    </div>
+                </li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- ============ PARSER DETAIL ============ -->
+    <section class="parser-detail">
+        <div class="container">
+            <h2 class="section-title">Что именно извлекает парсер</h2>
+            <p class="section-lead">
+                Модуль <code>extractors</code> рассчитан на типовые российские деловые
+                документы — счета-фактуры, акты выполненных работ, договоры, накладные.
+                Все правила настраиваются через JSON-конфигурацию: добавить новый тип
+                документа или новый реквизит можно без изменения кода.
+            </p>
+
+            <div class="parser-fields">
+                <div class="parser-field">
+                    <div class="field-name">ИНН</div>
+                    <div class="field-desc">
+                        10 цифр для юрлиц или 12 для ИП. Проверяется контрольная сумма
+                        по алгоритму ФНС России — мусор и случайные числа отсеиваются.
+                    </div>
                 </div>
-                <div class="metric metric-success">
-                    <div class="metric-value">4,2/5</div>
-                    <div class="metric-label">удовлетворённость сотрудников</div>
+                <div class="parser-field">
+                    <div class="field-name">КПП</div>
+                    <div class="field-desc">
+                        9 знаков в формате 4 цифры + 2 цифры/буквы + 3 цифры.
+                    </div>
                 </div>
+                <div class="parser-field">
+                    <div class="field-name">ОГРН / ОГРНИП</div>
+                    <div class="field-desc">
+                        13 цифр для юрлиц или 15 для ИП, с проверкой контрольной цифры.
+                    </div>
+                </div>
+                <div class="parser-field">
+                    <div class="field-name">БИК</div>
+                    <div class="field-desc">
+                        9 цифр, начинающиеся с «04» (БИК банков РФ).
+                    </div>
+                </div>
+                <div class="parser-field">
+                    <div class="field-name">Расчётный счёт</div>
+                    <div class="field-desc">
+                        20 цифр.
+                    </div>
+                </div>
+                <div class="parser-field">
+                    <div class="field-name">Денежные суммы</div>
+                    <div class="field-desc">
+                        Распознаются форматы «1 234 567,89 руб.», «50 000 ₽», «12345.67 RUB».
+                        Возвращаются как число + валюта + исходный текст.
+                    </div>
+                </div>
+                <div class="parser-field">
+                    <div class="field-name">Даты</div>
+                    <div class="field-desc">
+                        Числовые форматы (25.05.2026, 25/05/2026, 25-05-2026) и словесные
+                        («25 мая 2026»). Нормализуются в ISO YYYY-MM-DD.
+                    </div>
+                </div>
+                <div class="parser-field">
+                    <div class="field-name">Номера документов</div>
+                    <div class="field-desc">
+                        После символа «№». Подходит для счетов, актов, договоров.
+                    </div>
+                </div>
+                <div class="parser-field">
+                    <div class="field-name">Тип документа</div>
+                    <div class="field-desc">
+                        Определяется автоматически по характерным заголовкам:
+                        «Счёт на оплату», «Акт выполненных работ», «Договор поставки»
+                        и т. п.
+                    </div>
+                </div>
+            </div>
+
+            <div class="example-box">
+                <div class="example-label">Пример. Загружен PDF-счёт. Парсер вернул:</div>
+<pre class="example-code">{
+  "document_type_hint": "invoice",
+  "document_numbers": ["145"],
+  "dates": ["2026-05-20"],
+  "inn": ["7727563778"],
+  "kpp": ["772701001"],
+  "ogrn": ["1057748916300"],
+  "bik": ["044525225"],
+  "bank_accounts": ["40702810500000004567"],
+  "amounts": [
+    { "value": 150000.00, "currency": "RUB", "raw": "150 000,00 руб." }
+  ]
+}</pre>
             </div>
         </div>
     </section>
@@ -68,67 +256,78 @@
     <!-- ============ FEATURES ============ -->
     <section class="features">
         <div class="container">
-            <h2 class="section-title">Что внутри</h2>
+            <h2 class="section-title">Возможности подробно</h2>
             <div class="features-grid">
 
                 <div class="feature">
-                    <div class="feature-icon">🔐</div>
                     <h3>Сквозное шифрование</h3>
                     <p>
-                        ECDH P-256 для обмена ключами, AES-GCM-256 для шифрования сообщений.
-                        Приватный ключ хранится только на устройстве пользователя в IndexedDB
-                        (non-extractable). Сервер общим ключом пары не располагает.
+                        Обмен ключами — ECDH P-256 в браузере через нативный
+                        Web Crypto API. Из общего секрета производится ключ AES-GCM-256,
+                        который кэшируется в IndexedDB. Приватный ключ помечен как
+                        non-extractable: его не получится скопировать ни через
+                        DevTools, ни через вредоносный скрипт. Каждое сообщение шифруется
+                        своим уникальным 12-байтным IV. Долговременные ключи
+                        ротируются раз в 90 дней.
                     </p>
                 </div>
 
                 <div class="feature">
-                    <div class="feature-icon">📄</div>
-                    <h3>Парсинг деловых документов</h3>
+                    <h3>Реальное время и групповая работа</h3>
                     <p>
-                        Автоматическое извлечение реквизитов из PDF, DOCX, XLSX, TXT:
-                        ИНН (с проверкой контрольных сумм ФНС), КПП, ОГРН, БИК,
-                        расчётные счета, денежные суммы, даты, номера договоров.
-                        Превью реквизитов прямо в карточке сообщения.
+                        WebSocket-сервер на Node.js обрабатывает до 500 одновременных
+                        подключений на VPS с 2 vCPU. p99-латентность доставки
+                        сообщения — 38 мс на тестовом стенде. Поддерживаются
+                        статусы прочтения, индикация набора текста, ответы на
+                        конкретное сообщение, редактирование, удаление и поиск
+                        по истории.
                     </p>
                 </div>
 
                 <div class="feature">
-                    <div class="feature-icon">🏢</div>
-                    <h3>On-premise развёртывание</h3>
+                    <h3>Голосовые сообщения и медиафайлы</h3>
                     <p>
-                        Полный контроль над данными. Один VPS — 2 vCPU, 4 ГБ RAM,
-                        40 ГБ SSD — обслуживает до 500 одновременных WebSocket-подключений.
-                        Соответствие требованиям ФЗ-152, ФЗ-242, ФЗ-149.
+                        Запись голоса через MediaRecorder API с визуализацией
+                        осциллограммы. Поддержка картинок (JPEG, PNG, WebP),
+                        видео (MP4, WebM), аудио и документов. Лимит файла —
+                        50 МБ (настраивается). Загруженные файлы доступны только
+                        участникам соответствующего чата по Bearer-токену.
                     </p>
                 </div>
 
                 <div class="feature">
-                    <div class="feature-icon">⚖️</div>
-                    <h3>Соответствие законодательству</h3>
+                    <h3>Хранение на ваших серверах</h3>
                     <p>
-                        Локализация ПД на территории РФ (ФЗ-242). Поддерживается переход
-                        на отечественную криптографию (ГОСТ «Кузнечик» через КриптоПро CSP)
-                        в следующих версиях. Журнал аудита для расследования инцидентов.
+                        База данных PostgreSQL и кэш Redis работают на том же
+                        VPS, что и backend. Данные не передаются ни в какой
+                        облачный сервис. Резервное копирование настраивается
+                        cron-задачей <code>pg_dump</code>. Дата-центр выбирает заказчик —
+                        требование о локализации ПД по ФЗ-242 закрывается
+                        автоматически.
                     </p>
                 </div>
 
                 <div class="feature">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Реальное время</h3>
+                    <h3>Защита от типовых атак</h3>
                     <p>
-                        WebSocket-обмен сообщениями с p99-латентностью 38 мс.
-                        Обмен файлами до 50 МБ, голосовые сообщения, статусы прочтения,
-                        ответы на сообщения, форматирование текста.
+                        Bcrypt с фактором 10 для хеширования паролей, rate
+                        limiting (10 попыток входа за 15 минут с IP),
+                        параметризованные SQL-запросы, белый список расширений
+                        и валидация путей для защиты от path traversal,
+                        полный отказ от <code>innerHTML</code> на клиенте для архитектурной
+                        защиты от XSS.
                     </p>
                 </div>
 
                 <div class="feature">
-                    <div class="feature-icon">📂</div>
-                    <h3>Открытый исходный код</h3>
+                    <h3>Открытый код, лицензия MIT</h3>
                     <p>
-                        Лицензия MIT. Возможен независимый аудит безопасности.
-                        Подходит для адаптации под индивидуальные требования
-                        малого и среднего бизнеса.
+                        Около 15&nbsp;700 строк кода в 93 файлах: backend на TypeScript,
+                        SPA на чистом TypeScript без фреймворков, микросервис
+                        парсинга на Python. Возможен независимый аудит безопасности
+                        и адаптация под индивидуальные требования. 25 unit-тестов
+                        покрывают модуль извлечения реквизитов, включая проверку
+                        контрольных сумм ФНС.
                     </p>
                 </div>
 
@@ -143,19 +342,33 @@
             <div class="screenshots-grid">
                 <figure>
                     <img src="screenshots/chat.png" alt="Основное окно чата">
-                    <figcaption>Основное окно мессенджера: список чатов и переписка с E2E-шифрованием</figcaption>
+                    <figcaption>
+                        <strong>Главный экран.</strong> Слева — список чатов с превью
+                        последних сообщений и счётчиком непрочитанных. Справа — окно
+                        диалога с ответами на конкретные сообщения и индикатором онлайн-статуса.
+                    </figcaption>
                 </figure>
                 <figure>
                     <img src="screenshots/parser.png" alt="Модуль парсинга документов">
-                    <figcaption>Модуль парсинга: загрузка PDF, DOCX, XLSX и автоматическое извлечение структуры</figcaption>
+                    <figcaption>
+                        <strong>Модуль парсинга документов.</strong> Drag-and-drop загрузка
+                        PDF, DOCX, XLSX и TXT. История последних разборов — справа.
+                    </figcaption>
                 </figure>
                 <figure>
-                    <img src="screenshots/parser-fields.png" alt="Извлечённые реквизиты">
-                    <figcaption>Извлечённые реквизиты: метаданные, заголовки, таблицы, ключевые поля</figcaption>
+                    <img src="screenshots/parser-fields.png" alt="Извлечённые метаданные">
+                    <figcaption>
+                        <strong>Результат разбора.</strong> Вкладки «Текст», «Структура»,
+                        «Таблицы», «Метаданные» и кнопки экспорта в JSON, TEXT, MARKDOWN,
+                        EXCEL и HTML.
+                    </figcaption>
                 </figure>
                 <figure>
                     <img src="screenshots/auth.png" alt="Экран авторизации">
-                    <figcaption>Экран авторизации с проверкой по bcrypt и токен-сессией в&nbsp;Redis</figcaption>
+                    <figcaption>
+                        <strong>Авторизация.</strong> Login + password, хешируется bcrypt
+                        c фактором 10. Сессионный токен в&nbsp;Redis на 24 часа.
+                    </figcaption>
                 </figure>
             </div>
         </div>
@@ -165,38 +378,77 @@
     <section class="tech">
         <div class="container">
             <h2 class="section-title">Стек технологий</h2>
+            <p class="section-lead">
+                Гибридная архитектура: real-time-обмен сообщениями — на Node.js,
+                парсинг документов — на Python. Изоляция позволяет ресурсоёмкому
+                парсингу не блокировать доставку сообщений.
+            </p>
             <div class="tech-grid">
                 <div class="tech-item">
                     <div class="tech-cat">Backend</div>
-                    <div class="tech-name">Node.js + Express + WebSocket</div>
+                    <div class="tech-name">Node.js + Express + WebSocket (ws)</div>
                 </div>
                 <div class="tech-item">
                     <div class="tech-cat">Frontend</div>
-                    <div class="tech-name">TypeScript SPA · Vite</div>
+                    <div class="tech-name">TypeScript SPA · Vite (без фреймворков)</div>
                 </div>
                 <div class="tech-item">
                     <div class="tech-cat">Парсинг</div>
-                    <div class="tech-name">Python 3.11 + FastAPI</div>
+                    <div class="tech-name">Python 3.11 + FastAPI + PyMuPDF + python-docx + openpyxl</div>
                 </div>
                 <div class="tech-item">
                     <div class="tech-cat">СУБД</div>
-                    <div class="tech-name">PostgreSQL 14</div>
+                    <div class="tech-name">PostgreSQL 14 (4 таблицы, GIN-индекс по реквизитам)</div>
                 </div>
                 <div class="tech-item">
-                    <div class="tech-cat">Кэш</div>
-                    <div class="tech-name">Redis 7</div>
+                    <div class="tech-cat">Кэш / сессии</div>
+                    <div class="tech-name">Redis 7 — токены, rate limiting, онлайн-статусы</div>
                 </div>
                 <div class="tech-item">
-                    <div class="tech-cat">Reverse Proxy</div>
+                    <div class="tech-cat">Reverse proxy</div>
                     <div class="tech-name">Nginx + Let's Encrypt</div>
                 </div>
                 <div class="tech-item">
                     <div class="tech-cat">Шифрование</div>
-                    <div class="tech-name">Web Crypto API · ECDH P-256 · AES-GCM-256</div>
+                    <div class="tech-name">Web Crypto API · ECDH P-256 · AES-GCM-256 · bcrypt(10)</div>
                 </div>
                 <div class="tech-item">
-                    <div class="tech-cat">Парсеры</div>
-                    <div class="tech-name">PyMuPDF · python-docx · openpyxl</div>
+                    <div class="tech-cat">Тестирование</div>
+                    <div class="tech-name">k6 · pytest (25 тестов на модуль реквизитов)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ PILOT METRICS ============ -->
+    <section class="metrics">
+        <div class="container">
+            <h2 class="section-title">Пилот в реальной компании</h2>
+            <p class="section-lead">
+                Система обкатана в строительной компании ООО «ПромТехМонтаж» (г. Киров,
+                12 сотрудников). 26 дней эксплуатации в роли основного канала рабочих
+                коммуникаций.
+            </p>
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-value">12</div>
+                    <div class="metric-label">сотрудников подключено</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">2&nbsp;847</div>
+                    <div class="metric-label">отправленных сообщений</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">67</div>
+                    <div class="metric-label">документов разобрано парсером</div>
+                </div>
+                <div class="metric metric-success">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">инцидентов безопасности</div>
+                </div>
+                <div class="metric metric-success">
+                    <div class="metric-value">4,2 / 5</div>
+                    <div class="metric-label">оценка сотрудников</div>
                 </div>
             </div>
         </div>
@@ -205,29 +457,45 @@
     <!-- ============ AUDIENCE ============ -->
     <section class="audience">
         <div class="container">
-            <h2 class="section-title">Для кого</h2>
+            <h2 class="section-title">Для кого подходит</h2>
             <div class="audience-grid">
                 <div class="audience-item">
-                    <div class="aud-emoji">🏗️</div>
                     <div class="aud-name">Строительные компании</div>
-                    <div class="aud-desc">Контроль версий ПСД, защищённая переписка с заказчиками и подрядчиками</div>
+                    <div class="aud-desc">
+                        Защищённая переписка с заказчиками и субподрядчиками,
+                        автоматический разбор смет (XLSX, Гранд-Смета) и актов
+                        КС-2, КС-3.
+                    </div>
                 </div>
                 <div class="audience-item">
-                    <div class="aud-emoji">⚖️</div>
                     <div class="aud-name">Юридические фирмы</div>
-                    <div class="aud-desc">Конфиденциальность переписки с клиентами, автоматический разбор договоров</div>
+                    <div class="aud-desc">
+                        Конфиденциальность переписки с клиентами, разбор договоров
+                        и извлечение реквизитов сторон, дат и сумм.
+                    </div>
                 </div>
                 <div class="audience-item">
-                    <div class="aud-emoji">💼</div>
-                    <div class="aud-name">Бухгалтерские компании</div>
-                    <div class="aud-desc">Извлечение ИНН, КПП, сумм из счетов и актов, ускорение ввода данных</div>
+                    <div class="aud-name">Бухгалтерское обслуживание</div>
+                    <div class="aud-desc">
+                        Извлечение ИНН, КПП, БИК, расчётных счетов и сумм из
+                        счетов-фактур, актов и платёжных поручений. Ускорение
+                        ввода данных в учётные системы.
+                    </div>
                 </div>
                 <div class="audience-item">
-                    <div class="aud-emoji">💻</div>
-                    <div class="aud-name">IT-компании</div>
-                    <div class="aud-desc">Защищённые корпоративные коммуникации внутри проектных команд</div>
+                    <div class="aud-name">IT и проектные команды</div>
+                    <div class="aud-desc">
+                        Защищённый канал внутри команды для обмена техническими
+                        заданиями, договорами с заказчиками и счетами от поставщиков.
+                    </div>
                 </div>
             </div>
+            <p class="audience-note">
+                Решение рассчитано на коммерческие предприятия. Для государственных
+                информационных систем требуется сертификат ФСТЭК; в этом случае
+                AES-GCM-256 заменяется на отечественный «Кузнечик» через КриптоПро CSP —
+                это направление развития, заявленное в дорожной карте.
+            </p>
         </div>
     </section>
 
@@ -238,17 +506,21 @@
                 <div>
                     <strong>ЭГИДА</strong>
                     <span class="footer-sep">·</span>
-                    Выпускная квалификационная работа
+                    Выпускная квалификационная работа по теме «Разработка защищённого
+                    мессенджера с функцией парсинга документов для автоматизации
+                    бизнес-процессов малого предприятия»
                 </div>
                 <div>
-                    Кривошеин Е.Д.
+                    Кривошеин Е. Д.
                     <span class="footer-sep">·</span>
                     Вятский государственный университет
+                    <span class="footer-sep">·</span>
+                    Институт экономики и менеджмента
                     <span class="footer-sep">·</span>
                     Киров, 2026
                 </div>
                 <div class="footer-links">
-                    <a href="https://github.com/qrivoshein/secure-messenger">GitHub</a>
+                    <a href="https://github.com/qrivoshein/secure-messenger">Исходный код на GitHub</a>
                 </div>
             </div>
         </div>
