@@ -3,78 +3,729 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ЭГИДА — защищённый корпоративный мессенджер с парсингом документов</title>
-    <meta name="description" content="Отечественный корпоративный мессенджер с E2E-шифрованием и автоматическим извлечением реквизитов (ИНН, КПП, ОГРН, БИК, суммы, даты) из счетов, актов и договоров. Self-hosted, open-source.">
-    <link rel="stylesheet" href="styles.css">
+    <title>Эгида — корпоративный мессенджер с парсингом документов</title>
+    <meta name="description" content="Self-hosted корпоративный мессенджер для малых предприятий. Сквозное шифрование в браузере, автоматическое извлечение реквизитов из PDF и Excel.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        html{-webkit-text-size-adjust:100%}
+        body{
+            font-family:'Inter Tight',-apple-system,system-ui,sans-serif;
+            font-size:16px;
+            line-height:1.55;
+            color:#1A1A18;
+            background:#FAFAF8;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+        }
+
+        :root{
+            --ink:#1A1A18;
+            --ink-soft:#5C5B57;
+            --ink-mute:#8B8A85;
+            --line:#E5E5E0;
+            --line-soft:#EEEEE9;
+            --bg:#FAFAF8;
+            --surface:#FFFFFF;
+            --accent:#1B4FD8;
+            --accent-hover:#0F3EBE;
+            --accent-soft:#EEF2FE;
+        }
+
+        a{color:inherit;text-decoration:none}
+        code,.mono{font-family:'JetBrains Mono',monospace;font-size:0.9em}
+
+        .wrap{
+            max-width:1180px;
+            margin:0 auto;
+            padding:0 32px;
+        }
+
+        /* ======= HEADER ======= */
+        header{
+            padding:20px 0;
+            border-bottom:1px solid var(--line);
+            background:var(--bg);
+            position:sticky;
+            top:0;
+            z-index:50;
+        }
+        .head-inner{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+        .logo{
+            font-weight:600;
+            font-size:18px;
+            letter-spacing:-0.01em;
+        }
+        .logo-dot{
+            display:inline-block;
+            width:8px;
+            height:8px;
+            background:var(--accent);
+            border-radius:50%;
+            margin-right:10px;
+            vertical-align:middle;
+            transform:translateY(-1px);
+        }
+        .head-link{
+            font-size:14px;
+            color:var(--ink-soft);
+            font-weight:500;
+            transition:color 0.15s;
+        }
+        .head-link:hover{color:var(--accent)}
+
+        /* ======= HERO ======= */
+        .hero{
+            padding:80px 0 96px;
+        }
+        .hero-grid{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:64px;
+            align-items:center;
+        }
+        .hero-eyebrow{
+            font-family:'JetBrains Mono',monospace;
+            font-size:12px;
+            color:var(--ink-mute);
+            margin-bottom:28px;
+            letter-spacing:0.02em;
+        }
+        h1{
+            font-size:52px;
+            line-height:1.08;
+            font-weight:600;
+            letter-spacing:-0.025em;
+            color:var(--ink);
+            margin-bottom:24px;
+            max-width:520px;
+        }
+        .hero-sub{
+            font-size:17px;
+            line-height:1.55;
+            color:var(--ink-soft);
+            margin-bottom:36px;
+            max-width:480px;
+        }
+        .cta-row{
+            display:flex;
+            gap:12px;
+            align-items:center;
+        }
+        .btn{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            background:var(--accent);
+            color:#FFFFFF;
+            font-size:15px;
+            font-weight:500;
+            padding:12px 20px;
+            border-radius:6px;
+            transition:background 0.15s;
+        }
+        .btn:hover{background:var(--accent-hover)}
+        .btn svg{flex-shrink:0}
+        .btn-ghost{
+            color:var(--ink-soft);
+            font-size:14px;
+            font-weight:500;
+            padding:12px 16px;
+        }
+        .btn-ghost:hover{color:var(--ink)}
+
+        /* ======= CHAT MOCK ======= */
+        .chat-mock{
+            background:var(--surface);
+            border:1px solid var(--line);
+            border-radius:8px;
+            box-shadow:0 1px 3px rgba(0,0,0,0.06),0 8px 24px rgba(20,20,20,0.04);
+            overflow:hidden;
+            font-size:14px;
+        }
+        .chat-header{
+            padding:14px 18px;
+            border-bottom:1px solid var(--line-soft);
+            display:flex;
+            align-items:center;
+            gap:12px;
+        }
+        .avatar{
+            width:36px;
+            height:36px;
+            border-radius:50%;
+            background:var(--accent-soft);
+            color:var(--accent);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-weight:600;
+            font-size:13px;
+        }
+        .chat-name{font-weight:500;font-size:14px}
+        .chat-status{font-size:12px;color:var(--ink-mute);margin-top:1px}
+        .chat-status::before{
+            content:'';
+            display:inline-block;
+            width:6px;
+            height:6px;
+            background:#22C55E;
+            border-radius:50%;
+            margin-right:6px;
+            vertical-align:middle;
+            transform:translateY(-1px);
+        }
+        .chat-lock{
+            margin-left:auto;
+            color:var(--ink-mute);
+            font-size:11px;
+            display:flex;
+            align-items:center;
+            gap:5px;
+        }
+        .chat-body{
+            padding:20px 18px 16px;
+            background:#FBFBFA;
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+        }
+        .msg{display:flex;flex-direction:column;max-width:78%}
+        .msg-in{align-self:flex-start}
+        .msg-out{align-self:flex-end;align-items:flex-end}
+        .bubble{
+            padding:10px 14px;
+            border-radius:14px;
+            font-size:14px;
+            line-height:1.4;
+        }
+        .msg-in .bubble{background:#FFFFFF;border:1px solid var(--line);border-bottom-left-radius:4px}
+        .msg-out .bubble{background:var(--accent);color:#FFFFFF;border-bottom-right-radius:4px}
+        .msg .time{
+            font-size:11px;
+            color:var(--ink-mute);
+            margin-top:4px;
+            padding:0 4px;
+        }
+
+        .file-card{
+            background:#FFFFFF;
+            border:1px solid var(--line);
+            border-radius:10px;
+            padding:12px;
+            border-bottom-left-radius:4px;
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+            min-width:280px;
+        }
+        .file-row{
+            display:flex;
+            gap:12px;
+            align-items:center;
+        }
+        .file-icon{
+            width:40px;
+            height:40px;
+            background:var(--accent-soft);
+            color:var(--accent);
+            border-radius:6px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:11px;
+            font-weight:600;
+            font-family:'JetBrains Mono',monospace;
+            flex-shrink:0;
+        }
+        .file-meta{flex:1;min-width:0}
+        .file-name{
+            font-size:13.5px;
+            font-weight:500;
+            color:var(--ink);
+            white-space:nowrap;
+            overflow:hidden;
+            text-overflow:ellipsis;
+        }
+        .file-size{
+            font-size:11.5px;
+            color:var(--ink-mute);
+            margin-top:1px;
+        }
+
+        .extracted{
+            border-top:1px solid var(--line-soft);
+            padding-top:10px;
+        }
+        .extracted-label{
+            font-family:'JetBrains Mono',monospace;
+            font-size:10px;
+            color:var(--accent);
+            text-transform:uppercase;
+            letter-spacing:0.06em;
+            margin-bottom:8px;
+        }
+        .extracted-rows{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:6px 16px;
+        }
+        .extracted-rows>div{
+            display:flex;
+            justify-content:space-between;
+            align-items:baseline;
+            gap:8px;
+            font-size:12px;
+        }
+        .extracted-rows span{color:var(--ink-mute)}
+        .extracted-rows b{
+            font-weight:600;
+            color:var(--ink);
+            font-family:'JetBrains Mono',monospace;
+            font-size:11.5px;
+        }
+
+        .chat-input{
+            padding:14px 18px;
+            border-top:1px solid var(--line-soft);
+            display:flex;
+            align-items:center;
+            gap:10px;
+            background:#FFFFFF;
+        }
+        .input-box{
+            flex:1;
+            border:1px solid var(--line);
+            border-radius:18px;
+            padding:8px 14px;
+            color:var(--ink-mute);
+            font-size:13.5px;
+        }
+        .send-btn{
+            width:32px;
+            height:32px;
+            background:var(--accent);
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#FFFFFF;
+            flex-shrink:0;
+        }
+
+        /* ======= FEATURES ======= */
+        .features{
+            padding:80px 0;
+            border-top:1px solid var(--line);
+        }
+        .features-grid{
+            display:grid;
+            grid-template-columns:repeat(3,1fr);
+            gap:48px;
+        }
+        .feat-num{
+            font-family:'JetBrains Mono',monospace;
+            font-size:12px;
+            color:var(--accent);
+            margin-bottom:14px;
+            letter-spacing:0.02em;
+        }
+        .feat-title{
+            font-size:20px;
+            font-weight:600;
+            letter-spacing:-0.015em;
+            color:var(--ink);
+            margin-bottom:10px;
+        }
+        .feat-desc{
+            font-size:15px;
+            color:var(--ink-soft);
+            line-height:1.55;
+        }
+
+        /* ======= HOW IT WORKS ======= */
+        .how{
+            padding:96px 0;
+            border-top:1px solid var(--line);
+        }
+        .how-grid{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:64px;
+            align-items:start;
+        }
+        .section-eyebrow{
+            font-family:'JetBrains Mono',monospace;
+            font-size:12px;
+            color:var(--ink-mute);
+            margin-bottom:16px;
+            letter-spacing:0.02em;
+        }
+        h2{
+            font-size:36px;
+            line-height:1.15;
+            font-weight:600;
+            letter-spacing:-0.025em;
+            color:var(--ink);
+            margin-bottom:24px;
+            max-width:480px;
+        }
+        .how-lead{
+            font-size:16px;
+            color:var(--ink-soft);
+            line-height:1.6;
+            margin-bottom:36px;
+            max-width:460px;
+        }
+        .how-steps{
+            list-style:none;
+            counter-reset:step;
+            display:flex;
+            flex-direction:column;
+            gap:20px;
+        }
+        .how-steps li{
+            display:flex;
+            gap:18px;
+            counter-increment:step;
+        }
+        .how-steps li::before{
+            content:counter(step,decimal-leading-zero);
+            font-family:'JetBrains Mono',monospace;
+            font-size:12px;
+            color:var(--accent);
+            min-width:32px;
+            padding-top:3px;
+        }
+        .how-steps h4{
+            font-size:15px;
+            font-weight:600;
+            color:var(--ink);
+            margin-bottom:4px;
+            letter-spacing:-0.005em;
+        }
+        .how-steps p{
+            font-size:14px;
+            color:var(--ink-soft);
+            line-height:1.55;
+        }
+
+        /* Large parser card mock */
+        .parser-card{
+            background:var(--surface);
+            border:1px solid var(--line);
+            border-radius:8px;
+            box-shadow:0 1px 3px rgba(0,0,0,0.06),0 8px 24px rgba(20,20,20,0.04);
+            overflow:hidden;
+        }
+        .parser-head{
+            padding:18px 22px;
+            border-bottom:1px solid var(--line-soft);
+            display:flex;
+            align-items:center;
+            gap:16px;
+        }
+        .parser-icon{
+            width:48px;
+            height:48px;
+            background:var(--accent-soft);
+            color:var(--accent);
+            border-radius:8px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-family:'JetBrains Mono',monospace;
+            font-weight:600;
+            font-size:13px;
+            flex-shrink:0;
+        }
+        .parser-file{
+            font-size:16px;
+            font-weight:500;
+            color:var(--ink);
+        }
+        .parser-file-sub{
+            font-size:13px;
+            color:var(--ink-mute);
+            margin-top:3px;
+        }
+        .parser-body{padding:22px}
+        .parser-section-label{
+            font-family:'JetBrains Mono',monospace;
+            font-size:11px;
+            color:var(--accent);
+            text-transform:uppercase;
+            letter-spacing:0.06em;
+            margin-bottom:14px;
+        }
+        .parser-fields{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:14px 32px;
+        }
+        .parser-fields>div{
+            display:flex;
+            flex-direction:column;
+            gap:2px;
+            padding-bottom:12px;
+            border-bottom:1px solid var(--line-soft);
+        }
+        .parser-fields>div:nth-last-child(-n+2){border-bottom:none;padding-bottom:0}
+        .pf-label{
+            font-size:12px;
+            color:var(--ink-mute);
+            font-family:'JetBrains Mono',monospace;
+            text-transform:uppercase;
+            letter-spacing:0.04em;
+        }
+        .pf-value{
+            font-size:15px;
+            color:var(--ink);
+            font-weight:500;
+            font-family:'JetBrains Mono',monospace;
+        }
+        .pf-value-money{font-size:17px;color:var(--accent)}
+
+        /* ======= COMPARISON ======= */
+        .compare{
+            padding:96px 0;
+            border-top:1px solid var(--line);
+        }
+        .compare-head{
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:64px;
+            margin-bottom:48px;
+            align-items:end;
+        }
+        .compare h2{margin-bottom:0}
+        .compare-lead{
+            font-size:15px;
+            color:var(--ink-soft);
+            line-height:1.6;
+            max-width:400px;
+        }
+        table{
+            width:100%;
+            border-collapse:collapse;
+            border:1px solid var(--line);
+            border-radius:8px;
+            overflow:hidden;
+            background:var(--surface);
+        }
+        th,td{
+            text-align:left;
+            padding:16px 20px;
+            font-size:14px;
+            border-bottom:1px solid var(--line-soft);
+        }
+        thead th{
+            background:#F5F5F0;
+            font-weight:600;
+            font-size:13px;
+            color:var(--ink);
+            letter-spacing:-0.005em;
+        }
+        thead th.us{color:var(--accent)}
+        tbody td:first-child{
+            color:var(--ink-soft);
+            font-size:13.5px;
+        }
+        tbody tr:last-child td{border-bottom:none}
+        td.us{
+            color:var(--ink);
+            font-weight:500;
+            background:#FBFCFF;
+        }
+        td.neg{color:var(--ink-mute)}
+
+        /* ======= FOOTER ======= */
+        footer{
+            padding:48px 0 32px;
+            border-top:1px solid var(--line);
+            background:var(--bg);
+        }
+        .foot-inner{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-end;
+            gap:32px;
+            flex-wrap:wrap;
+        }
+        .foot-meta{
+            font-size:13px;
+            color:var(--ink-mute);
+            line-height:1.6;
+        }
+        .foot-meta strong{color:var(--ink);font-weight:600}
+        .foot-link{
+            font-size:13px;
+            color:var(--ink-soft);
+            font-weight:500;
+        }
+        .foot-link:hover{color:var(--accent)}
+
+        /* ======= RESPONSIVE ======= */
+        @media (max-width:960px){
+            .hero-grid,.how-grid,.compare-head{grid-template-columns:1fr;gap:48px}
+            h1{font-size:42px;max-width:none}
+            .hero{padding:56px 0 64px}
+            .features{padding:56px 0}
+            .features-grid{grid-template-columns:1fr;gap:32px}
+            .how,.compare{padding:64px 0}
+        }
+        @media (max-width:600px){
+            .wrap{padding:0 20px}
+            h1{font-size:34px;letter-spacing:-0.02em}
+            h2{font-size:28px}
+            .hero{padding:40px 0 48px}
+            .extracted-rows{grid-template-columns:1fr}
+            .parser-fields{grid-template-columns:1fr}
+            .parser-fields>div{border-bottom:1px solid var(--line-soft);padding-bottom:12px}
+            .parser-fields>div:nth-last-child(-n+2){border-bottom:1px solid var(--line-soft);padding-bottom:12px}
+            .parser-fields>div:last-child{border-bottom:none;padding-bottom:0}
+            table,thead,tbody,tr,td,th{display:block}
+            thead{display:none}
+            tbody tr{padding:16px 20px;border-bottom:1px solid var(--line-soft)}
+            tbody tr:last-child{border-bottom:none}
+            tbody td{padding:6px 0;border:none;display:flex;justify-content:space-between;gap:16px}
+            tbody td:first-child{font-weight:600;color:var(--ink);font-size:14px;margin-bottom:4px}
+            tbody td::before{content:attr(data-label);color:var(--ink-mute);font-size:12px}
+            tbody td:first-child::before{display:none}
+        }
+    </style>
 </head>
 <body>
-    <div class="bg-grid"></div>
+
+    <header>
+        <div class="wrap head-inner">
+            <div class="logo"><span class="logo-dot"></span>Эгида</div>
+            <a class="head-link" href="https://github.com/qrivoshein/secure-messenger">GitHub →</a>
+        </div>
+    </header>
 
     <!-- ============ HERO ============ -->
     <section class="hero">
-        <div class="container">
-            <div class="badge">Выпускная квалификационная работа · ВятГУ · 2026</div>
-            <h1 class="title">
-                <span class="title-name">ЭГИДА</span>
-            </h1>
-            <p class="tagline">
-                Корпоративный мессенджер для малых предприятий,<br>
-                который ещё и разбирает за вас счета и договоры
-            </p>
-            <p class="subtitle">
-                Self-hosted замена WhatsApp и Telegram для рабочей переписки. Сообщения
-                шифруются сквозным шифрованием прямо в браузере, файлы хранятся на сервере
-                вашей компании, а вложенные PDF и Excel-документы автоматически разбираются —
-                из них вытаскиваются ИНН, КПП, ОГРН, БИК, расчётные счета, суммы, даты
-                и номера договоров. Превью реквизитов появляется прямо в карточке сообщения.
-            </p>
-            <div class="cta">
-                <a href="https://github.com/qrivoshein/secure-messenger" class="btn btn-primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-                    </svg>
-                    Исходный код на GitHub
-                </a>
+        <div class="wrap">
+            <div class="hero-grid">
+                <div>
+                    <div class="hero-eyebrow">Корпоративный мессенджер · ВКР 2026</div>
+                    <h1>Рабочая переписка на вашем сервере. Счета разбираются сами.</h1>
+                    <p class="hero-sub">
+                        Self-hosted замена WhatsApp и Telegram для малых предприятий.
+                        Сквозное шифрование в браузере, файлы остаются на сервере компании.
+                        Вложенные PDF и Excel разбираются автоматически — реквизиты сразу
+                        видны в карточке сообщения.
+                    </p>
+                    <div class="cta-row">
+                        <a href="https://github.com/qrivoshein/secure-messenger" class="btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                            </svg>
+                            Исходный код на GitHub
+                        </a>
+                        <a href="#how" class="btn-ghost">Как работает →</a>
+                    </div>
+                </div>
+
+                <!-- Chat mockup -->
+                <div class="chat-mock">
+                    <div class="chat-header">
+                        <div class="avatar">ИВ</div>
+                        <div>
+                            <div class="chat-name">Иван Воронин</div>
+                            <div class="chat-status">в сети</div>
+                        </div>
+                        <div class="chat-lock">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            E2E
+                        </div>
+                    </div>
+
+                    <div class="chat-body">
+                        <div class="msg msg-in">
+                            <div class="bubble">Высылаю счёт от поставщика, проверь реквизиты до конца недели.</div>
+                            <span class="time">14:32</span>
+                        </div>
+
+                        <div class="msg msg-out">
+                            <div class="bubble">Принял, посмотрю сегодня.</div>
+                            <span class="time">14:35</span>
+                        </div>
+
+                        <div class="msg msg-in">
+                            <div class="file-card">
+                                <div class="file-row">
+                                    <div class="file-icon">PDF</div>
+                                    <div class="file-meta">
+                                        <div class="file-name">Счёт №247 от 12.05.2026</div>
+                                        <div class="file-size">238 КБ · разобран</div>
+                                    </div>
+                                </div>
+                                <div class="extracted">
+                                    <div class="extracted-label">Извлечённые реквизиты</div>
+                                    <div class="extracted-rows">
+                                        <div><span>ИНН</span><b>4345123456</b></div>
+                                        <div><span>КПП</span><b>434501001</b></div>
+                                        <div><span>БИК</span><b>043304711</b></div>
+                                        <div><span>р/с</span><b>40702810500000004567</b></div>
+                                        <div><span>Сумма</span><b>184 500 ₽</b></div>
+                                        <div><span>Дата</span><b>12.05.2026</b></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="time">14:38</span>
+                        </div>
+                    </div>
+
+                    <div class="chat-input">
+                        <div class="input-box">Сообщение</div>
+                        <div class="send-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M5 12h14M13 6l6 6-6 6"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- ============ PROBLEM ============ -->
-    <section class="problem">
-        <div class="container">
-            <h2 class="section-title">Зачем это нужно</h2>
-            <div class="problem-grid">
-                <div class="problem-card">
-                    <div class="problem-num">1</div>
-                    <h3>Публичные мессенджеры — это юридический риск</h3>
-                    <p>
-                        Когда сотрудники компании пересылают сканы договоров и сметы через
-                        WhatsApp или Telegram, серверы которых находятся за пределами РФ,
-                        предприятие нарушает ФЗ-242 о локализации персональных данных.
-                        С 30 мая 2025 года штрафы за утечку ПД для юридических лиц —
-                        от 3 до 15 миллионов рублей, при повторном нарушении — оборотный
-                        штраф от 25 до 500 миллионов.
+    <!-- ============ FEATURES ============ -->
+    <section class="features">
+        <div class="wrap">
+            <div class="features-grid">
+                <div>
+                    <div class="feat-num">01</div>
+                    <h3 class="feat-title">E2E-шифрование в браузере</h3>
+                    <p class="feat-desc">
+                        ECDH P-256 для обмена ключами, AES-GCM-256 для сообщений.
+                        Приватный ключ хранится в IndexedDB как non-extractable и не покидает устройство.
                     </p>
                 </div>
-                <div class="problem-card">
-                    <div class="problem-num">2</div>
-                    <h3>Извлечение данных из документов отнимает время</h3>
-                    <p>
-                        Бухгалтер открывает PDF-счёт, ищет в нём ИНН, КПП, сумму, дату,
-                        номер договора и вручную переносит всё в 1С или таблицу. На один
-                        документ — 5–10 минут. При 50 документах в месяц это около
-                        25 часов чистого рабочего времени, которое сотрудник мог бы
-                        потратить на что-то полезнее.
+                <div>
+                    <div class="feat-num">02</div>
+                    <h3 class="feat-title">Файлы на сервере компании</h3>
+                    <p class="feat-desc">
+                        Один VPS в российском дата-центре, PostgreSQL и Redis локально.
+                        Никаких облачных сервисов. Требование о локализации по ФЗ-242 закрывается автоматически.
                     </p>
                 </div>
-                <div class="problem-card">
-                    <div class="problem-num">3</div>
-                    <h3>Корпоративные мессенджеры на рынке — дорого или неудобно</h3>
-                    <p>
-                        VK Teams и Яндекс 360 — от 249 ₽/мес за пользователя, без E2E
-                        и без возможности развернуть у себя. eXpress — от 300 ₽/мес и
-                        минимум 50 лицензий, парсинга документов нет. Mattermost — open-source,
-                        но без сквозного шифрования в бесплатной версии и без парсинга.
+                <div>
+                    <div class="feat-num">03</div>
+                    <h3 class="feat-title">Автопарсинг документов</h3>
+                    <p class="feat-desc">
+                        ИНН, КПП, ОГРН, БИК, расчётные счета, суммы и даты извлекаются
+                        из PDF, DOCX и XLSX. Проверка контрольных сумм по алгоритму ФНС.
                     </p>
                 </div>
             </div>
@@ -82,447 +733,175 @@
     </section>
 
     <!-- ============ HOW IT WORKS ============ -->
-    <section class="how-it-works">
-        <div class="container">
-            <h2 class="section-title">Как это работает</h2>
-            <ol class="steps">
-                <li>
-                    <span class="step-num">01</span>
-                    <div>
-                        <h3>Развёртываете на своём сервере</h3>
-                        <p>
-                            Один VPS с 2 vCPU и 4 ГБ RAM в российском дата-центре. Установка
-                            идёт по систему: PostgreSQL, Redis, Nginx, Node.js, Python. Скрипты
-                            развёртывания и systemd-юниты лежат в репозитории. Среднее время
-                            установки на чистый Ubuntu 22.04 — около 4 часов вместе с настройкой
-                            SSL через Let's Encrypt.
-                        </p>
-                    </div>
-                </li>
-                <li>
-                    <span class="step-num">02</span>
-                    <div>
-                        <h3>Сотрудники открывают сайт в браузере и регистрируются</h3>
-                        <p>
-                            Логин, пароль (хешируется bcrypt), уникальный 5-значный ID для
-                            добавления в чат. При регистрации браузер генерирует пару
-                            ECDH-ключей P-256: приватный остаётся локально в IndexedDB
-                            и помечен как non-extractable, публичный отправляется на
-                            сервер. Никаких настольных приложений и магазинов — открыли
-                            ссылку и работаете.
-                        </p>
-                    </div>
-                </li>
-                <li>
-                    <span class="step-num">03</span>
-                    <div>
-                        <h3>Переписываются и обмениваются файлами</h3>
-                        <p>
-                            При первой переписке с конкретным собеседником клиент скачивает
-                            его публичный ключ и через <code>crypto.subtle.deriveKey()</code> вычисляет
-                            общий ключ AES-GCM-256. Каждое сообщение шифруется этим ключом
-                            с уникальным IV. Сервер видит только шифротекст — общим ключом
-                            не располагает и расшифровать не может. Поддерживаются
-                            голосовые сообщения, ответы на конкретное сообщение, статусы
-                            прочтения, поиск по переписке.
-                        </p>
-                    </div>
-                </li>
-                <li>
-                    <span class="step-num">04</span>
-                    <div>
-                        <h3>Прикладывают деловой документ — система разбирает его автоматически</h3>
-                        <p>
-                            Сотрудник перетаскивает в чат PDF, DOCX или XLSX. Бэкенд
-                            отправляет файл в отдельный микросервис на Python+FastAPI.
-                            Тот извлекает текст и структуру через PyMuPDF, python-docx
-                            и openpyxl, а затем прогоняет содержимое через модуль
-                            <code>extractors</code> — набор регулярных выражений с проверкой
-                            контрольных сумм. На выходе — структурированный JSON с реквизитами.
-                        </p>
-                    </div>
-                </li>
-                <li>
-                    <span class="step-num">05</span>
-                    <div>
-                        <h3>Получатель видит ключевые поля прямо в чате</h3>
-                        <p>
-                            Под карточкой файла появляется блок с типом документа
-                            (счёт-фактура / акт / договор), ИНН, КПП, основной суммой,
-                            датой и номером документа. Получателю не нужно открывать
-                            файл и искать реквизиты глазами — они уже есть. Полный
-                            результат разбора по клику открывается в модальном окне
-                            со вкладками «Текст», «Структура», «Таблицы», «Метаданные»
-                            и кнопками экспорта в JSON, Markdown, Excel, HTML.
-                        </p>
-                    </div>
-                </li>
-            </ol>
-        </div>
-    </section>
-
-    <!-- ============ PARSER DETAIL ============ -->
-    <section class="parser-detail">
-        <div class="container">
-            <h2 class="section-title">Что именно извлекает парсер</h2>
-            <p class="section-lead">
-                Модуль <code>extractors</code> рассчитан на типовые российские деловые
-                документы — счета-фактуры, акты выполненных работ, договоры, накладные.
-                Все правила настраиваются через JSON-конфигурацию: добавить новый тип
-                документа или новый реквизит можно без изменения кода.
-            </p>
-
-            <div class="parser-fields">
-                <div class="parser-field">
-                    <div class="field-name">ИНН</div>
-                    <div class="field-desc">
-                        10 цифр для юрлиц или 12 для ИП. Проверяется контрольная сумма
-                        по алгоритму ФНС России — мусор и случайные числа отсеиваются.
-                    </div>
-                </div>
-                <div class="parser-field">
-                    <div class="field-name">КПП</div>
-                    <div class="field-desc">
-                        9 знаков в формате 4 цифры + 2 цифры/буквы + 3 цифры.
-                    </div>
-                </div>
-                <div class="parser-field">
-                    <div class="field-name">ОГРН / ОГРНИП</div>
-                    <div class="field-desc">
-                        13 цифр для юрлиц или 15 для ИП, с проверкой контрольной цифры.
-                    </div>
-                </div>
-                <div class="parser-field">
-                    <div class="field-name">БИК</div>
-                    <div class="field-desc">
-                        9 цифр, начинающиеся с «04» (БИК банков РФ).
-                    </div>
-                </div>
-                <div class="parser-field">
-                    <div class="field-name">Расчётный счёт</div>
-                    <div class="field-desc">
-                        20 цифр.
-                    </div>
-                </div>
-                <div class="parser-field">
-                    <div class="field-name">Денежные суммы</div>
-                    <div class="field-desc">
-                        Распознаются форматы «1 234 567,89 руб.», «50 000 ₽», «12345.67 RUB».
-                        Возвращаются как число + валюта + исходный текст.
-                    </div>
-                </div>
-                <div class="parser-field">
-                    <div class="field-name">Даты</div>
-                    <div class="field-desc">
-                        Числовые форматы (25.05.2026, 25/05/2026, 25-05-2026) и словесные
-                        («25 мая 2026»). Нормализуются в ISO YYYY-MM-DD.
-                    </div>
-                </div>
-                <div class="parser-field">
-                    <div class="field-name">Номера документов</div>
-                    <div class="field-desc">
-                        После символа «№». Подходит для счетов, актов, договоров.
-                    </div>
-                </div>
-                <div class="parser-field">
-                    <div class="field-name">Тип документа</div>
-                    <div class="field-desc">
-                        Определяется автоматически по характерным заголовкам:
-                        «Счёт на оплату», «Акт выполненных работ», «Договор поставки»
-                        и т. п.
-                    </div>
-                </div>
-            </div>
-
-            <div class="example-box">
-                <div class="example-label">Пример. Загружен PDF-счёт. Парсер вернул:</div>
-<pre class="example-code">{
-  "document_type_hint": "invoice",
-  "document_numbers": ["145"],
-  "dates": ["2026-05-20"],
-  "inn": ["7727563778"],
-  "kpp": ["772701001"],
-  "ogrn": ["1057748916300"],
-  "bik": ["044525225"],
-  "bank_accounts": ["40702810500000004567"],
-  "amounts": [
-    { "value": 150000.00, "currency": "RUB", "raw": "150 000,00 руб." }
-  ]
-}</pre>
-            </div>
-        </div>
-    </section>
-
-    <!-- ============ FEATURES ============ -->
-    <section class="features">
-        <div class="container">
-            <h2 class="section-title">Возможности подробно</h2>
-            <div class="features-grid">
-
-                <div class="feature">
-                    <h3>Сквозное шифрование</h3>
-                    <p>
-                        Обмен ключами — ECDH P-256 в браузере через нативный
-                        Web Crypto API. Из общего секрета производится ключ AES-GCM-256,
-                        который кэшируется в IndexedDB. Приватный ключ помечен как
-                        non-extractable: его не получится скопировать ни через
-                        DevTools, ни через вредоносный скрипт. Каждое сообщение шифруется
-                        своим уникальным 12-байтным IV. Долговременные ключи
-                        ротируются раз в 90 дней.
+    <section class="how" id="how">
+        <div class="wrap">
+            <div class="how-grid">
+                <div>
+                    <div class="section-eyebrow">Парсинг документов</div>
+                    <h2>Что происходит, когда сотрудник прикрепляет PDF</h2>
+                    <p class="how-lead">
+                        Парсинг запускается автоматически в момент загрузки. Получателю
+                        не нужно нажимать ничего, чтобы увидеть реквизиты.
                     </p>
+                    <ol class="how-steps">
+                        <li>
+                            <div>
+                                <h4>Файл уходит в микросервис</h4>
+                                <p>Python 3.11 + FastAPI. PyMuPDF для PDF, python-docx и openpyxl для офисных форматов.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <h4>Извлечение текста и структуры</h4>
+                                <p>Заголовки, абзацы, таблицы и метаданные собираются в единый DocumentStructure.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <h4>Распознавание реквизитов</h4>
+                                <p>Регулярные выражения с проверкой контрольных сумм ФНС. Мусор и случайные числа отсеиваются.</p>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <h4>Превью в карточке сообщения</h4>
+                                <p>Тип документа, номер, дата, сумма и идентификаторы появляются под файлом сразу у обоих собеседников.</p>
+                            </div>
+                        </li>
+                    </ol>
                 </div>
 
-                <div class="feature">
-                    <h3>Реальное время и групповая работа</h3>
-                    <p>
-                        WebSocket-сервер на Node.js обрабатывает до 500 одновременных
-                        подключений на VPS с 2 vCPU. p99-латентность доставки
-                        сообщения — 38 мс на тестовом стенде. Поддерживаются
-                        статусы прочтения, индикация набора текста, ответы на
-                        конкретное сообщение, редактирование, удаление и поиск
-                        по истории.
-                    </p>
-                </div>
+                <div class="parser-card">
+                    <div class="parser-head">
+                        <div class="parser-icon">PDF</div>
+                        <div>
+                            <div class="parser-file">Счёт №247 от 12.05.2026</div>
+                            <div class="parser-file-sub">238 КБ · обработка 0,6 с</div>
+                        </div>
+                    </div>
+                    <div class="parser-body">
+                        <div class="parser-section-label">Тип документа</div>
+                        <div style="font-size:15px;color:var(--ink);font-weight:500;margin-bottom:22px">Счёт на оплату</div>
 
-                <div class="feature">
-                    <h3>Голосовые сообщения и медиафайлы</h3>
-                    <p>
-                        Запись голоса через MediaRecorder API с визуализацией
-                        осциллограммы. Поддержка картинок (JPEG, PNG, WebP),
-                        видео (MP4, WebM), аудио и документов. Лимит файла —
-                        50 МБ (настраивается). Загруженные файлы доступны только
-                        участникам соответствующего чата по Bearer-токену.
-                    </p>
-                </div>
+                        <div class="parser-section-label">Реквизиты поставщика</div>
+                        <div class="parser-fields" style="margin-bottom:24px">
+                            <div>
+                                <span class="pf-label">ИНН</span>
+                                <span class="pf-value">4345123456</span>
+                            </div>
+                            <div>
+                                <span class="pf-label">КПП</span>
+                                <span class="pf-value">434501001</span>
+                            </div>
+                            <div>
+                                <span class="pf-label">ОГРН</span>
+                                <span class="pf-value">1184350003421</span>
+                            </div>
+                            <div>
+                                <span class="pf-label">БИК</span>
+                                <span class="pf-value">043304711</span>
+                            </div>
+                            <div>
+                                <span class="pf-label">Расчётный счёт</span>
+                                <span class="pf-value">40702810500000004567</span>
+                            </div>
+                            <div>
+                                <span class="pf-label">Дата</span>
+                                <span class="pf-value">12.05.2026</span>
+                            </div>
+                        </div>
 
-                <div class="feature">
-                    <h3>Хранение на ваших серверах</h3>
-                    <p>
-                        База данных PostgreSQL и кэш Redis работают на том же
-                        VPS, что и backend. Данные не передаются ни в какой
-                        облачный сервис. Резервное копирование настраивается
-                        cron-задачей <code>pg_dump</code>. Дата-центр выбирает заказчик —
-                        требование о локализации ПД по ФЗ-242 закрывается
-                        автоматически.
-                    </p>
-                </div>
-
-                <div class="feature">
-                    <h3>Защита от типовых атак</h3>
-                    <p>
-                        Bcrypt с фактором 10 для хеширования паролей, rate
-                        limiting (10 попыток входа за 15 минут с IP),
-                        параметризованные SQL-запросы, белый список расширений
-                        и валидация путей для защиты от path traversal,
-                        полный отказ от <code>innerHTML</code> на клиенте для архитектурной
-                        защиты от XSS.
-                    </p>
-                </div>
-
-                <div class="feature">
-                    <h3>Открытый код, лицензия MIT</h3>
-                    <p>
-                        Около 15&nbsp;700 строк кода в 93 файлах: backend на TypeScript,
-                        SPA на чистом TypeScript без фреймворков, микросервис
-                        парсинга на Python. Возможен независимый аудит безопасности
-                        и адаптация под индивидуальные требования. 25 unit-тестов
-                        покрывают модуль извлечения реквизитов, включая проверку
-                        контрольных сумм ФНС.
-                    </p>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- ============ SCREENSHOTS ============ -->
-    <section class="screenshots">
-        <div class="container">
-            <h2 class="section-title">Как это выглядит</h2>
-            <div class="screenshots-grid">
-                <figure>
-                    <img src="screenshots/chat.png" alt="Основное окно чата">
-                    <figcaption>
-                        <strong>Главный экран.</strong> Слева — список чатов с превью
-                        последних сообщений и счётчиком непрочитанных. Справа — окно
-                        диалога с ответами на конкретные сообщения и индикатором онлайн-статуса.
-                    </figcaption>
-                </figure>
-                <figure>
-                    <img src="screenshots/parser.png" alt="Модуль парсинга документов">
-                    <figcaption>
-                        <strong>Модуль парсинга документов.</strong> Drag-and-drop загрузка
-                        PDF, DOCX, XLSX и TXT. История последних разборов — справа.
-                    </figcaption>
-                </figure>
-                <figure>
-                    <img src="screenshots/parser-fields.png" alt="Извлечённые метаданные">
-                    <figcaption>
-                        <strong>Результат разбора.</strong> Вкладки «Текст», «Структура»,
-                        «Таблицы», «Метаданные» и кнопки экспорта в JSON, TEXT, MARKDOWN,
-                        EXCEL и HTML.
-                    </figcaption>
-                </figure>
-                <figure>
-                    <img src="screenshots/auth.png" alt="Экран авторизации">
-                    <figcaption>
-                        <strong>Авторизация.</strong> Login + password, хешируется bcrypt
-                        c фактором 10. Сессионный токен в&nbsp;Redis на 24 часа.
-                    </figcaption>
-                </figure>
-            </div>
-        </div>
-    </section>
-
-    <!-- ============ TECH STACK ============ -->
-    <section class="tech">
-        <div class="container">
-            <h2 class="section-title">Стек технологий</h2>
-            <p class="section-lead">
-                Гибридная архитектура: real-time-обмен сообщениями — на Node.js,
-                парсинг документов — на Python. Изоляция позволяет ресурсоёмкому
-                парсингу не блокировать доставку сообщений.
-            </p>
-            <div class="tech-grid">
-                <div class="tech-item">
-                    <div class="tech-cat">Backend</div>
-                    <div class="tech-name">Node.js + Express + WebSocket (ws)</div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-cat">Frontend</div>
-                    <div class="tech-name">TypeScript SPA · Vite (без фреймворков)</div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-cat">Парсинг</div>
-                    <div class="tech-name">Python 3.11 + FastAPI + PyMuPDF + python-docx + openpyxl</div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-cat">СУБД</div>
-                    <div class="tech-name">PostgreSQL 14 (4 таблицы, GIN-индекс по реквизитам)</div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-cat">Кэш / сессии</div>
-                    <div class="tech-name">Redis 7 — токены, rate limiting, онлайн-статусы</div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-cat">Reverse proxy</div>
-                    <div class="tech-name">Nginx + Let's Encrypt</div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-cat">Шифрование</div>
-                    <div class="tech-name">Web Crypto API · ECDH P-256 · AES-GCM-256 · bcrypt(10)</div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-cat">Тестирование</div>
-                    <div class="tech-name">k6 · pytest (25 тестов на модуль реквизитов)</div>
+                        <div class="parser-section-label">К оплате</div>
+                        <div class="parser-fields">
+                            <div>
+                                <span class="pf-label">Сумма</span>
+                                <span class="pf-value pf-value-money">184 500 ₽</span>
+                            </div>
+                            <div>
+                                <span class="pf-label">№ договора</span>
+                                <span class="pf-value">№ 12-А/2026</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ============ PILOT METRICS ============ -->
-    <section class="metrics">
-        <div class="container">
-            <h2 class="section-title">Пилот в реальной компании</h2>
-            <p class="section-lead">
-                Система обкатана в строительной компании ООО «ПромТехМонтаж» (г. Киров,
-                12 сотрудников). 26 дней эксплуатации в роли основного канала рабочих
-                коммуникаций.
-            </p>
-            <div class="metrics-grid">
-                <div class="metric">
-                    <div class="metric-value">12</div>
-                    <div class="metric-label">сотрудников подключено</div>
+    <!-- ============ COMPARISON ============ -->
+    <section class="compare">
+        <div class="wrap">
+            <div class="compare-head">
+                <div>
+                    <div class="section-eyebrow">Сравнение</div>
+                    <h2>Что не так с публичными мессенджерами для бизнеса</h2>
                 </div>
-                <div class="metric">
-                    <div class="metric-value">2&nbsp;847</div>
-                    <div class="metric-label">отправленных сообщений</div>
-                </div>
-                <div class="metric">
-                    <div class="metric-value">67</div>
-                    <div class="metric-label">документов разобрано парсером</div>
-                </div>
-                <div class="metric metric-success">
-                    <div class="metric-value">0</div>
-                    <div class="metric-label">инцидентов безопасности</div>
-                </div>
-                <div class="metric metric-success">
-                    <div class="metric-value">4,2 / 5</div>
-                    <div class="metric-label">оценка сотрудников</div>
-                </div>
+                <p class="compare-lead">
+                    Telegram и WhatsApp удобны, но юридически и функционально не подходят
+                    для пересылки счетов, договоров и персональных данных.
+                </p>
             </div>
-        </div>
-    </section>
 
-    <!-- ============ AUDIENCE ============ -->
-    <section class="audience">
-        <div class="container">
-            <h2 class="section-title">Для кого подходит</h2>
-            <div class="audience-grid">
-                <div class="audience-item">
-                    <div class="aud-name">Строительные компании</div>
-                    <div class="aud-desc">
-                        Защищённая переписка с заказчиками и субподрядчиками,
-                        автоматический разбор смет (XLSX, Гранд-Смета) и актов
-                        КС-2, КС-3.
-                    </div>
-                </div>
-                <div class="audience-item">
-                    <div class="aud-name">Юридические фирмы</div>
-                    <div class="aud-desc">
-                        Конфиденциальность переписки с клиентами, разбор договоров
-                        и извлечение реквизитов сторон, дат и сумм.
-                    </div>
-                </div>
-                <div class="audience-item">
-                    <div class="aud-name">Бухгалтерское обслуживание</div>
-                    <div class="aud-desc">
-                        Извлечение ИНН, КПП, БИК, расчётных счетов и сумм из
-                        счетов-фактур, актов и платёжных поручений. Ускорение
-                        ввода данных в учётные системы.
-                    </div>
-                </div>
-                <div class="audience-item">
-                    <div class="aud-name">IT и проектные команды</div>
-                    <div class="aud-desc">
-                        Защищённый канал внутри команды для обмена техническими
-                        заданиями, договорами с заказчиками и счетами от поставщиков.
-                    </div>
-                </div>
-            </div>
-            <p class="audience-note">
-                Решение рассчитано на коммерческие предприятия. Для государственных
-                информационных систем требуется сертификат ФСТЭК; в этом случае
-                AES-GCM-256 заменяется на отечественный «Кузнечик» через КриптоПро CSP —
-                это направление развития, заявленное в дорожной карте.
-            </p>
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>WhatsApp</th>
+                        <th>Telegram</th>
+                        <th class="us">Эгида</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Где хранятся файлы</td>
+                        <td data-label="WhatsApp" class="neg">Серверы Meta (США)</td>
+                        <td data-label="Telegram" class="neg">Дата-центры за рубежом</td>
+                        <td data-label="Эгида" class="us">Ваш сервер в РФ</td>
+                    </tr>
+                    <tr>
+                        <td>Соответствие ФЗ-242</td>
+                        <td data-label="WhatsApp" class="neg">Нарушает</td>
+                        <td data-label="Telegram" class="neg">Нарушает</td>
+                        <td data-label="Эгида" class="us">Закрыто на уровне развёртывания</td>
+                    </tr>
+                    <tr>
+                        <td>Сквозное шифрование</td>
+                        <td data-label="WhatsApp">По умолчанию</td>
+                        <td data-label="Telegram" class="neg">Только в «секретных» чатах</td>
+                        <td data-label="Эгида" class="us">По умолчанию для всех чатов</td>
+                    </tr>
+                    <tr>
+                        <td>Парсинг реквизитов</td>
+                        <td data-label="WhatsApp" class="neg">Нет</td>
+                        <td data-label="Telegram" class="neg">Нет</td>
+                        <td data-label="Эгида" class="us">ИНН, КПП, ОГРН, БИК, суммы, даты</td>
+                    </tr>
+                    <tr>
+                        <td>Контроль над данными</td>
+                        <td data-label="WhatsApp" class="neg">Нет</td>
+                        <td data-label="Telegram" class="neg">Нет</td>
+                        <td data-label="Эгида" class="us">Полный — сервер ваш</td>
+                    </tr>
+                    <tr>
+                        <td>Стоимость</td>
+                        <td data-label="WhatsApp">Бесплатно</td>
+                        <td data-label="Telegram">Бесплатно</td>
+                        <td data-label="Эгида" class="us">Open-source, MIT</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </section>
 
     <!-- ============ FOOTER ============ -->
     <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div>
-                    <strong>ЭГИДА</strong>
-                    <span class="footer-sep">·</span>
-                    Выпускная квалификационная работа по теме «Разработка защищённого
-                    мессенджера с функцией парсинга документов для автоматизации
-                    бизнес-процессов малого предприятия»
-                </div>
-                <div>
-                    Кривошеин Е. Д.
-                    <span class="footer-sep">·</span>
-                    Вятский государственный университет
-                    <span class="footer-sep">·</span>
-                    Институт экономики и менеджмента
-                    <span class="footer-sep">·</span>
-                    Киров, 2026
-                </div>
-                <div class="footer-links">
-                    <a href="https://github.com/qrivoshein/secure-messenger">Исходный код на GitHub</a>
-                </div>
+        <div class="wrap foot-inner">
+            <div class="foot-meta">
+                <strong>Эгида</strong><br>
+                Выпускная квалификационная работа · ВятГУ · 2026<br>
+                Кривошеин Е.&nbsp;Д. · группа БИб-4601-01-00
             </div>
+            <a class="foot-link" href="https://github.com/qrivoshein/secure-messenger">github.com/qrivoshein/secure-messenger →</a>
         </div>
     </footer>
 
