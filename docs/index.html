@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ЭГИДА — защищённый корпоративный мессенджер с парсингом документов</title>
+    <meta name="description" content="ЭГИДА — российская on-premise альтернатива корпоративным мессенджерам с E2E-шифрованием и автоматическим извлечением реквизитов из деловых документов.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="bg-grid"></div>
+
+    <!-- ============ HERO ============ -->
+    <section class="hero">
+        <div class="container">
+            <div class="badge">Выпускная квалификационная работа · ВятГУ · 2026</div>
+            <h1 class="title">
+                <span class="title-name">ЭГИДА</span>
+            </h1>
+            <p class="tagline">
+                Защищённый корпоративный мессенджер<br>
+                с парсингом российских деловых документов
+            </p>
+            <p class="subtitle">
+                Отечественная on-premise альтернатива публичным мессенджерам.
+                Сквозное шифрование, автоматическое извлечение реквизитов из счетов, актов и договоров,
+                полный контроль над данными.
+            </p>
+            <div class="cta">
+                <a href="https://github.com/qrivoshein/secure-messenger" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                    </svg>
+                    Открыть на GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ KEY METRICS ============ -->
+    <section class="metrics">
+        <div class="container">
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-value">12</div>
+                    <div class="metric-label">пользователей в&nbsp;пилоте</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">2&nbsp;847</div>
+                    <div class="metric-label">сообщений за&nbsp;26&nbsp;дней</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">67</div>
+                    <div class="metric-label">документов через&nbsp;парсер</div>
+                </div>
+                <div class="metric metric-success">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">инцидентов безопасности</div>
+                </div>
+                <div class="metric metric-success">
+                    <div class="metric-value">4,2/5</div>
+                    <div class="metric-label">удовлетворённость сотрудников</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ FEATURES ============ -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Что внутри</h2>
+            <div class="features-grid">
+
+                <div class="feature">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Сквозное шифрование</h3>
+                    <p>
+                        ECDH P-256 для обмена ключами, AES-GCM-256 для шифрования сообщений.
+                        Приватный ключ хранится только на устройстве пользователя в IndexedDB
+                        (non-extractable). Сервер общим ключом пары не располагает.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">📄</div>
+                    <h3>Парсинг деловых документов</h3>
+                    <p>
+                        Автоматическое извлечение реквизитов из PDF, DOCX, XLSX, TXT:
+                        ИНН (с проверкой контрольных сумм ФНС), КПП, ОГРН, БИК,
+                        расчётные счета, денежные суммы, даты, номера договоров.
+                        Превью реквизитов прямо в карточке сообщения.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">🏢</div>
+                    <h3>On-premise развёртывание</h3>
+                    <p>
+                        Полный контроль над данными. Один VPS — 2 vCPU, 4 ГБ RAM,
+                        40 ГБ SSD — обслуживает до 500 одновременных WebSocket-подключений.
+                        Соответствие требованиям ФЗ-152, ФЗ-242, ФЗ-149.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">⚖️</div>
+                    <h3>Соответствие законодательству</h3>
+                    <p>
+                        Локализация ПД на территории РФ (ФЗ-242). Поддерживается переход
+                        на отечественную криптографию (ГОСТ «Кузнечик» через КриптоПро CSP)
+                        в следующих версиях. Журнал аудита для расследования инцидентов.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Реальное время</h3>
+                    <p>
+                        WebSocket-обмен сообщениями с p99-латентностью 38 мс.
+                        Обмен файлами до 50 МБ, голосовые сообщения, статусы прочтения,
+                        ответы на сообщения, форматирование текста.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">📂</div>
+                    <h3>Открытый исходный код</h3>
+                    <p>
+                        Лицензия MIT. Возможен независимый аудит безопасности.
+                        Подходит для адаптации под индивидуальные требования
+                        малого и среднего бизнеса.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ SCREENSHOTS ============ -->
+    <section class="screenshots">
+        <div class="container">
+            <h2 class="section-title">Как это выглядит</h2>
+            <div class="screenshots-grid">
+                <figure>
+                    <img src="screenshots/chat.png" alt="Основное окно чата">
+                    <figcaption>Основное окно мессенджера: список чатов и переписка с E2E-шифрованием</figcaption>
+                </figure>
+                <figure>
+                    <img src="screenshots/parser.png" alt="Модуль парсинга документов">
+                    <figcaption>Модуль парсинга: загрузка PDF, DOCX, XLSX и автоматическое извлечение структуры</figcaption>
+                </figure>
+                <figure>
+                    <img src="screenshots/parser-fields.png" alt="Извлечённые реквизиты">
+                    <figcaption>Извлечённые реквизиты: метаданные, заголовки, таблицы, ключевые поля</figcaption>
+                </figure>
+                <figure>
+                    <img src="screenshots/auth.png" alt="Экран авторизации">
+                    <figcaption>Экран авторизации с проверкой по bcrypt и токен-сессией в&nbsp;Redis</figcaption>
+                </figure>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ TECH STACK ============ -->
+    <section class="tech">
+        <div class="container">
+            <h2 class="section-title">Стек технологий</h2>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <div class="tech-cat">Backend</div>
+                    <div class="tech-name">Node.js + Express + WebSocket</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-cat">Frontend</div>
+                    <div class="tech-name">TypeScript SPA · Vite</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-cat">Парсинг</div>
+                    <div class="tech-name">Python 3.11 + FastAPI</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-cat">СУБД</div>
+                    <div class="tech-name">PostgreSQL 14</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-cat">Кэш</div>
+                    <div class="tech-name">Redis 7</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-cat">Reverse Proxy</div>
+                    <div class="tech-name">Nginx + Let's Encrypt</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-cat">Шифрование</div>
+                    <div class="tech-name">Web Crypto API · ECDH P-256 · AES-GCM-256</div>
+                </div>
+                <div class="tech-item">
+                    <div class="tech-cat">Парсеры</div>
+                    <div class="tech-name">PyMuPDF · python-docx · openpyxl</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ AUDIENCE ============ -->
+    <section class="audience">
+        <div class="container">
+            <h2 class="section-title">Для кого</h2>
+            <div class="audience-grid">
+                <div class="audience-item">
+                    <div class="aud-emoji">🏗️</div>
+                    <div class="aud-name">Строительные компании</div>
+                    <div class="aud-desc">Контроль версий ПСД, защищённая переписка с заказчиками и подрядчиками</div>
+                </div>
+                <div class="audience-item">
+                    <div class="aud-emoji">⚖️</div>
+                    <div class="aud-name">Юридические фирмы</div>
+                    <div class="aud-desc">Конфиденциальность переписки с клиентами, автоматический разбор договоров</div>
+                </div>
+                <div class="audience-item">
+                    <div class="aud-emoji">💼</div>
+                    <div class="aud-name">Бухгалтерские компании</div>
+                    <div class="aud-desc">Извлечение ИНН, КПП, сумм из счетов и актов, ускорение ввода данных</div>
+                </div>
+                <div class="audience-item">
+                    <div class="aud-emoji">💻</div>
+                    <div class="aud-name">IT-компании</div>
+                    <div class="aud-desc">Защищённые корпоративные коммуникации внутри проектных команд</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ FOOTER ============ -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div>
+                    <strong>ЭГИДА</strong>
+                    <span class="footer-sep">·</span>
+                    Выпускная квалификационная работа
+                </div>
+                <div>
+                    Кривошеин Е.Д.
+                    <span class="footer-sep">·</span>
+                    Вятский государственный университет
+                    <span class="footer-sep">·</span>
+                    Киров, 2026
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/qrivoshein/secure-messenger">GitHub</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
